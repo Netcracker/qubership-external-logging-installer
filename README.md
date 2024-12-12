@@ -1,0 +1,1 @@
+# qubership-external-logging-installer
