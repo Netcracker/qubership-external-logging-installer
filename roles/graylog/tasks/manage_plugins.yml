@@ -1,0 +1,147 @@
+---
+- name: Create plugins directory
+  file:
+    path: "{{ graylog_volume }}/graylog/plugins/"
+    state: directory
+    mode: 0777
+
+- name: Initialize variables
+  set_fact:
+    # List of installed Graylog plugins, use to selectively remove a set of plugins
+    internal_installed_graylog_plugins: []
+    # Result list of Graylog plugins, after parse, merge and override
+    internal_resulted_graylog_plugins_list: []
+
+- name: Collect plugins before installation
+  include_tasks: collect_graylog_plugins.yml
+
+- name: Remove OOB old plugin versions
+  file:
+    path: "{{ item.file }}"
+    state: absent
+  with_items: "{{ internal_installed_graylog_plugins }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.name in default_graylog_plugins
+
+# User will use inventory fully filled manually
+- name: Prepare default plugins coordinates
+  block:
+    - name: Calculate plugins paths from user and default values
+      set_fact:
+        # User values from "plugins_path" should override default values from "default_plugins_path"
+        internal_plugins_paths: "{{ default_plugins_path | combine(plugins_path) }}"
+      when:
+        - plugins_path is defined
+        - plugins_path is not none
+
+    - name: Specify link for plugins with registry
+      set_fact:
+        internal_resulted_graylog_plugins_list: "{{ internal_resulted_graylog_plugins_list + ['/'.join((raw_artifacts_registry, item.value))] }}"
+      when:
+        - item is defined
+        - item is not none
+        - item | trim | length > 0
+      with_dict:
+        - "{{ internal_plugins_paths }}"
+  when:
+    - raw_artifacts_registry is defined
+    - raw_artifacts_registry is not none
+    - raw_artifacts_registry | trim | length > 0
+
+- name: Download plugins with credentials
+  when:
+    - raw_artifacts_registry_username is defined
+    - raw_artifacts_registry_password is defined
+  block:
+    - name: Copy custom plugins
+      get_url:
+        url: "{{ item | trim }}"
+        dest: "{{ graylog_volume }}/graylog/plugins/"
+        validate_certs: no
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      when:
+        - not raw_artifacts_registry_validate_certs | bool
+        - plugins is defined
+        - plugins is not none
+        - plugins | trim | length > 0
+      with_items:
+        - "{{ plugins.split(',') }}"
+
+    - name: Copy custom plugins with SSL-certificate
+      get_url:
+        url: "{{ item | trim }}"
+        dest: "{{ graylog_volume }}/graylog/plugins/"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+        - plugins is defined
+        - plugins is not none
+        - plugins | trim | length > 0
+      with_items:
+        - "{{ plugins.split(',') }}"
+
+    - name: Copy custom plugins without SSL-certificate
+      get_url:
+        url: "{{ item | trim }}"
+        dest: "{{ graylog_volume }}/graylog/plugins/"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+        - plugins is defined
+        - plugins is not none
+        - plugins | trim | length > 0
+      with_items:
+        - "{{ plugins.split(',') }}"
+
+- name: Download plugins without credentials
+  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+  block:
+    - name: Copy custom plugins
+      get_url:
+        url: "{{ item | trim }}"
+        dest: "{{ graylog_volume }}/graylog/plugins/"
+        validate_certs: no
+      when:
+        - not raw_artifacts_registry_validate_certs | bool
+        - plugins is defined
+        - plugins is not none
+        - plugins | trim | length > 0
+      with_items:
+        - "{{ plugins.split(',') }}"
+
+    - name: Copy custom plugins with SSL-certificate
+      get_url:
+        url: "{{ item | trim }}"
+        dest: "{{ graylog_volume }}/graylog/plugins/"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+        - plugins is defined
+        - plugins is not none
+        - plugins | trim | length > 0
+      with_items:
+        - "{{ plugins.split(',') }}"
+
+    - name: Copy custom plugins without SSL-certificate
+      get_url:
+        url: "{{ item | trim }}"
+        dest: "{{ graylog_volume }}/graylog/plugins/"
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+        - plugins is defined
+        - plugins is not none
+        - plugins | trim | length > 0
+      with_items:
+        - "{{ plugins.split(',') }}"

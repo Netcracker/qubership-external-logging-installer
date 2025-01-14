@@ -1,0 +1,101 @@
+---
+- name: Prepare custom certificates
+  when:
+    - certificates is defined
+    - certificates is not none
+    - certificates | trim | length > 0
+  delegate_to: 127.0.0.1
+  block:
+    - name: Download custom certificates with credentials
+      when:
+      - raw_artifacts_registry_username is defined
+      - raw_artifacts_registry_password is defined
+      block:
+        - name: Download zip-file
+          when: not raw_artifacts_registry_validate_certs | bool
+          get_url:
+            url: "{{ certificates }}"
+            dest: "/tmp/certificates.tar.gz"
+            validate_certs: no
+            url_username: "{{ raw_artifacts_registry_username }}"
+            url_password: "{{ raw_artifacts_registry_password }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download zip-file with SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is defined
+          get_url:
+            url: "{{ certificates }}"
+            dest: "/tmp/certificates.tar.gz"
+            url_username: "{{ raw_artifacts_registry_username }}"
+            url_password: "{{ raw_artifacts_registry_password }}"
+          environment:
+            SSL_CERT_FILE: "{{ ssl_module_files_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download zip-file without SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is not defined
+          get_url:
+            url: "{{ certificates }}"
+            dest: "/tmp/certificates.tar.gz"
+            url_username: "{{ raw_artifacts_registry_username }}"
+            url_password: "{{ raw_artifacts_registry_password }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+    - name: Download custom certificates without credentials
+      when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+      block:
+        - name: Download zip-file
+          when: not raw_artifacts_registry_validate_certs | bool
+          get_url:
+            url: "{{ certificates }}"
+            dest: "/tmp/certificates.tar.gz"
+            validate_certs: no
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download zip-file with SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is defined
+          get_url:
+            url: "{{ certificates }}"
+            dest: "/tmp/certificates.tar.gz"
+          environment:
+            SSL_CERT_FILE: "{{ ssl_module_files_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download zip-file without SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is not defined
+          get_url:
+            url: "{{ certificates }}"
+            dest: "/tmp/certificates.tar.gz"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+    - name: Unzip content packs
+      unarchive:
+        src: "/tmp/certificates.tar.gz"
+        dest: /tmp
+        remote_src: yes

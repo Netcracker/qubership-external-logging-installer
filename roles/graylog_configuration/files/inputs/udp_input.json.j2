@@ -1,0 +1,13 @@
+{
+  "title": "input-{{ port }}",
+  "configuration": {
+    "recv_buffer_size": 262144,
+    "port": {{ port }},
+    "number_worker_threads": 2,
+    "override_source": null,
+    "bind_address": "0.0.0.0",
+    "decompress_size_limit": 8388608
+  },
+  "type": "org.graylog2.inputs.gelf.udp.GELFUDPInput",
+  "global": true
+}

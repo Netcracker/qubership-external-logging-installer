@@ -1,0 +1,166 @@
+---
+- name: Prepare custom content packs
+  when: content_pack_paths is defined and content_pack_paths is not none
+  delegate_to: 127.0.0.1
+  block:
+    - name: Print content packs links
+      debug:
+        var: content_pack_paths
+
+    - name: Cleanup old packs
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /tmp/downloaded-logging-packs/
+        - /tmp/logging-packs/
+        - /tmp/logging-packs/content-packs/
+        - /tmp/logging-packs/elasticsearch-configs/
+        - /tmp/logging-packs/opensearch-configs/
+        - /tmp/logging-packs/saved-searches/
+
+    - name: Creates directories for download and unarchive content packs
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - /tmp/downloaded-logging-packs/
+        - /tmp/logging-packs/
+
+    - name: Download archives with credentials
+      when:
+        - raw_artifacts_registry_username is defined
+        - raw_artifacts_registry_password is defined
+      block:
+        - name: Download archive with content packs
+          when: not raw_artifacts_registry_validate_certs | bool
+          get_url:
+            url: "{{ content_pack_paths }}"
+            dest: "/tmp/downloaded-logging-packs/"
+            url_username: "{{ raw_artifacts_registry_username }}"
+            url_password: "{{ raw_artifacts_registry_password }}"
+            validate_certs: no
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download archive with content packs with SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is defined
+          get_url:
+            url: "{{ content_pack_paths }}"
+            dest: "/tmp/downloaded-logging-packs/"
+            url_username: "{{ raw_artifacts_registry_username }}"
+            url_password: "{{ raw_artifacts_registry_password }}"
+          environment:
+            SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download archive with content packs without SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is not defined
+          get_url:
+            url: "{{ content_pack_paths }}"
+            dest: "/tmp/downloaded-logging-packs/"
+            url_username: "{{ raw_artifacts_registry_username }}"
+            url_password: "{{ raw_artifacts_registry_password }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+    - name: Download archives without credentials
+      when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+      block:
+        - name: Download archive with content packs
+          when: not raw_artifacts_registry_validate_certs | bool
+          get_url:
+            url: "{{ content_pack_paths }}"
+            dest: "/tmp/downloaded-logging-packs/"
+            validate_certs: no
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download archive with content packs with SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is defined
+          get_url:
+            url: "{{ content_pack_paths }}"
+            dest: "/tmp/downloaded-logging-packs/"
+          environment:
+            SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+        - name: Download archive with content packs without SSL-certificate
+          when: 
+            - raw_artifacts_registry_validate_certs | bool
+            - raw_artifacts_registry_ca_cert_file is not defined
+          get_url:
+            url: "{{ content_pack_paths }}"
+            dest: "/tmp/downloaded-logging-packs/"
+          register: _download_archive
+          until: _download_archive is succeeded
+          retries: 5
+          delay: 2
+
+    - name: Unarchive content packs
+      unarchive:
+        src: "{{ item }}"
+        dest: /tmp/logging-packs/
+        remote_src: yes
+      with_fileglob:
+        - /tmp/downloaded-logging-packs/*
+
+    - name: Check that the 'content-packs' exists
+      stat:
+        path: "/tmp/logging-packs/content-packs"
+      register: content_packs_dir
+
+    - name: Copy content packs
+      copy:
+        src: "{{ item }}"
+        dest: "{{ role_path }}/files/content_packs"
+      with_fileglob:
+        - /tmp/logging-packs/content-packs/*
+      when:
+        - content_packs_dir.stat.exists | bool
+
+    - name: Check that the 'saved-searches' exists
+      stat:
+        path: "/tmp/logging-packs/saved-searches"
+      register: saved_searches_dir
+
+    - name: Copy saved searches
+      copy:
+        src: "{{ item }}"
+        dest: "{{ role_path }}/files/saved_searches"
+      with_fileglob:
+        - /tmp/logging-packs/saved-searches/*
+      when:
+        - saved_searches_dir.stat.exists | bool
+
+    - name: Check that the 'opensearch-configs' exists for OpenSearch
+      stat:
+        path: "/tmp/logging-packs/opensearch-configs"
+      register: opensearch_configs_dir
+
+    - name: Copy saved searches for OpenSearch
+      copy:
+        src: "{{ item }}"
+        dest: "{{ role_path }}/files/opensearch_configs"
+      with_fileglob:
+        - /tmp/logging-packs/opensearch-configs/*
+      when:
+        - opensearch_configs_dir.stat.exists | bool

@@ -1,0 +1,29 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=MongoDB Prometheus Metrics Exporter
+After=network-online.target
+
+[Service]
+Type=simple
+StartLimitBurst=5
+StartLimitInterval=0
+Restart=on-failure
+RestartSec=1
+
+User={{ exporters_system_user }}
+Group={{ exporters_system_group }}
+ExecStart={{ mongodb_exporter_host_bin_dir }}/mongodb_exporter \
+{% for flag in mongodb_exporter_flags -%}
+    {{ flag }} \
+{% endfor %}
+
+SyslogIdentifier=mongodb_exporter
+
+ProtectHome=yes
+NoNewPrivileges=yes
+ProtectSystem=full
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+
+[Install]
+WantedBy=multi-user.target

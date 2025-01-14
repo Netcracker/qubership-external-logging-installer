@@ -1,0 +1,13 @@
+- name: Install Graylog
+  block:
+    - import_tasks: manage_plugins.yml
+    - import_tasks: pre_deploy.yml
+    - import_tasks: manage_certificates.yml
+    - import_tasks: prepare_of_containers_parameters.yml
+    - import_tasks: run_docker.yml
+  when: graylog_install|bool
+
+- name: Uninstall Graylog
+  block:
+    - import_tasks: uninstall.yml
+  when: not graylog_install|bool

@@ -1,0 +1,33 @@
+global_defs {
+  script_user root root
+  enable_script_security
+}
+
+vrrp_script check_graylog_status {
+  script "/etc/keepalived/files/check_graylog_status.sh"
+  interval 15
+  fall 2
+  rise 2
+  init_fail
+}
+
+vrrp_instance VI_{{ keepalived_virtual_ip_address.split('.')[3] }} {
+  state BACKUP
+  interface {{ keepalived_network_interface }}
+  virtual_router_id {{ keepalived_virtual_ip_address.split('.')[3] }}
+  priority {{ keepalived_priority }}
+  nopreempt
+
+  authentication {
+    auth_type PASS
+    auth_pass {{ keepalived_auth_password }}
+  }
+
+  track_script {
+    check_graylog_status
+  }
+
+  virtual_ipaddress {
+    {{ keepalived_virtual_ip_address }}/24 dev {{ keepalived_network_interface }} label {{ keepalived_network_interface }}:vip
+  }
+}

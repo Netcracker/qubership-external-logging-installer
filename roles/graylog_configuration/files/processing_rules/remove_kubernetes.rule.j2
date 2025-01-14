@@ -1,0 +1,6 @@
+rule \"Remove kubernetes field\"
+when
+  has_field(\"kubernetes\")
+then
+  remove_field(\"kubernetes\");
+end

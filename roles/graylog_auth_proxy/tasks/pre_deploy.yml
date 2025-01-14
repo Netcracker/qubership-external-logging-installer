@@ -1,0 +1,18 @@
+- name: Ensure necessary directories exist and is available
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    recurse: true
+  with_items:
+    - { path: "{{ graylog_volume }}/graylog-auth-proxy/config/", mode: "0600", owner: "{{ proxy_uid }}", group: "{{ proxy_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog-auth-proxy/ssl/", mode: "0600", owner: "{{ proxy_uid }}", group: "{{ proxy_gid }}" }
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Prepare graylog-auth-proxy config
+  template:
+    src: "{{ role_path }}/templates/config.yaml.j2"
+    dest: "{{ graylog_volume }}/graylog-auth-proxy/config/config.yaml"

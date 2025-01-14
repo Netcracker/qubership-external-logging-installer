@@ -1,0 +1,10 @@
+rule \"Route Audit logs\"
+when
+{% if input_id is defined %}
+  (NOT (from_input(id: \"{{ input_id }}\"))) AND
+{% endif %}
+  (has_field(\"qs_audit_label\") OR
+  to_bool(regex(pattern: \"var.log.(kube|ocp|ope|audit)+(-|[a-z.])*.?([a-z]|-)*audit.log$\", value: to_string($message.tag)).matches))
+then
+  route_to_stream(id: \"{{ route_to_stream_id }}\", remove_from_default: true);
+end

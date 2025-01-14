@@ -1,0 +1,44 @@
+[SERVICE]
+    Flush         1
+    {% if fluentbit_log_level is defined and fluentbit_log_level|length %}
+    Log_Level     {{ fluentbit_log_level | lower }}
+    {% else %}
+    Log_Level     warn
+    {% endif %}
+    Daemon        off
+    Parsers_File  /fluent-bit/etc/parsers.conf
+    HTTP_Server   On
+    HTTP_Listen   0.0.0.0
+    HTTP_Port     2020
+    Health_Check  On
+    storage.path              /fluent-bit/etc/flb-storage/
+    storage.sync              normal
+    storage.checksum          off
+    storage.backlog.mem_limit 5M
+    storage.total_limit_size  {{ fluentbit_total_limit_size }}
+    storage.type              filesystem
+    storage.max_chunks_up     1000
+
+@INCLUDE /fluent-bit/etc/conf/input-docker.conf
+@INCLUDE /fluent-bit/etc/conf/input-audit.conf
+@INCLUDE /fluent-bit/etc/conf/input-messages-varlogsyslog.conf
+@INCLUDE /fluent-bit/etc/conf/input-messages-varlogmessages.conf
+{% if fluentbit_custom_input_conf is defined and fluentbit_custom_input_conf is not none %}
+@INCLUDE /fluent-bit/etc/conf/custom-input.conf
+{% endif %}
+
+@INCLUDE /fluent-bit/etc/conf/filter-log-transformer.conf
+@INCLUDE /fluent-bit/etc/conf/filter-concat.conf
+@INCLUDE /fluent-bit/etc/conf/filter-empty-log.conf
+@INCLUDE /fluent-bit/etc/conf/filter-log-parser.conf
+@INCLUDE /fluent-bit/etc/conf/filter-audit.conf
+@INCLUDE /fluent-bit/etc/conf/filter-add.conf
+{% if fluentbit_custom_filter_conf is defined and fluentbit_custom_filter_conf is not none %}
+@INCLUDE /fluent-bit/etc/conf/custom-filter.conf
+{% endif %}
+
+@INCLUDE /fluent-bit/etc/conf/output-null.conf
+@INCLUDE /fluent-bit/etc/conf/output-graylog.conf
+{% if fluentbit_custom_output_conf is defined and fluentbit_custom_output_conf is not none %}
+@INCLUDE /fluent-bit/etc/conf/custom-output.conf
+{% endif %}

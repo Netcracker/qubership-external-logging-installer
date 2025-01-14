@@ -1,0 +1,69 @@
+---
+- name: Set docker image with registry
+  set_fact:
+    fluentbit_image: "{{ docker_registry }}/{{ fluentbit_image }}"
+  when:
+    - docker_registry is defined
+    - docker_registry != 0
+
+- name: Pull FluentBit image
+  docker_image:
+    name: "{{ fluentbit_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+  when:
+    - not docker_registry_validate_certs|bool
+
+- name: Pull FluentBit image with local CA
+  docker_image:
+    name: "{{ fluentbit_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    ca_cert: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: Pull FluentBit image without local CA
+  docker_image:
+    name: "{{ fluentbit_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is not defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: FluentBit container start
+  docker_container:
+    name: graylog_fluentbit_1
+    image: "{{ fluentbit_image }}"
+    state: started
+    purge_networks: true
+    recreate: true
+    restart_policy: always
+    privileged: true
+    security_opts:
+      - no-new-privileges
+    ports:
+      - 2020:2020
+    read_only: false
+    volumes: "{{ fluentbit_volumes }}"
+    networks:
+      - name: logging
+        links:
+          - graylog
+        aliases:
+          - fluentbit
+
+- name: Wait for FluentBit to start
+  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_fluentbit_1  # noqa 206
+  register: result
+  until: result.stdout == 'running'
+  delay: 2
+  retries: 5

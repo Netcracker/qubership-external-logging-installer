@@ -1,0 +1,10 @@
+rule \"Processing unsupported symbols\"
+when
+  has_field(\"labels\")
+then
+  let lab = to_string($message.labels);
+  let replace_labels = replace(lab, \"/\", \"_\");
+  let json = parse_json(replace_labels);
+  let map = to_map(json);
+  set_fields(map);
+end

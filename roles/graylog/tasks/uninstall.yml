@@ -1,0 +1,29 @@
+---
+- name: Ensure the existence of a directory if not local connection
+  when:
+    - ansible_connection != 'local'
+  block:
+    - name: Set 'project_src'
+      set_fact:
+        project_src: "~/graylog"
+
+    - name: Ensure {{ project_src }} dir exists
+      file:
+        path: "{{ project_src }}"
+        state: directory
+
+# TODO: remove graylog_elasticsearch_1 deletion
+- name: Shut down Graylog
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+    force_kill: true
+    keep_volumes: false
+  with_items:
+    - graylog_web_1
+    - graylog_graylog_1
+    - graylog_mongo_1
+    - graylog_elasticsearch_1
+    - graylog_storage_1
+    - graylog_fluentd_1
+    - graylog_fluentbit_1

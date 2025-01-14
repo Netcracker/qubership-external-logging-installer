@@ -1,0 +1,123 @@
+---
+########################################################################################################################
+#                                           Logging-Graylog common variables
+########################################################################################################################
+
+####################################################### Common #########################################################
+
+## Enable/disable graylog installation.
+# True - install, False - uninstall
+# default: true
+graylog_install: true
+
+validate_certs: false
+ssl_cert_file: ~
+
+####################################################### Plugins ########################################################
+
+# List of default plugins names
+default_graylog_plugins:
+  - graylog-output-syslog
+  - metrics-reporter-prometheus
+  - graylog-archiving-plugin
+  - graylog-plugin-integrations
+
+# Default plugins paths in registry
+default_plugins_path:
+  graylog_output_syslog_plugin: com/wizecore/graylog2/graylog-output-syslog/4.2.6/graylog-output-syslog-4.2.6.jar
+  metrics_reporter_prometheus_plugin: org/graylog/plugins/metrics-reporter-prometheus/3.0.0/metrics-reporter-prometheus-3.0.0.jar
+  graylog_archiving_plugin: org/qubership/graylog2/plugin/graylog-archiving-plugin/0.2.0/graylog-archiving-plugin-0.2.0.jar
+  graylog_plugin_integrations: graylog-integrations/graylog-integrations-plugins/graylog-plugin-integrations-4.3.9.jar
+
+########################################################################################################################
+#                                                  Docker settings
+########################################################################################################################
+
+## Set Docker Treads limits: soft and hard
+# it is recommended to change both limits
+# it is not set by default
+# docker_threads_soft_limit: 4096
+# docker_threads_hard_limit: 8192
+
+graylog_image: "graylog/graylog:5.2.9"
+
+########################################################################################################################
+#                                               Services settings
+########################################################################################################################
+
+## Graylog user and group who SHOULD has access rights to configure and data directories.
+# default: uid=1100 and gid=1100
+#
+graylog_uid: 1100
+graylog_gid: 1100
+
+########################################################################################################################
+#                                         Parameters for graylog.conf
+########################################################################################################################
+
+# Credentials for root user/super admin
+root_username: admin
+root_password: admin
+
+# Size of internal ring buffers. Raise this if raising outputbuffer_processors does not help anymore.
+# For optimum performance your LogMessage objects in the ring buffer should fit in your CPU L3 cache.
+# Must be a power of 2. (512, 1024, 2048, ...)
+ring_size: 262144
+
+# Input buffer parameters
+inputbuffer_ring_size: 65536
+inputbuffer_processors: 2
+
+# Process buffer parameters
+processbuffer_processors: 5
+
+# Output buffer parameters
+outputbuffer_processors: 5
+outputbuffer_processor_threads_max_pool_size: 30
+output_batch_size: 1000
+
+elasticsearch_max_total_connections: 200
+elasticsearch_max_total_connections_per_route: 20
+
+# Default index parameters
+max_size: 1073741824 # 1 GB
+max_number_of_indices: 20
+
+# Replicas and shards for default indices
+graylog_config_elasticsearch_replicas: 0
+graylog_config_elasticsearch_shards: 1
+
+## Parameters for collecting Prometheus metrics
+graylog_metrics_port: 9833
+graylog_metrics_path: /api/metrics/prometheus
+
+# TLS
+tls_enabled: false
+
+## Custom parameters for graylog.conf
+# graylog_custom_params:
+#   message_journal_flush_age: 1m
+#   message_journal_flush_interval: 1000000
+#   message_journal_segment_age: 1h
+#   message_journal_segment_size: 100mb
+
+########################################################################################################################
+#                                         Parameters for graylog log4j.xml
+########################################################################################################################
+
+graylog_log_level: warn
+graylog_accesslog_log_level: debug
+
+########################################################################################################################
+#                                          OpenSearch/ElasticSearch settings
+########################################################################################################################
+
+## The default directory for saving snapshots inside /usr/share/elasticsearch/data/
+# default: archives
+#
+path_repo: archives
+
+# Additional parameters for graylog-archiving-plugin
+#
+aws_access_key: ""
+aws_secret_key: ""

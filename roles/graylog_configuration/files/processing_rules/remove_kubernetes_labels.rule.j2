@@ -1,0 +1,6 @@
+rule \"Remove kubernetes labels field\"
+when
+  has_field(\"kubernetes_labels\")
+then
+  remove_field(\"kubernetes_labels\");
+end

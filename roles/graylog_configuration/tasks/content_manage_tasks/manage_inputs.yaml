@@ -1,0 +1,91 @@
+---
+- name: Set empty tls_cert_file var if it is not exist
+  set_fact:
+    tls_cert_file: ""
+  when:
+    - ((tls_cert_file is not defined)
+      or (tls_cert_file is none)
+      or (tls_cert_file | trim | length == 0))
+
+- name: Set empty tls_key_file var if it is not exist
+  set_fact:
+    tls_key_file: ""
+  when:
+    - ((tls_key_file is not defined)
+      or (tls_key_file is none)
+      or (tls_key_file | trim | length == 0))
+
+- name: Set empty tls_key_password var if it is not exist
+  set_fact:
+    tls_key_password: ""
+  when:
+    - ((tls_key_password is not defined)
+      or (tls_key_password is none)
+      or (tls_key_password | trim | length == 0))
+
+- name: Inputs management tasks
+  vars:
+    gelf_tcp_inputs: "{{ inputs_list | json_query(jq_gelf_tcp_inputs) }}"
+    jq_gelf_tcp_inputs: "json.inputs[?name=='GELF TCP']"
+    gelf_tcp_input_ports: "{{ gelf_tcp_inputs | map(attribute='attributes.port') | list }}"
+  block:
+    - name: Update the inputs
+      when:
+        - update_content | bool
+      block:
+        - name: Set 'inputs_to_update'
+          set_fact:
+            inputs_to_update: "{{ docker_ports | intersect(gelf_tcp_input_ports) }}"
+
+        - name: Update the required inputs
+          uri:
+            url: https://localhost/api/system/inputs/{{ input_id }}
+            validate_certs: false
+            user: admin
+            password: "{{ root_password }}"
+            force_basic_auth: true
+            method: PUT
+            timeout: "{{ response_timeout }}"
+            status_code: 201
+            headers:
+              X-Requested-By: Graylog API Browser
+            body: "{{ lookup('template', '{{ role_path }}/files/inputs/tcp_input.json.j2', template_vars=template_vars) }}"
+            body_format: json
+          with_items:
+            - "{{ inputs_to_update }}"
+          vars:
+            input_id: "{{ gelf_tcp_inputs | json_query(jq_input_id) }}"
+            jq_input_id: "[?attributes.port==`{{ item }}`].id | [0]"
+            template_vars:
+              port: "{{ item }}"
+              tls_enabled: "{{ tls_enabled }}"
+              tls_key_password: "{{ tls_key_password }}"
+          loop_control:
+            label: "{{ item }}, id={{ input_id }}"
+
+    - name: Create the required inputs
+      uri:
+        url: https://localhost/api/system/inputs
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/inputs/tcp_input.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      with_items:
+        - "{{ inputs_to_create }}"
+      vars:
+        inputs_to_create: "{{ docker_ports | difference(gelf_tcp_input_ports) }}"
+        template_vars:
+          port: "{{ item }}"
+          tls_enabled: "{{ tls_enabled }}"
+          tls_cert_file: "{{ tls_cert_file }}"
+          tls_key_file: "{{ tls_key_file }}"
+          tls_key_password: "{{ tls_key_password }}"
+      loop_control:
+        label: "{{ item }}"

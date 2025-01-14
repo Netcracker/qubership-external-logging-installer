@@ -1,0 +1,5 @@
+---
+- include_tasks: deploy_node_exporter_systemd_service.yaml
+  tags: [nodeexporter]
+  when:
+    - node_exporter_install|bool

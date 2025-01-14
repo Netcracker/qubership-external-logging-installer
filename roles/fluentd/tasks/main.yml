@@ -1,0 +1,7 @@
+---
+- name: Install FluentD
+  block:
+    - import_tasks: prepare-env.yml
+    - import_tasks: run-fluentd.yml
+  when:
+    - fluentd_install | bool

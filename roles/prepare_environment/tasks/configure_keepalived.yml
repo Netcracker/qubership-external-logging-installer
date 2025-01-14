@@ -1,0 +1,48 @@
+---
+- name: Check that keepalived enabled
+  set_fact:
+    keepalived_enabled: true
+  when:
+    - keepalived_virtual_ip_address is defined
+    - keepalived_virtual_ip_address is not none
+    - keepalived_virtual_ip_address | trim | length > 0
+    - keepalived_network_interface is defined
+    - keepalived_network_interface is not none
+    - keepalived_network_interface | trim | length > 0
+    - keepalived_priority is defined
+    - keepalived_priority is not none
+    - keepalived_priority | trim | length > 0
+    - keepalived_auth_password is defined
+    - keepalived_auth_password is not none
+    - keepalived_auth_password | trim | length > 0
+
+- name: Configure keepalived
+  when:
+    - keepalived_enabled | default('false') | bool
+  block:
+    - name: Check if chrony exists  # noqa 403
+      command: keepalived --version
+      register: result
+      ignore_errors: True
+
+    - name: Configure keepalived
+      when: result is success
+      block:
+        - name: Add keepalived config file
+          template:
+            src: "{{ role_path }}/templates/configs/keepalived.conf.j2"
+            dest: "/etc/keepalived/keepalived.conf"
+
+        - name: Copy the necessary scripts
+          copy:
+            src: "{{ role_path }}/files/keepalived/check_graylog_status.sh"
+            dest: "/etc/keepalived/files/"
+            setype: keepalived_unconfined_script_exec_t
+            mode: a+x
+            force: true
+
+        - name: Start keepalived
+          service:
+            name: keepalived
+            enabled: true
+            state: restarted

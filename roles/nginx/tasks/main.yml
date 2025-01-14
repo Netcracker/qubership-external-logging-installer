@@ -1,0 +1,6 @@
+---
+- import_tasks: prepare_env.yml
+- import_tasks: manage_certificates.yml
+- import_tasks: run_nginx.yml
+- import_tasks: post_deploy.yml
+

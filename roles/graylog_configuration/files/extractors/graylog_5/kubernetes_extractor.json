@@ -1,0 +1,20 @@
+{
+  "title": "kuber_extractor",
+  "extractor_type": "json",
+  "cursor_strategy": "copy",
+  "target_field": "",
+  "source_field": "kubernetes",
+  "extractor_config": {
+    "flatten": false,
+    "list_separator": ",",
+    "kv_separator": ":",
+    "key_prefix": "",
+    "key_separator": "-",
+    "replace_key_whitespace": false,
+    "key_whitespace_replacement": "_"
+  },
+  "converters": [],
+  "condition_type": "NONE",
+  "condition_value": "",
+  "order": 0
+}

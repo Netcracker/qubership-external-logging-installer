@@ -1,0 +1,71 @@
+---
+- name: Ensure necessary directories exist and is available
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items:
+    - { path: "{{ graylog_volume }}/opensearch/", mode: "0700", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/snapshots", mode: "0766", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/snapshots/graylog", mode: "0766", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/logs/", mode: "0775", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/config/", mode: "0700", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/config/jvm.options.d/", mode: "0700", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/config/opensearch-observability/", mode: "0700", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/config/opensearch-performance-analyzer/", mode: "0700", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/config/opensearch-reports-scheduler/", mode: "0700", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+    - { path: "{{ graylog_volume }}/opensearch/plugins/", mode: "0775", owner: "{{ opensearch_uid }}", group: "{{ opensearch_gid }}" }
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Prepare Opensearch default config
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ opensearch_uid }}"
+    group: "{{ opensearch_gid }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: "{{ role_path }}/files/default-config/esnode.pem", dest: "{{ graylog_volume }}/opensearch/config/esnode.pem", mode: "0600" }
+    - { src: "{{ role_path }}/files/default-config/esnode-key.pem", dest: "{{ graylog_volume }}/opensearch/config/esnode-key.pem", mode: "0600" }
+    - { src: "{{ role_path }}/files/default-config/root-ca.pem", dest: "{{ graylog_volume }}/opensearch/config/root-ca.pem", mode: "0600" }
+    - { src: "{{ role_path }}/files/default-config/opensearch-observability/", dest: "{{ graylog_volume }}/opensearch/config/opensearch-observability/", mode: "0600" }
+    - { src: "{{ role_path }}/files/default-config/opensearch-performance-analyzer/", dest: "{{ graylog_volume }}/opensearch/config/opensearch-performance-analyzer/", mode: "0600" }
+    - { src: "{{ role_path }}/files/default-config/opensearch-reports-scheduler/", dest: "{{ graylog_volume }}/opensearch/config/opensearch-reports-scheduler/", mode: "0600" }
+
+- name: Calculate salt for security plugin
+  set_fact:
+    opensearch_security_salt: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
+
+- name: Prepare Opensearch config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ opensearch_uid }}"
+    group: "{{ opensearch_gid }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: "opensearch.yml.jinja", dest: "{{ graylog_volume }}/opensearch/config/opensearch.yml", mode: "0600" }
+    - { src: "log4j2.properties.jinja", dest: "{{ graylog_volume }}/opensearch/config/log4j2.properties", mode: "0600" }
+    - { src: "jvm.options.jinja", dest: "{{ graylog_volume }}/opensearch/config/jvm.options", mode: "0600" }
+
+- name: Create OpenSearch volumes
+  command: >
+    docker volume create --driver local
+    --opt type=none
+    --opt o=bind
+    --opt device={{ item.device }}
+    {{ item.name }}
+  with_items:
+    - { name: "opensearch-logs", device: "{{ graylog_volume }}/opensearch/logs", }
+    - { name: "opensearch-config", device: "{{ graylog_volume }}/opensearch/config", }
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Set ACL to snapshots directory
+  command: setfacl -d -m o::rwx "{{ graylog_volume }}/opensearch/snapshots"
+
+- name: Set ACL to snapshots graylog directory
+  command: setfacl -d -m o::rwx "{{ graylog_volume }}/opensearch/snapshots/graylog"

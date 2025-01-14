@@ -1,0 +1,24 @@
+---
+####################################################### Common #########################################################
+
+## Allow to turn on the duplication of logs from the left host to the right and from the right to the left.
+# For correct operation, the parameter `other_side_graylog_host` must be specified.
+# default: false
+#
+duplicator_enabled: "{{ other_side_graylog_host | default('') | trim | length > 0 | ternary(true, false) }}"
+
+########################################################################################################################
+#                                                  Docker settings
+########################################################################################################################
+
+nginx_image: "nginx:1.27.3-alpine"
+
+## Nginx user and group who SHOULD has access rights to configure and data directories.
+# default: uid=101 and gid=101
+#
+nginx_uid: 101
+nginx_gid: 101
+
+nginx_default_ports:
+  - 80
+  - 443

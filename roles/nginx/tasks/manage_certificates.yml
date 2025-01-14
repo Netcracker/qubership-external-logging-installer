@@ -1,0 +1,43 @@
+---
+- name: Copy custom certificate and key for NGINX
+  when:
+    - ssl_certificate is defined
+    - ssl_certificate | trim | length > 0
+    - ssl_certificate_key is defined
+    - ssl_certificate_key | trim | length > 0
+  block:
+    - name: Copy custom certificate and key for NGINX from raw registry
+      when:
+        - ssl_module_files_path is not defined
+      block:
+        - name: Copy custom certificate for NGINX
+          copy:
+            src: "/tmp/{{ ssl_certificate }}"
+            dest: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.crt"
+            force: true
+            backup: true
+
+        - name: Copy custom certificate key for NGINX
+          copy:
+            src: "/tmp/{{ ssl_certificate_key }}"
+            dest: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.pem"
+            force: true
+            backup: true
+
+    - name: Copy custom certificate and key for NGINX from local path
+      when:
+        - ssl_module_files_path is defined
+      block:
+        - name: Copy custom certificate for NGINX
+          copy:
+            src: "{{ ssl_module_files_path }}/{{ ssl_certificate }}"
+            dest: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.crt"
+            force: true
+            backup: true
+
+        - name: Copy custom certificate key for NGINX
+          copy:
+            src: "{{ ssl_module_files_path }}/{{ ssl_certificate_key }}"
+            dest: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.pem"
+            force: true
+            backup: true

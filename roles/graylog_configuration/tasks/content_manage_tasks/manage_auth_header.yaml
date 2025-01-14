@@ -1,0 +1,14 @@
+- name: Update the HTTP header authentication configuration
+  uri:
+    url: https://localhost/api/system/authentication/http-header-auth-config
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file','{{ role_path }}/files/auth_header.json') }}"
+    body_format: json

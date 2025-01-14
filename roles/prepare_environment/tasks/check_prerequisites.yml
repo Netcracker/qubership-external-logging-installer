@@ -1,0 +1,224 @@
+---
+- name: Set logging data directory if not set
+  set_fact:
+    graylog_volume: "{{ graylog_default_volume }}"
+  when:
+    - graylog_volume is not defined or graylog_volume is none
+
+- name: Print using logging directory
+  debug:
+    msg: |-
+      All Logging data will store in the directory {{ graylog_volume }}
+
+- name: Create logging data directory if not exist
+  file:
+    path: "{{ graylog_volume }}"
+    state: directory
+    mode: 0777
+
+- name: Check OS name
+  block:
+    - name: Print warning if OS is not in supported list
+      vars:
+        msg: |
+          The '{{ ansible_host }}' host use unsupported OS:
+          distribution - {{ ansible_facts.distribution }}
+          family - {{ ansible_facts.os_family }}
+          version - {{ ansible_facts.distribution_version }}
+          package manager - {{ ansible_facts.pkg_mgr }}
+          Installation can be failed. The list of supported OS {{ supported_os_families | join(', ') }}
+      fail:
+        msg: "{{ msg.split('\n') }}"
+      when:
+        - ansible_facts.distribution not in {{ supported_os_families }}
+      ignore_errors: true
+
+- name: Check prerequisites
+  become: true
+  any_errors_fatal: true
+  when:
+    - check_prerequisites_enabled is undefined or check_prerequisites_enabled | lower | trim != 'false'
+  block:
+    - name: Fail if memory parameters are not specified / specified not correctly
+      fail:
+        msg: Parameter '{{ item.name }}' is not correctly
+      when:
+        - (item.value is undefined) or (item.value is none) or (item.value | int == 0)
+      with_items:
+        - { name: "max_size", value: "{{ max_size }}" }
+        - { name: "max_number_of_indices", value: "{{ max_number_of_indices }}" }
+        - { name: "graylog_heap_size_mb", value: "{{ graylog_heap_size_mb }}" }
+        - { name: "elasticsearch_heap_size_mb", value: "{{ elasticsearch_heap_size_mb }}" }
+
+    - name: Fail if the 'docker_ports' parameter contains the 'duplicator_default_port'
+      fail:
+        msg: >
+          The parameter 'docker_ports' contains the 'duplicator_default_port'.
+          Parameter 'docker_ports' is not correctly
+      when:
+        - duplicator_enabled | bool
+        - (duplicator_default_port | string) in (docker_ports | string)
+
+    - name: Check HDD space
+      block:
+        - name: Determine the HDD space total on the server
+          shell: >
+            df -BG {{ graylog_volume }} | awk '!/'Filesystem'/ {print $2}' | sed 's/G//'
+          register: hdd_space_total
+
+        - name: HDD information
+          vars:
+            msg: >
+              Found {{ hdd_space_total.stdout | int }} GB, required {{ max_size | int * max_number_of_indices | int / 1073741824 + delta_hdd_gb | int }} GB
+            delta_hdd_gb: 5
+          debug:
+            msg: "{{ msg }}"
+
+    - name: Check RAM space
+      block:
+        - name: Determine the RAM space available on the server
+          shell: >
+            free -m | awk '!/'total'/ {print $1 $2}' | grep 'Mem:' | sed 's/Mem://'
+          register: ram_space_available
+
+        - name: Fail if there is not enough RAM size
+          fail:
+            msg: >
+              Not enough RAM size on '{{ ansible_host }}'.
+              Found {{ ram_space_available.stdout | int }} MB, required {{ required_ram_amount | int }} MB
+          when:
+            - (ram_space_available.stdout | int) < (required_ram_amount | int)
+          vars:
+            required_ram_amount: "{{ graylog_heap_size_mb | int + elasticsearch_heap_size_mb | int + basic_heap_size_mb | int }}"
+            basic_heap_size_mb: 3456
+
+        - debug:
+            msg: >
+                WARNING not rational use of RAM.
+                Found {{ ram_space_available.stdout | int }} MB, usage after deploy {{ required_ram_amount | int }} MB
+          vars:
+            required_ram_amount: "{{ graylog_heap_size_mb | int + elasticsearch_heap_size_mb | int + basic_heap_size_mb | int }}"
+            basic_heap_size_mb: 3456
+          when: ( ram_space_available.stdout|int ) > ((required_ram_amount|int)*1.5)
+
+    - name: Check count of CPU
+      block:
+        - name: Determine the count of CPU on the server
+          shell: >
+            lscpu | grep ^"CPU(s)" | awk 'NF>1{print $NF}'
+          register: cpus_available
+          ignore_errors: yes
+
+        - debug:
+            msg: "Found {{ cpus_available.stdout }} CPU's"
+
+        - set_fact:
+            processbuffer_processors: "{{ (cpus_available.stdout|int / 2) | int }}"
+            outputbuffer_processors: "{{ (cpus_available.stdout|int / 2) | int }}"
+          when:
+            - cpus_available.stdout | length > 0
+
+        - debug:
+            msg: >
+                Set default values for processbuffer_processors and outputbuffer_processors
+          when:
+            - cpus_available.stdout | length  == 0
+
+        - set_fact:
+            processbuffer_processors: "{{ 5|int }}"
+            outputbuffer_processors: "{{ 5|int }}"
+          when:
+            - cpus_available.stdout | length  == 0
+
+        - debug:
+            msg: |
+              - "set processing buffer = {{ processbuffer_processors }} cpus"
+              - "set output buffer {{ outputbuffer_processors }} cpus"
+
+    - name: Check docker is exists
+      command: /usr/bin/docker ps
+      register: docker_exists
+      ignore_errors: true
+
+    - name: Fail if docker doesn't exist
+      fail:
+        msg: Docker not found or not running on target VM!
+      when:
+        - docker_exists is failed
+
+    - name: Check all port numbers are accessible
+      block:
+        - name: Fail if parameter 'docker_ports' is empty
+          fail:
+            msg: Parameter 'docker_ports' is empty
+          when:
+            - docker_ports | trim | length == 0
+
+        - name: Fail if parameter 'docker_ports' is not specified / specified not correctly
+          fail:
+            msg: Parameter 'docker_ports' is not correctly
+          when:
+            - (item is undefined) or (item is not number)
+          with_items:
+            - "{{ docker_ports }}"
+
+        - name: Collect all required accessible docker tcp ports
+          set_fact:
+            required_tcp_docker_ports: "{{ required_tcp_docker_ports | default([]) + [ item ] }}"
+          with_items:
+            - "{{ docker_ports }}"
+            - 80
+            - 443
+
+        # All block bellow can be changed in ansible 2.8, when docker_container_info will available
+        - name: Collect active allowed graylog ports
+          block:
+            - name: Collect docker active ports
+              shell: "{{ 'docker port ' + item }}"
+              with_items: "{{ docker_containers }}"
+              register: raw_docker_ports
+              ignore_errors: true
+
+            # In ansible 2.5 after the map on regex_search can be added 'flatten' filter, 
+            # then the Flat Collected Ports will not necessary
+            - name: Parse collected active ports
+              set_fact:
+                raw_active_ports: "{{ raw_active_ports | default([]) + active_port }}"
+              vars:
+                ports: "{{ item.stdout.split('\n') }}"
+                active_port: "{{ ports | map('regex_search', '^(\\d{1,5}/(?:tcp|udp))', '\\1') | list }}"
+              with_items: "{{ raw_docker_ports.results }}"
+              loop_control:
+                label: "{{ item.stdout | default('none') }}"
+              when:
+                - item.stdout | length > 0
+
+            - name: Flat collected active ports
+              set_fact:
+                active_docker_ports: "{{ active_docker_ports | default([]) + [ item ] }}"
+              with_items: "{{ raw_active_ports }}"
+              loop_control:
+                label: "{{ item }}"
+              when: raw_active_ports is defined
+          when: docker_exists is success
+
+        - name: Exclude active tcp docker ports
+          set_fact:
+            required_tcp_docker_ports: "{{ required_tcp_docker_ports | difference(active_port) }}"
+          vars:
+            split_active_port: "{{ item.split('/') }}"
+            active_port: "{{ [ split_active_port.0 | int ] }}"
+          with_items: "{{ active_docker_ports }}"
+          loop_control:
+            label: "{{ active_port }}"
+          when:
+            - active_docker_ports is defined
+            - split_active_port.1 == "tcp"
+
+        - name: Check TCP ports are accessible
+          wait_for:
+            port: "{{ item }}"
+            timeout: 3
+            state: stopped
+            msg: TCP port {{ item }} is busy
+          with_items: "{{ required_tcp_docker_ports }}"

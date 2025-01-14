@@ -1,0 +1,20 @@
+---
+elasticsearch_exporter_install: false
+elasticsearch_exporter_tarball: https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v1.8.0/elasticsearch_exporter-1.8.0.linux-amd64.tar.gz
+elasticsearch_exporter_host_bin_dir: /usr/local/bin
+
+elasticsearch_exporter_listen_port: 9114
+elasticsearch_exporter_metrics_path: /metrics
+
+elasticsearch_exporter_schema: http
+elasticsearch_exporter_url: localhost:9200
+
+## Admin credentials for elasticsearch-exporter to request data from OpenSearch/ElasticSearch
+# elasticsearch_exporter_admin_username: admin
+# elasticsearch_exporter_admin_password: admin
+
+elasticsearch_exporter_flags:
+  - "--es.indices"
+
+validate_certs: false
+ssl_cert_file: ~

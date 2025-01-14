@@ -1,0 +1,11 @@
+# Created by cloud-init on instance boot automatically, do not edit.
+
+DEVICE=bridge0
+TYPE=Bridge
+IPADDR={{ (docker_bridge0_ipaddr | trim | length > 0) | ternary(docker_bridge0_ipaddr, '192.168.5.1') }}
+NETMASK={{ (docker_bridge0_netmask | trim | length > 0) | ternary(docker_bridge0_netmask, '255.255.255.0') }}
+BROADCAST=0.0.0.0
+ONBOOT=yes
+BOOTPROTO=static
+NM_CONTROLLED=no
+DELAY=0

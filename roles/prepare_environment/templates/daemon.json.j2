@@ -1,0 +1,18 @@
+{
+{% if need_overlay2 is defined and need_overlay2 | lower | trim == 'true' %}
+  "storage-driver": "overlay2",
+{% endif %}
+{% if change_docker_network_allowed is defined and change_docker_network_allowed | lower | trim == 'true' %}
+  "bridge": "bridge0",
+{% endif %}
+{% if not docker_registry_validate_certs %}
+  "insecure-registries" : ["{{ docker_registry }}"],
+{% endif %}
+  "icc" : false,
+  "live-restore" : true,
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "50m",
+    "max-file": "6" 
+  }
+}

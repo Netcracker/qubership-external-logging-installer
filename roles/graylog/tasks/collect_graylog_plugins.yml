@@ -1,0 +1,39 @@
+---
+- name: Fetch installed plugin files
+  find:
+    file_type: file
+    paths: "{{ graylog_volume }}/graylog/plugins/"
+    patterns: "*.jar"
+  register: installed_plugin_files
+
+# Example of the structure:
+# "internal_installed_graylog_plugins": [{
+#   "file": "/srv/docker/graylog/graylog/plugins/graylog-plugin-integrations-4.3.9.jar",
+#   "file_name": "graylog-plugin-integrations-4.3.9.jar",
+#   "name": "graylog-plugin-integrations",
+#   "version": "4.3.9"
+# }]
+- name: Store plugins to variable
+  set_fact:
+    internal_installed_graylog_plugins: "{{ internal_installed_graylog_plugins + [ plugin ] }}"
+  vars:
+    plugin_name_regex: "^([a-zA-Z\\d]+(?:-[a-zA-Z\\d]+)*)-(\\d+\\.\\d+\\.\\d+)(?:-[a-zA-Z]+)?\\.jar$"
+    plugin_file_name: "{{ item.path | basename }}"
+    plugin_name: "{{ plugin_file_name | regex_search(plugin_name_regex, '\\1') }}"
+    plugin_version: "{{ plugin_file_name | regex_search(plugin_name_regex, '\\2') }}"
+    plugin: "{{ { 'file': item.path, 'file_name': plugin_file_name, 'name': plugin_name.0, 'version': plugin_version.0 } }}"
+  with_items: "{{ installed_plugin_files.files }}"
+  loop_control:
+    label: "{{ plugin }}"
+  when:
+    - plugin_name | length == 1
+    - plugin_version | length == 1
+
+- name: Print list of already installed Graylog plugins
+  debug:
+    var: "{{ item }}"
+  with_items:
+    - "{{ internal_installed_graylog_plugins }}"
+  when:
+    - internal_installed_graylog_plugins is defined
+    - internal_installed_graylog_plugins is not none

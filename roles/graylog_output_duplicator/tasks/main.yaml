@@ -1,0 +1,4 @@
+---
+- include_tasks: deploy_duplicator.yaml
+  tags: [duplicator]
+  when: duplicator_enabled | bool

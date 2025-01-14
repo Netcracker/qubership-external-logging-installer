@@ -1,0 +1,23 @@
+{
+  "title": "replace_timestamp",
+  "extractor_type": "substring",
+  "cursor_strategy": "copy",
+  "target_field": "timestamp",
+  "source_field": "event_time",
+  "extractor_config": {
+    "end_index": 23,
+    "begin_index": 0
+  },
+  "converters": [
+    {
+      "type": "date",
+      "config": {
+        "date_format": "yyyy-MM-dd'T'HH:mm:ss,SSS",
+        "time_zone": "UTC"
+      }
+    }
+  ],
+  "condition_type": "none",
+  "condition_value": "",
+  "order": 0
+}

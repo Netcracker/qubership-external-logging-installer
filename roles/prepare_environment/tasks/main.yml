@@ -1,0 +1,9 @@
+---
+- import_tasks: check_prerequisites.yml
+- import_tasks: configure_ntp.yml
+  when:
+    - ntp_server is defined
+    - ntp_server is not none
+    - ntp_server | trim | length > 0
+- import_tasks: configure_keepalived.yml
+- import_tasks: docker_configuring.yml

@@ -1,0 +1,46 @@
+---
+- name: Check if cAdvisor service started
+  command: "systemctl status cadvisor"
+  changed_when: false
+  check_mode: no
+  register: is_cadvisor_installed
+  ignore_errors: true
+
+- name: Stop and disable cAdvisor service
+  systemd:
+    name: cadvisor
+    enabled: no
+    state: stopped
+    daemon_reload: yes
+  when:
+    - is_cadvisor_installed is defined
+    - is_cadvisor_installed.rc | int == 0
+
+- name: Check that cAdvisor binary exists
+  stat:
+    path: "{{ cadvisor_host_bin_dir }}/cadvisor"
+  register: cadvisor_binary
+  ignore_errors: true
+
+- name: Delete cAdvisor binary
+  file:
+    state: absent
+    path: "{{ cadvisor_host_bin_dir }}/cadvisor"
+  when:
+    - cadvisor_binary is defined
+    - cadvisor_binary.stat.exists
+
+- name: Check that cAdvisor systemd unit config exists
+  stat:
+    path: /etc/systemd/system/cadvisor.service
+  register: cadvisor_config
+  ignore_errors: true
+
+- name: Delete cAdvisor systemd unit config exists
+  file:
+    state: absent
+    dest: /etc/systemd/system/cadvisor.service
+  when:
+    - cadvisor_config is defined
+    - cadvisor_config.stat.exists
+    - not cadvisor_keep_custom_config|bool

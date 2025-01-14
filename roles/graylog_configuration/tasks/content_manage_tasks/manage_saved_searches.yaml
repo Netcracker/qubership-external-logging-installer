@@ -1,0 +1,101 @@
+---
+- name: Saved searches management tasks
+  vars:
+    saved_search_files_glob: "{{ role_path }}/files/saved_searches/*-search.json"
+    saved_search_views_files_glob: "{{ role_path }}/files/saved_searches/*-view.json"
+    saved_searches_from_graylog: "{{ saved_searches_list.json.views }}"
+    saved_search_view_names_from_graylog: "{{ saved_searches_from_graylog | map(attribute='title') | list }}"
+    saved_search_ids_from_graylog: "{{ saved_searches_from_graylog | map(attribute='search_id') | list }}"
+  block:
+    - name: Set 'saved_searches_views_map'
+      set_fact:
+        saved_searches_views_map: "{{ [ saved_search ] + saved_searches_views_map }}"
+      vars:
+        saved_search: { title: "{{ title }}", src: "{{ item }}" }
+        title: "{{ (lookup('file','{{ item }}') | from_json).title }}"
+        saved_searches_views_map: []
+      with_fileglob:
+        - "{{ saved_search_views_files_glob }}"
+
+    - name: Set 'saved_searches_map'
+      set_fact:
+        saved_searches_map: "{{ [ saved_search ] + saved_searches_map }}"
+      vars:
+        saved_search: { id: "{{ id }}", src: "{{ item }}" }
+        id: "{{ (lookup('file','{{ item }}') | from_json).id }}"
+        saved_searches_map: []
+      with_fileglob:
+        - "{{ saved_search_files_glob }}"
+
+    - name: Update the saved searches
+      when:
+        - update_content | bool
+      block:
+        - name: Update the required saved searches
+          uri:
+            url: https://localhost/api/views/search
+            validate_certs: false
+            user: admin
+            password: "{{ root_password }}"
+            force_basic_auth: true
+            method: POST
+            timeout: "{{ response_timeout }}"
+            status_code: 201
+            headers:
+              X-Requested-By: Graylog API Browser
+            body: "{{ lookup('file','{{ item.src }}') }}"
+            body_format: json
+          when:
+            - item.id in saved_searches_to_update
+          with_items:
+            - "{{ saved_searches_map }}"
+          vars:
+            saved_searches_to_update: "{{ (saved_searches_map | map(attribute='id') | list) | intersect(saved_search_ids_from_graylog) }}"
+          loop_control:
+            label: "{{ item.id }}"
+
+    - name: Upload saved searches
+      uri:
+        url: https://localhost/api/views/search
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file','{{ item.src }}') }}"
+        body_format: json
+      when:
+        - item.id in saved_searches_to_create
+      with_items:
+        - "{{ saved_searches_map }}"
+      vars:
+        saved_searches_to_create: "{{ (saved_searches_map | map(attribute='id') | list) | difference(saved_search_ids_from_graylog) }}"
+      loop_control:
+        label: "{{ item.id }}"
+
+    - name: Upload saved searches views
+      uri:
+        url: https://localhost/api/views
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file','{{ item.src }}') }}"
+        body_format: json
+      when:
+        - item.title in saved_searches_views_to_create
+      with_items:
+        - "{{ saved_searches_views_map }}"
+      vars:
+        saved_searches_views_to_create: "{{ (saved_searches_views_map | map(attribute='title') | list) | difference(saved_search_view_names_from_graylog) }}"
+      loop_control:
+        label: "{{ item.title }}"

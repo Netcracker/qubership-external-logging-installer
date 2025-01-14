@@ -1,0 +1,7 @@
+<system>
+{% if fluentd_log_level is defined and fluentd_log_level|length %}
+  log_level {{ fluentd_log_level | lower }}
+{% else %}
+  log_level warn
+{% endif %}
+</system>

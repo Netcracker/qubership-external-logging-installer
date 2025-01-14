@@ -1,0 +1,25 @@
+---
+- name: Installation roles
+  hosts: all
+  gather_facts: true
+  become: yes
+  roles:
+    # Prepare steps
+    - { name: common, become: yes }
+    - { name: prepare_environment, become: yes }
+    # Main components
+    - { name: mongodb, become: yes }
+    - { name: opensearch, become: yes }
+    - { name: graylog_auth_proxy, become: yes }
+    - { name: graylog, become: yes }
+    - { name: nginx, become: yes }
+    - { name: graylog_configuration, become: yes }
+    - { name: graylog_output_duplicator, become: yes }
+    # Self-logging
+    - { name: fluentd, become: yes }
+    - { name: fluentbit, become: yes }
+    # Monitoring
+    - { name: node_exporter, become: yes }
+    - { name: mongodb_exporter, become: yes }
+    - { name: opensearch_exporter, become: yes }
+    - { name: cadvisor, become: yes }

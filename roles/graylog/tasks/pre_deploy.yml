@@ -1,0 +1,88 @@
+---
+- name: Set 'project_src' if not local connection
+  set_fact:
+    project_src: "~/graylog"
+  when:
+    - ansible_connection != 'local'
+
+- name: Ensure necessary directories exist and is available
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    recurse: true
+  with_items:
+    - { path: "{{ project_src }}", mode: "0655", owner: "root", group: "root" }
+    - { path: "{{ graylog_volume }}/graylog/config/", mode: "0700", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog/data/journal", mode: "0700", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog/plugins-merged", mode: "0700", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog/data/contentpacks", mode: "0700", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog/data/ssl", mode: "0700", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog/data/archives", mode: "0777", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+    - { path: "{{ graylog_volume }}/graylog/data/restore_archives", mode: "0777", owner: "{{ graylog_uid }}", group: "{{ graylog_gid }}" }
+  loop_control:
+    label: "{{ item.path }}"
+
+# Copy to the root home directory /root/graylog/ because run with become: True
+- name: Copy the necessary scripts
+  copy:
+    src: "{{ item }}"
+    dest: "~/graylog/"
+    mode: a+x
+    force: true
+  with_items:
+    - "{{ role_path }}/files/restore-logging.sh"
+    - "{{ role_path }}/files/change-password.sh"
+    - "{{ role_path }}/files/processing-change-password.sh"
+
+- name: Set default value for 'root_password' if it is not set
+  set_fact:
+    root_password: "admin"
+  when: (root_password is undefined) or (root_password is none) or (root_password | trim | length == 0)
+
+- name: Calculate sha256 for 'root_password' that will use in graylog.conf
+  set_fact:
+    root_password_sha2: "{{ root_password | hash('sha256') }}"
+  when:
+    - root_password is defined
+    - root_password is not none
+    - root_password | trim | length > 0
+
+- name: Prepare Graylog config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_uid }}"
+    mode: "0766"
+  with_items:
+    - { src: "{{ role_path }}/templates/graylog.conf.j2", dest: "{{ graylog_volume }}/graylog/config/graylog.conf" }
+    - { src: "{{ role_path }}/templates/log4j2.xml.j2", dest: "{{ graylog_volume }}/graylog/config/log4j2.xml" }
+
+- name: Set custom params in Graylog config
+  with_dict:
+    - "{{ graylog_custom_params }}"
+  ini_file:
+    path: "{{ graylog_volume }}/graylog/config/graylog.conf"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_gid }}"
+    mode: "0766"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    section: null
+  when: graylog_custom_params is defined
+
+- name: Create directories.json
+  file:
+    path: "{{ graylog_volume }}/graylog/config/directories.json"
+    state: touch
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_gid }}"
+    mode: "0766"
+
+- name: Initialize directories.json
+  copy:
+    dest: "{{ graylog_volume }}/graylog/config/directories.json"
+    content: "{}"

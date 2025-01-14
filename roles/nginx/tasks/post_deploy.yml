@@ -1,0 +1,46 @@
+---
+- name: Check if TCP ports is listening
+  wait_for:
+    port: "{{ item | int }}"
+    timeout: 3
+    state: started
+    msg: TCP port {{ item }} is not listening
+  with_items:
+    - "{{ tcp_ports_to_check }}"
+  vars:
+    tcp_ports_to_check: "{{ docker_ports }} + {{ nginx_default_ports }}"
+
+- name: Check if UDP ports is listening
+  vars:
+    udp_ports_to_check: [514]
+  block:
+    - name: Prepare docker port for a duplicator
+      set_fact:
+        udp_ports_to_check: "{{ udp_ports_to_check }} + [ {{ duplicator_default_port }} ]"
+      when:
+        - duplicator_enabled | bool
+
+    - name: Gather the package facts
+      package_facts:
+        manager: auto
+
+    # The socket statistic (ss) is a part of iproute (RHEL, CentOS, Rocky) or iproute2 (Ubuntu) package
+    - name: Set 'ss' as a command to print list of listening ports
+      set_fact:
+        port_list_cmd: ss
+      when:
+        - ansible_facts.packages | select('search', '^iproute.*') | list | length > 0
+
+    - name: Set 'netstat' as a default command to print list of listening ports
+      set_fact:
+        port_list_cmd: netstat
+      when:
+        - port_list_cmd is not defined
+
+    - name: Check if UDP ports is listening
+      shell: >
+        "{{ port_list_cmd }}" -nul | grep :{{ item }}
+      register: udp_check_result
+      with_items:
+        - "{{ udp_ports_to_check }}"
+

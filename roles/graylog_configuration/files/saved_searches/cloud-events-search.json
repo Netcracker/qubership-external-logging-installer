@@ -1,0 +1,66 @@
+{
+  "id": "5f34f2f9cde8a4c1fa00f33b",
+  "queries": [
+    {
+      "id": "8d835af5-016d-45aa-a640-84731e6ed6f6",
+      "timerange": {
+        "type": "relative",
+        "range": 300
+      },
+      "query": {
+        "type": "elasticsearch",
+        "query_string": "container:events\\-reader"
+      },
+      "search_types": [
+        {
+          "timerange": null,
+          "query": null,
+          "streams": [],
+          "id": "8dfed138-1044-42b1-92ab-a67abfcd6700",
+          "name": "chart",
+          "series": [
+            {
+              "type": "count",
+              "id": "count()",
+              "field": null
+            }
+          ],
+          "sort": [],
+          "rollup": true,
+          "type": "pivot",
+          "row_groups": [
+            {
+              "type": "time",
+              "field": "timestamp",
+              "interval": {
+                "type": "auto",
+                "scaling": 1
+              }
+            }
+          ],
+          "column_groups": [],
+          "filter": null
+        },
+        {
+          "timerange": null,
+          "query": null,
+          "streams": [],
+          "id": "dc1c752c-f45d-49cd-9d90-a7c604033f9b",
+          "name": null,
+          "limit": 150,
+          "offset": 0,
+          "sort": [
+            {
+              "field": "timestamp",
+              "order": "DESC"
+            }
+          ],
+          "decorators": [],
+          "type": "messages",
+          "filter": null
+        }
+      ]
+    }
+  ],
+  "parameters": []
+}

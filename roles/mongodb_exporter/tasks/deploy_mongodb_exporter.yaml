@@ -1,0 +1,155 @@
+---
+- name: Set artifact download path
+  block:
+    - name: Set mongodb-exporter tarball url with registry
+      set_fact:
+        mongodb_exporter_tarball_url: "{{ raw_artifacts_registry }}/{{ mongodb_exporter_tarball }}"
+      when:
+        - raw_artifacts_registry is defined
+        - raw_artifacts_registry is not none
+
+    - name: Set mongodb-exporter tarball custom url
+      set_fact:
+        mongodb_exporter_tarball_url: "{{ mongodb_exporter_custom_tarball }}"
+      when:
+        - node_exporter_custom_tarball is defined
+        - node_exporter_custom_tarball is not none
+
+- name: Set default mongodb-exporter flags
+  set_fact:
+    mongodb_exporter_default_flags:
+      - "--mongodb.uri=mongodb://127.0.0.1:27017/"
+
+- name: Compile custom and default MongoDB exporter flags
+  set_fact:
+    mongodb_exporter_flags: "{{ mongodb_exporter_flags + mongodb_exporter_default_flags }}"
+
+- name: Download mongodb-exporter with credentials
+  when:
+    - raw_artifacts_registry_username is defined
+    - raw_artifacts_registry_password is defined
+  block:
+    - name: Download mongodb-exporter archive
+      when: not raw_artifacts_registry_validate_certs | bool
+      get_url:
+        url: "{{ mongodb_exporter_tarball_url }}"
+        dest: "/tmp/mongodb_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+        validate_certs: no
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download mongodb-exporter archive with SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+      get_url:
+        url: "{{ mongodb_exporter_tarball_url }}"
+        dest: "/tmp/mongodb_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download mongodb-exporter archive without SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+      get_url:
+        url: "{{ mongodb_exporter_tarball_url }}"
+        dest: "/tmp/mongodb_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+- name: Download mongodb-exporter without credentials
+  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+  block:
+    - name: Download mongodb-exporter archive
+      when: not raw_artifacts_registry_validate_certs | bool
+      get_url:
+        url: "{{ mongodb_exporter_tarball_url }}"
+        dest: "/tmp/mongodb_exporter.tar.gz"
+        validate_certs: no
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download mongodb-exporter archive with SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+      get_url:
+        url: "{{ mongodb_exporter_tarball_url }}"
+        dest: "/tmp/mongodb_exporter.tar.gz"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download mongodb-exporter archive without SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+      get_url:
+        url: "{{ mongodb_exporter_tarball_url }}"
+        dest: "/tmp/mongodb_exporter.tar.gz"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+- name: Unarchive mongodb-exporter binary
+  unarchive:
+    src: "/tmp/mongodb_exporter.tar.gz"
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Propagate mongodb-exporter binary
+  copy:
+    src: /tmp/mongodb_exporter
+    dest: "{{ mongodb_exporter_host_bin_dir }}/mongodb_exporter"
+    remote_src: yes
+    mode: 0750
+    owner: "{{ exporters_system_user }}"
+    group: "{{ exporters_system_group }}"
+    force: yes
+  notify: Restart MongoDB exporter
+
+- name: Copy mongodb-exporter systemd service file
+  template:
+    src: mongodb_exporter.service.jinja
+    dest: /etc/systemd/system/mongodb_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart MongoDB exporter
+
+- name: Start and enable mongodb-exporter service
+  systemd:
+    name: mongodb_exporter
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Delete temporary files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/tmp/mongodb_exporter"
+    - "/tmp/mongodb_exporter.tar.gz"

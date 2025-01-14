@@ -1,0 +1,153 @@
+---
+- name: Set artifact download path
+  block:
+    - name: Set node-exporter tarball url with registry
+      set_fact:
+        node_exporter_tarball_url: "{{ raw_artifacts_registry }}/{{ node_exporter_tarball }}"
+      when:
+        - raw_artifacts_registry is defined
+        - raw_artifacts_registry is not none
+
+    - name: Set node-exporter tarball custom url
+      set_fact:
+        node_exporter_tarball_url: "{{ node_exporter_custom_tarball }}"
+      when:
+        - node_exporter_custom_tarball is defined
+        - node_exporter_custom_tarball is not none
+
+- name: Set default node-exporter flags
+  set_fact:
+    node_exporter_default_flags:
+      - "--path.procfs=/proc"
+      - "--path.sysfs=/sys"
+      - '--path.rootfs=/'
+      - "--collector.filesystem.ignored-mount-points={{ node_exporter_ignored_mount_points }}"
+      - "--web.listen-address=:{{ node_exporter_listen_port }}"
+      - "--web.telemetry-path={{ node_exporter_telemetry_path }}"
+      - "--collector.systemd"
+
+- name: Compile custom and default node-exporter flags
+  set_fact:
+    node_exporter_flags: "{{ node_exporter_flags + node_exporter_default_flags }}"
+
+- name: Download node-exporter with credentials
+  when:
+    - raw_artifacts_registry_username is defined
+    - raw_artifacts_registry_password is defined
+  block:
+    - name: Download Node-exporter tarball
+      when: not raw_artifacts_registry_validate_certs | bool
+      get_url:
+        url: "{{ node_exporter_tarball_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+        validate_certs: no
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download Node-exporter tarball with SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+      get_url:
+        url: "{{ node_exporter_tarball_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download Node-exporter tarball without SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+      get_url:
+        url: "{{ node_exporter_tarball_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+
+- name: Download node-exporter without credentials
+  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+  block:
+    - name: Download Node-exporter tarball
+      when: not raw_artifacts_registry_validate_certs | bool
+      get_url:
+        url: "{{ node_exporter_tarball_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
+        validate_certs: no
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download Node-exporter tarball with SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+      get_url:
+        url: "{{ node_exporter_tarball_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download Node-exporter tarball without SSL-certificate
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+      get_url:
+        url: "{{ node_exporter_tarball_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+
+- name: Unarchive Node-exporter binary
+  unarchive:
+    src: "/tmp/node_exporter.tar.gz"
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Propagate Node-exporter binary
+  copy:
+    src: /tmp/node_exporter
+    dest: "{{ node_exporter_host_bin_dir }}/node_exporter"
+    remote_src: yes
+    mode: 0750
+    owner: "{{ exporters_system_user }}"
+    group: "{{ exporters_system_group }}"
+    force: yes
+  notify: Restart Node-exporter service
+
+- name: Copy Node-exporter systemd service file
+  template:
+    src: node_exporter.service.jinja
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart Node-exporter service
+
+- name: Start and enable Node-exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: started
+    daemon_reload: yes

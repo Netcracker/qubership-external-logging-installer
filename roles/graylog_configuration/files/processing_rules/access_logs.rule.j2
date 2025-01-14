@@ -1,0 +1,10 @@
+rule \"Route Access logs\"
+when
+{% if input_id is defined %}
+  (NOT (from_input(id: \"{{ input_id }}\"))) AND
+{% endif %}
+  (has_field(\"logType\") AND to_string($message.logType) == \"access\") OR
+  (has_field(\"log_type\") AND to_string($message.log_type) == \"access\")
+then
+  route_to_stream(id: \"{{ route_to_stream_id }}\", remove_from_default: true);
+end

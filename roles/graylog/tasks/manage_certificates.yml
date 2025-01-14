@@ -1,0 +1,83 @@
+---
+- name: Prepare custom certificates
+  when:
+    - certificates is defined
+    - certificates is not none
+    - certificates | trim | length > 0
+  delegate_to: 127.0.0.1
+  block:
+    - name: Prepare cert file
+      copy:
+        src: "/tmp/{{ tls_cert_file }}"
+        dest: "{{ role_path }}/files/Certificate.crt"
+      delegate_to: 127.0.0.1
+      when:
+        - tls_cert_file is defined
+        - tls_cert_file is not none
+        - tls_cert_file | trim | length > 0
+
+    - name: Prepare key file
+      copy:
+        src: "/tmp/{{ tls_key_file }}"
+        dest: "{{ role_path }}/files/Key.key"
+      delegate_to: 127.0.0.1
+      when:
+        - tls_key_file is defined
+        - tls_key_file is not none
+        - tls_key_file | trim | length > 0
+
+- name: Prepare custom certificates from local path
+  when:
+    - certificates is not defined
+    - ssl_module_files_path is defined
+  delegate_to: 127.0.0.1
+  block:
+    - name: Prepare cert file
+      copy:
+        src: "{{ ssl_module_files_path }}/{{ tls_cert_file }}"
+        dest: "{{ role_path }}/files/Certificate.crt"
+      delegate_to: 127.0.0.1
+      when:
+        - tls_cert_file is defined
+        - tls_cert_file is not none
+        - tls_cert_file | trim | length > 0
+
+    - name: Prepare key file
+      copy:
+        src: "{{ ssl_module_files_path }}/{{ tls_key_file }}"
+        dest: "{{ role_path }}/files/Key.key"
+      delegate_to: 127.0.0.1
+      when:
+        - tls_key_file is defined
+        - tls_key_file is not none
+        - tls_key_file | trim | length > 0
+
+- name: Copy key and cert files
+  when:
+    - tls_enabled | bool
+  block:
+    - name: Copy custom certificate for input
+      copy:
+        src: "{{ role_path }}/files/Certificate.crt"
+        dest: "{{ graylog_volume }}/graylog/data/ssl/Certificate.crt"
+        force: true
+        backup: true
+
+    - name: Copy custom key for input
+      copy:
+        src: "{{ role_path }}/files/Key.key"
+        dest: "{{ graylog_volume }}/graylog/data/ssl/Key.key"
+        force: true
+        backup: true
+
+    # Permissions for directory should already changed in previous tasks from pre_deploy.yaml
+    - name: Change ownership and permissions for certificates
+      file:
+        path: "{{ item.path }}"
+        state: file
+        owner: "{{ graylog_uid }}"
+        group: "{{ graylog_gid }}"
+        mode: "0700"
+      with_items:
+        - { path: "{{ graylog_volume }}/graylog/data/ssl/Certificate.crt" }
+        - { path: "{{ graylog_volume }}/graylog/data/ssl/Key.key" }

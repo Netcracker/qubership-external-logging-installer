@@ -1,0 +1,6 @@
+---
+- name: Restart MongoDB exporter
+  systemd:
+    daemon_reload: yes
+    name: mongodb_exporter
+    state: restarted

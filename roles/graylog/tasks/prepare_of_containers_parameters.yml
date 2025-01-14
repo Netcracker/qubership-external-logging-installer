@@ -1,0 +1,57 @@
+---
+- name: Set default graylog volumes
+  set_fact:
+    graylog_volumes:
+      - "{{ graylog_volume }}/graylog/config:/usr/share/graylog/data/config:z"
+      - "{{ graylog_volume }}/graylog/data/journal:/usr/share/graylog/data/journal:z"
+      - "{{ graylog_volume }}/graylog/data/contentpacks:/usr/share/graylog/data/contentpacks:z"
+      - "{{ graylog_volume }}/graylog/plugins-merged:/usr/share/graylog/plugins-merged:z"
+      - "{{ graylog_volume }}/graylog/plugins:/usr/share/graylog/plugin:z"
+      - "{{ graylog_volume }}/graylog/data/archives:/usr/share/graylog/data/archives:z"
+      - "{{ graylog_volume }}/graylog/data/restore_archives:/usr/share/graylog/data/restore_archives:z"
+      - "{{ graylog_volume }}/graylog/data/ssl:/usr/share/graylog/data/ssl:z"
+
+- name: Add additional graylog volumes
+  when:
+    - additional_graylog_volumes is defined
+    - additional_graylog_volumes is not none
+    - additional_graylog_volumes | trim | length > 0
+  set_fact:
+    graylog_volumes: "{{ graylog_volumes + additional_graylog_volumes_list }}"
+  vars:
+    additional_graylog_volumes_list: "{{ additional_graylog_volumes.split(',') | map('trim') | list }}"
+
+- name: Set ACL to archives directory
+  command: setfacl -d -m o::rwx "{{ graylog_volume }}/graylog/data/archives"
+
+- name: Set ACL to restore_archives directory
+  command: setfacl -d -m o::rwx "{{ graylog_volume }}/graylog/data/restore_archives"
+
+- name: Set default graylog_ports
+  set_fact:
+    graylog_ports:
+      - 9000:9000
+      - 9833:9833
+      - 514:514/udp
+
+- name: Add 'docker_ports' to 'graylog_ports'
+  set_fact:
+    graylog_ports: "{{ graylog_ports + [ item ~ ':' ~ item ] }}"
+  with_items:
+    - "{{ docker_ports }}"
+
+- name: Add 'duplicator_port' to 'graylog_ports'
+  set_fact:
+    graylog_ports: "{{ graylog_ports + [ duplicator_default_port ~ ':' ~ duplicator_default_port ~ '/udp'] }}"
+  when:
+    - duplicator_enabled | bool
+
+- name: Add additional graylog ports
+  when:
+    - additional_graylog_ports is defined
+    - additional_graylog_ports is not none
+    - additional_graylog_ports | trim | length > 0
+  set_fact:
+    graylog_ports: "{{ graylog_ports + additional_graylog_ports_list }}"
+  vars:
+    additional_graylog_ports_list: "{{ additional_graylog_ports.split(',') | map('trim') | list }}"

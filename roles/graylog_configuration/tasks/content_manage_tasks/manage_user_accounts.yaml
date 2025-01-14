@@ -1,0 +1,423 @@
+---
+- name: Get a list of all streams
+  uri:
+    url: https://localhost/api/streams
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: streams_list
+
+- name: Get stream ids
+  set_fact:
+    all_events_stream_id: "{{ streams_list | json_query(jq_all_events_stream_id) | default(omit) }}"
+    all_system_events_stream_id: "{{ streams_list | json_query(jq_all_system_events_stream_id) | default(omit) }}"
+    audit_logs_stream_id: "{{ streams_list | json_query(jq_audit_logs_stream_id) | default(omit) }}"
+    system_logs_stream_id: "{{ streams_list | json_query(jq_system_logs_stream_id) | default(omit) }}"
+    other_site_logs_stream_id: "{{ streams_list | json_query(jq_other_site_logs_stream_id) | default(omit) }}"
+  vars:
+    jq_all_events_stream_id: "json.streams[?title==`All events`].id | [0]"
+    jq_all_system_events_stream_id: "json.streams[?title==`All system events`].id | [0]"
+    jq_audit_logs_stream_id: "json.streams[?title==`Audit logs`].id | [0]"
+    jq_system_logs_stream_id: "json.streams[?title==`System logs`].id | [0]"
+    jq_other_site_logs_stream_id: "json.streams[?title==`Other site logs`].id | [0]"
+
+- name: Get Default Stream ID
+  set_fact:
+    default_stream_id: "{{ streams_list | json_query(jq_default_stream_id) | default(omit) }}"
+  vars:
+    jq_default_stream_id: "json.streams[?title==`Default Stream`].id | [0]"
+
+- name: Get All messages stream ID
+  set_fact:
+    default_stream_id: "{{ streams_list | json_query(jq_all_messages_stream_id) | default(omit) }}"
+  vars:
+    jq_all_messages_stream_id: "json.streams[?title==`All messages`].id | [0]"
+  when:
+    - (default_stream_id is undefined) or (default_stream_id is none) or (default_stream_id | trim | length == 0)
+
+- name: Get a list of all users
+  uri:
+    url: https://localhost/api/users
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: users_list
+
+- name: Get users ids
+  set_fact:
+    audit_user_id: "{{ users_list | json_query(jq_audit_user_id) | default(omit) }}"
+    operator_user_id: "{{ users_list | json_query(jq_operator_user_id) | default(omit) }}"
+    telegraf_operator_user_id: "{{ users_list | json_query(jq_telegraf_operator_user_id) | default(omit) }}"
+    api_th_user_id: "{{ users_list | json_query(jq_api_th_user_id) | default(omit) }}"
+  vars:
+    jq_audit_user_id: "json.users[?username==`auditViewer`].id | [0]"
+    jq_operator_user_id: "json.users[?username==`operator`].id | [0]"
+    jq_telegraf_operator_user_id: "json.users[?username==`telegraf_operator`].id | [0]"
+    jq_api_th_user_id: "json.users[?username==`graylog_api_th_user`].id | [0]"
+
+- name: Get a list of all dashboards
+  uri:
+    url: https://localhost/api/dashboards
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: dashboards_list
+
+- name: Get 'Sources' dashboard id
+  set_fact:
+    sources_dashboard_id: "{{ dashboards_list | json_query(jq_sources_dashboard_id) | default(omit) }}"
+  vars:
+    jq_sources_dashboard_id: "json.elements[?title==`Sources`].id | [0]"
+
+- name: Get 'Kubernetes Events' dashboard id
+  set_fact:
+    k8s_events_dashboard_id: "{{ dashboards_list | json_query(jq_k8s_events_dashboard_id) | default(omit) }}"
+  vars:
+    jq_k8s_events_dashboard_id: "json.elements[?title==`Kubernetes Events`].id | [0]"
+
+- name: Get role 'Operator'
+  uri:
+    url: https://localhost/api/roles/operator
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: [200, 404]
+    headers:
+      Accept: application/json
+    return_content: true
+  register: operatorRole
+
+- name: Create role 'Operator'
+  uri:
+    url: https://localhost/api/roles
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/roles/operator.json.j2') }}"
+    body_format: json
+  when:
+    - operatorRole.status == 404
+
+- name: Update role 'Operator'
+  uri:
+    url: https://localhost/api/roles/operator
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/roles/operator.json.j2') }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - operatorRole.status == 200
+
+- name: Get role 'AuditViewer'
+  uri:
+    url: https://localhost/api/roles/auditViewer
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: [200, 404]
+    headers:
+      Accept: application/json
+    return_content: true
+  register: auditViewerRole
+
+- name: Create role 'AuditViewer'
+  uri:
+    url: https://localhost/api/roles
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/roles/auditViewer.json.j2') }}"
+    body_format: json
+  when:
+    - auditViewerRole.status == 404
+
+- name: Update role 'AuditViewer'
+  uri:
+    url: https://localhost/api/roles/auditViewer
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/roles/auditViewer.json.j2') }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - auditViewerRole.status == 200
+
+- name: Get user account 'operator'
+  uri:
+    url: https://localhost/api/users/operator
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: [200, 404]
+    headers:
+      Accept: application/json
+    return_content: true
+  register: operator
+
+- name: Create 'operator' user
+  uri:
+    url: https://localhost/api/users
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/operator.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - operator.status == 404
+  vars:
+    template_vars:
+      password: "{{ operator_password }}"
+
+- name: Update 'operator' user
+  uri:
+    url: https://localhost/api/users/{{ operator_user_id }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 204
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/operator.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - operator.status == 200
+  vars:
+    template_vars:
+      password: "{{ operator_password }}"
+
+- name: Get user account 'auditViewer'
+  uri:
+    url: https://localhost/api/users/auditViewer
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: [200, 404]
+    headers:
+      Accept: application/json
+    return_content: true
+  register: auditViewer
+
+- name: Create 'auditViewer' user
+  uri:
+    url: https://localhost/api/users
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/auditViewer.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - auditViewer.status == 404
+  vars:
+    template_vars:
+      password: "{{ auditviewer_password }}"
+
+- name: Update 'auditViewer' user
+  uri:
+    url: https://localhost/api/users/{{ audit_user_id }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 204
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/auditViewer.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - auditViewer.status == 200
+  vars:
+    template_vars:
+      password: "{{ auditviewer_password }}"
+
+- name: Get user account 'telegraf_operator'
+  uri:
+    url: https://localhost/api/users/telegraf_operator
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: [200, 404]
+    headers:
+      Accept: application/json
+    return_content: true
+  register: telegraf_operator
+
+- name: Create 'telegraf_operator' user
+  uri:
+    url: https://localhost/api/users
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/telegraf_operator.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - telegraf_operator.status == 404
+  vars:
+    template_vars:
+      password: "{{ telegraf_operator_password }}"
+
+- name: Update 'telegraf_operator' user
+  uri:
+    url: https://localhost/api/users/{{ telegraf_operator_user_id }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 204
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/telegraf_operator.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - telegraf_operator.status == 200
+  vars:
+    template_vars:
+      password: "{{ telegraf_operator_password }}"
+
+- name: Get user account for admin user with trusted header
+  uri:
+    url: https://localhost/api/users/graylog_api_th_user
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: [200, 404]
+    headers:
+      Accept: application/json
+    return_content: true
+  register: admin_with_trusted_header
+
+- name: Create admin user with trusted header
+  uri:
+    url: https://localhost/api/users
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/admin_with_trusted_header.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - admin_with_trusted_header.status == 404
+  vars:
+    template_vars:
+      password: "{{ root_password }}"
+    force_basic_auth: true
+
+- name: Update admin user with trusted header
+  uri:
+    url: https://localhost/api/users/{{ api_th_user_id }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 204
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/admin_with_trusted_header.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - admin_with_trusted_header.status == 200
+  vars:
+    template_vars:
+      password: "{{ root_password }}"
+    force_basic_auth: true

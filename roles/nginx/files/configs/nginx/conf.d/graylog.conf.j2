@@ -1,0 +1,66 @@
+ssl_certificate      /etc/nginx/ssl/{{ ansible_host }}.crt;
+ssl_certificate_key  /etc/nginx/ssl/{{ ansible_host }}.pem;
+server_names_hash_bucket_size  512;
+map $status $loggable {
+    ~^[4]   1;
+    default 0;
+}
+server {
+  access_log                 /var/log/nginx/access.log combined if=$loggable;
+{% if dns_name is defined and dns_name|length %}
+  server_name                {{ dns_name }};
+{% else %}
+  server_name                {{ ansible_host }};
+{% endif %}
+  listen                     443 ssl http2;
+  if ($http_x_forwarded_proto = '') {
+    set $http_x_forwarded_proto  $scheme;
+  }
+  chunked_transfer_encoding  on;
+  resolver                   127.0.0.11; # must be 127.0.0.11 with docker!
+{% if graylog_auth_proxy_enabled | d() | bool %}
+  set                        $graylog http://graylog_auth_proxy:8888;
+  set                        $prom_metrics http://graylog_auth_proxy:8889;
+{% else %}
+  set                        $graylog http://graylog:9000;
+{% endif %}
+  ssl_protocols              TLSv1.2;
+  ssl_ciphers                ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:DHE-RSA-CAMELLIA256-SHA:DHE-RSA-AES256-SHA:AES256-GCM-SHA384:AES256-SHA256:CAMELLIA256-SHA:AES256-SHA:ECDH-ECDSA-AES256-GCM-SHA384:ECDH-RSA-AES256-GCM-SHA384;
+  ssl_prefer_server_ciphers  on;
+  ssl_session_cache          shared:SSL:10m; # a 1mb cache can hold about 4000 sessions, so we can hold 40000 sessions
+  ssl_session_timeout        24h;
+  keepalive_timeout          300; # up from 75 secs default
+
+{% if graylog_auth_proxy_enabled | d() | bool %}
+  location = /metrics
+    {
+      proxy_set_header    X-Forwarded-Port     $server_port;
+      proxy_set_header    X-Forwarded-Proto    $http_x_forwarded_proto;
+      proxy_set_header    Host                 $host;
+      proxy_set_header    X-Forwarded-For      $proxy_add_x_forwarded_for;
+      proxy_set_header    X-Real-IP            $remote_addr;
+      proxy_set_header    X-Graylog-Server-URL https://$server_name/;
+      proxy_pass          $prom_metrics;
+    }
+{% endif %}
+
+  location /
+    {
+      proxy_set_header    X-Forwarded-Port     $server_port;
+      proxy_set_header    X-Forwarded-Proto    $http_x_forwarded_proto;
+      proxy_set_header    Host                 $host;
+      proxy_set_header    X-Forwarded-For      $proxy_add_x_forwarded_for;
+      proxy_set_header    X-Real-IP            $remote_addr;
+      proxy_set_header    X-Graylog-Server-URL https://$server_name/;
+      proxy_pass          $graylog;
+    }
+}
+server {
+  listen       80;
+{% if dns_name is defined and dns_name|length %}
+  server_name                {{ dns_name }};
+{% else %}
+  server_name                {{ ansible_host }};
+{% endif %}
+  return       301 https://$host$request_uri;
+}

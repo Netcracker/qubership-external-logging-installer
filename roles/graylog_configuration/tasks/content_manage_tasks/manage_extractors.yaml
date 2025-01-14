@@ -1,0 +1,315 @@
+---
+- name: Get a list of all inputs
+  uri:
+    url: https://localhost/api/system/inputs
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: inputs_list
+
+- name: Get the ids of the inputs created/updated
+  set_fact:
+    inputs_ids: "{{ inputs_ids + input_id }}"
+  with_items:
+    - "{{ docker_ports }}"
+  vars:
+    input_id: "{{ inputs_list | json_query(jq_input_id) }}"
+    jq_input_id: "json.inputs[?attributes.port==`{{ item }}` && name=='GELF TCP'].id"
+    inputs_ids: []
+
+- name: Get all extractors of an input
+  uri:
+    url: https://localhost/api/system/inputs/{{ item }}/extractors
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: extractors_list_from_inputs
+  with_items:
+    - "{{ inputs_ids }}"
+
+- name: Set 'content_extractors_dir' fact to divide API for Graylog 4 and 5
+  set_fact:
+    content_extractors_dir: "files/extractors/graylog_5"
+
+- name: Update the extractors
+  when:
+    - update_content | bool
+  block:
+    - name: Update the 'replace_timestamp_extractor' to an input
+      uri:
+        url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/replace_timestamp_extractor.json') }}"
+        body_format: json
+      when:
+        - extractor_id | trim | length != 0
+      with_items:
+        - "{{ extractors_list_from_inputs.results }}"
+      vars:
+        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        input_id: "{{ item.url.split('/')[-2] }}"
+        jq_extractor_id: "json.extractors[?title=='replace_timestamp'].id | [0]"
+      loop_control:
+        label: "{{ input_id }}, extractor_id={{ extractor_id }}"
+
+    - name: Update the 'kubernetes_extractor' to an input
+      uri:
+        url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/kubernetes_extractor.json') }}"
+        body_format: json
+      when:
+        - extractor_id | trim | length != 0
+      with_items:
+        - "{{ extractors_list_from_inputs.results }}"
+      vars:
+        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        input_id: "{{ item.url.split('/')[-2] }}"
+        jq_extractor_id: "json.extractors[?title=='kuber_extractor'].id | [0]"
+      loop_control:
+        label: "{{ input_id }}, extractor_id={{ extractor_id }}"
+
+    - name: Update the 'kubernetes_labels_extractor' to an input
+      uri:
+        url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/kubernetes_labels_extractor.json') }}"
+        body_format: json
+      when:
+        - extractor_id | trim | length != 0
+      with_items:
+        - "{{ extractors_list_from_inputs.results }}"
+      vars:
+        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        input_id: "{{ item.url.split('/')[-2] }}"
+        jq_extractor_id: "json.extractors[?title=='kuber_labels_extractor'].id | [0]"
+      loop_control:
+        label: "{{ input_id }}, extractor_id={{ extractor_id }}"
+
+    - name: Update the 'docker_extractor' to an input
+      uri:
+        url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/docker_extractor.json') }}"
+        body_format: json
+      when:
+        - extractor_id | trim | length != 0
+      with_items:
+        - "{{ extractors_list_from_inputs.results }}"
+      vars:
+        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        input_id: "{{ item.url.split('/')[-2] }}"
+        jq_extractor_id: "json.extractors[?title=='docker_extractor'].id | [0]"
+      loop_control:
+        label: "{{ input_id }}, extractor_id={{ extractor_id }}"
+
+    - name: Update the 'microservice_framework_extractor' to an input
+      uri:
+        url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/replace_timestamp_extractor.json') }}"
+        body_format: json
+      when:
+        - extractor_id | trim | length != 0
+      with_items:
+        - "{{ extractors_list_from_inputs.results }}"
+      vars:
+        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        input_id: "{{ item.url.split('/')[-2] }}"
+        jq_extractor_id: "json.extractors[?title=='Microservice Framework Backend'].id | [0]"
+      loop_control:
+        label: "{{ input_id }}, extractor_id={{ extractor_id }}"
+
+- name: Add the 'replace_timestamp_extractor' to an input
+  uri:
+    url: https://localhost/api/system/inputs/{{ input_id }}/extractors
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/replace_timestamp_extractor.json') }}"
+    body_format: json
+  when:
+    - extractor_id | trim | length == 0
+  with_items:
+    - "{{ extractors_list_from_inputs.results }}"
+  vars:
+    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    input_id: "{{ item.url.split('/')[-2] }}"
+    jq_extractor_id: "json.extractors[?title=='replace_timestamp'].id | [0]"
+  loop_control:
+    label: "{{ input_id }}"
+
+- name: Add the 'kubernetes_extractor' to an input
+  uri:
+    url: https://localhost/api/system/inputs/{{ input_id }}/extractors
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/kubernetes_extractor.json') }}"
+    body_format: json
+  when:
+    - extractor_id | trim | length == 0
+  with_items:
+    - "{{ extractors_list_from_inputs.results }}"
+  vars:
+    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    input_id: "{{ item.url.split('/')[-2] }}"
+    jq_extractor_id: "json.extractors[?title=='kuber_extractor'].id | [0]"
+  loop_control:
+    label: "{{ input_id }}"
+
+- name: Add the 'kubernetes_labels_extractor' to an input
+  uri:
+    url: https://localhost/api/system/inputs/{{ input_id }}/extractors
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/kubernetes_labels_extractor.json') }}"
+    body_format: json
+  when:
+    - extractor_id | trim | length == 0
+  with_items:
+    - "{{ extractors_list_from_inputs.results }}"
+  vars:
+    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    input_id: "{{ item.url.split('/')[-2] }}"
+    jq_extractor_id: "json.extractors[?title=='kuber_labels_extractor'].id | [0]"
+  loop_control:
+    label: "{{ input_id }}"
+
+- name: Add the 'docker_extractor' to an input
+  uri:
+    url: https://localhost/api/system/inputs/{{ input_id }}/extractors
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/docker_extractor.json') }}"
+    body_format: json
+  when:
+    - extractor_id | trim | length == 0
+  with_items:
+    - "{{ extractors_list_from_inputs.results }}"
+  vars:
+    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    input_id: "{{ item.url.split('/')[-2] }}"
+    jq_extractor_id: "json.extractors[?title=='docker_extractor'].id | [0]"
+  loop_control:
+    label: "{{ input_id }}"
+
+- name: Add the 'microservice_framework_extractor' to an input
+  uri:
+    url: https://localhost/api/system/inputs/{{ input_id }}/extractors
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/microservice_framework_extractor.json') }}"
+    body_format: json
+  when:
+    - extractor_id | trim | length == 0
+  with_items:
+    - "{{ extractors_list_from_inputs.results }}"
+  vars:
+    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    input_id: "{{ item.url.split('/')[-2] }}"
+    jq_extractor_id: "json.extractors[?title=='Microservice Framework Backend'].id | [0]"
+  loop_control:
+    label: "{{ input_id }}"
+
+- name: Update the order of messageprocessors
+  uri:
+    url: https://localhost/api/system/messageprocessors/config
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('file','{{ role_path }}/files/messageprocessors.json') }}"
+    body_format: json

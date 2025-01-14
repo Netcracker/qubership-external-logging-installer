@@ -1,0 +1,1365 @@
+{
+  "v": 1,
+  "id": "0fac53ed-df74-4ba6-88c2-aa16b4b8542d",
+  "rev": 1,
+  "name": "Qubership dashboard",
+  "summary": "Dashboard for common statistics",
+  "description": "",
+  "vendor": "Qubership",
+  "url": "",
+  "parameters": [],
+  "entities": [
+    {
+      "v": "1",
+      "type": {
+        "name": "dashboard",
+        "version": "2"
+      },
+      "id": "79f74a8f-92fb-4e41-8680-2d01a5589b1f",
+      "data": {
+        "summary": {
+          "@type": "string",
+          "@value": "This is a list of all sources that sent in messages to Graylog."
+        },
+        "search": {
+          "queries": [
+            {
+              "id": "a1647eb6-a064-4fe6-b459-1e4267d3f659",
+              "timerange": {
+                "type": "relative",
+                "range": 300
+              },
+              "query": {
+                "type": "elasticsearch",
+                "query_string": ""
+              },
+              "search_types": [
+                {
+                  "query": null,
+                  "name": null,
+                  "timerange": null,
+                  "offset": 0,
+                  "streams": [],
+                  "filter": null,
+                  "decorators": [],
+                  "type": "messages",
+                  "id": "224572d2-4df8-4f0d-8b6f-944681747dc4",
+                  "limit": 150
+                },
+                {
+                  "query": null,
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "range": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 30
+                    },
+                    {
+                      "type": "values",
+                      "field": "pod",
+                      "limit": 30
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "c2779376-2d1a-4a92-94aa-8bbeefbfd8c0",
+                  "column_groups": [],
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                },
+                {
+                  "query": null,
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "range": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 30
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "8e8fbdbe-57df-445a-b5ec-3baf3182f926",
+                  "column_groups": [],
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                },
+                {
+                  "query": null,
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "range": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "time",
+                      "field": "timestamp",
+                      "interval": {
+                        "type": "auto",
+                        "scaling": 1
+                      }
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "63a9ad57-2203-4b5a-8dbd-ef781b852c2e",
+                  "column_groups": [],
+                  "sort": []
+                },
+                {
+                  "query": null,
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "range": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 30
+                    },
+                    {
+                      "type": "values",
+                      "field": "level",
+                      "limit": 30
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "3f594445-841e-4c80-b136-6befe16ae641",
+                  "column_groups": [],
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                },
+                {
+                  "query": null,
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "range": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 10
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "9bb36322-5188-47e9-bd0b-20829d3542e8",
+                  "column_groups": [],
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "parameters": [],
+          "requires": {},
+          "owner": "admin",
+          "created_at": "2022-11-11T07:20:51.894Z"
+        },
+        "created_at": "2022-11-22T10:54:50.950Z",
+        "requires": {},
+        "state": {
+          "a1647eb6-a064-4fe6-b459-1e4267d3f659": {
+            "selected_fields": null,
+            "static_message_list_id": null,
+            "titles": {
+              "tab": {
+                "title": "Sources Overview"
+              },
+              "widget": {
+                "6c127c5d-be75-4157-b43f-ac0194ac0586": "Messages count per Namespace and Service",
+                "92d63811-e4dd-47db-bd3b-db03c8a9bd53": "Messages per Source",
+                "00637e63-d728-4b3e-932b-7c8696b4855d": "Messages over time",
+                "95c29d28-9ab9-4c84-a797-1804fb4763f3": "Messages count by Namespace",
+                "a735cc5f-93f1-4a68-ad6e-75a5694fc9ea": "Messages count by Namespace (pie)",
+                "b35d90b4-5a89-40e9-bc2c-7406d3d999b7": "Messages count per Namespace and Level",
+                "7d8154d2-7827-4313-b0f9-62e89d724f1d": "Messages over time (copy)",
+                "4561c8f7-c7cf-4f58-8e2f-486e24ed05f8": "Message Table"
+              }
+            },
+            "widgets": [
+              {
+                "id": "6c127c5d-be75-4157-b43f-ac0194ac0586",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "range": 300
+                },
+                "query": null,
+                "streams": [],
+                "config": {
+                  "visualization": "table",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    },
+                    {
+                      "field": "pod",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "4561c8f7-c7cf-4f58-8e2f-486e24ed05f8",
+                "type": "messages",
+                "filter": null,
+                "timerange": null,
+                "query": null,
+                "streams": [],
+                "config": {
+                  "fields": [
+                    "timestamp",
+                    "source"
+                  ],
+                  "show_message_row": true,
+                  "show_summary": true,
+                  "decorators": [],
+                  "sort": [
+                    {
+                      "type": "pivot",
+                      "field": "timestamp",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "95c29d28-9ab9-4c84-a797-1804fb4763f3",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "range": 300
+                },
+                "query": null,
+                "streams": [],
+                "config": {
+                  "visualization": "table",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "a735cc5f-93f1-4a68-ad6e-75a5694fc9ea",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "range": 300
+                },
+                "query": null,
+                "streams": [],
+                "config": {
+                  "visualization": "pie",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 10
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "00637e63-d728-4b3e-932b-7c8696b4855d",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "range": 300
+                },
+                "query": null,
+                "streams": [],
+                "config": {
+                  "visualization": "line",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "timestamp",
+                      "type": "time",
+                      "config": {
+                        "interval": {
+                          "type": "auto",
+                          "scaling": 1
+                        }
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": []
+                }
+              },
+              {
+                "id": "b35d90b4-5a89-40e9-bc2c-7406d3d999b7",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "range": 300
+                },
+                "query": null,
+                "streams": [],
+                "config": {
+                  "visualization": "table",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    },
+                    {
+                      "field": "level",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              }
+            ],
+            "widget_mapping": {
+              "6c127c5d-be75-4157-b43f-ac0194ac0586": [
+                "c2779376-2d1a-4a92-94aa-8bbeefbfd8c0"
+              ],
+              "00637e63-d728-4b3e-932b-7c8696b4855d": [
+                "63a9ad57-2203-4b5a-8dbd-ef781b852c2e"
+              ],
+              "95c29d28-9ab9-4c84-a797-1804fb4763f3": [
+                "8e8fbdbe-57df-445a-b5ec-3baf3182f926"
+              ],
+              "a735cc5f-93f1-4a68-ad6e-75a5694fc9ea": [
+                "9bb36322-5188-47e9-bd0b-20829d3542e8"
+              ],
+              "b35d90b4-5a89-40e9-bc2c-7406d3d999b7": [
+                "3f594445-841e-4c80-b136-6befe16ae641"
+              ],
+              "4561c8f7-c7cf-4f58-8e2f-486e24ed05f8": [
+                "224572d2-4df8-4f0d-8b6f-944681747dc4"
+              ]
+            },
+            "positions": {
+              "6c127c5d-be75-4157-b43f-ac0194ac0586": {
+                "col": 1,
+                "row": 8,
+                "height": 5,
+                "width": 6
+              },
+              "00637e63-d728-4b3e-932b-7c8696b4855d": {
+                "col": 1,
+                "row": 2,
+                "height": 2,
+                "width": "Infinity"
+              },
+              "95c29d28-9ab9-4c84-a797-1804fb4763f3": {
+                "col": 1,
+                "row": 4,
+                "height": 4,
+                "width": 6
+              },
+              "a735cc5f-93f1-4a68-ad6e-75a5694fc9ea": {
+                "col": 7,
+                "row": 4,
+                "height": 4,
+                "width": 6
+              },
+              "b35d90b4-5a89-40e9-bc2c-7406d3d999b7": {
+                "col": 7,
+                "row": 8,
+                "height": 5,
+                "width": 6
+              },
+              "4561c8f7-c7cf-4f58-8e2f-486e24ed05f8": {
+                "col": 1,
+                "row": 13,
+                "height": 5,
+                "width": "Infinity"
+              }
+            },
+            "formatting": {
+              "highlighting": []
+            },
+            "display_mode_settings": {
+              "positions": {}
+            }
+          }
+        },
+        "properties": [],
+        "owner": "admin",
+        "title": {
+          "@type": "string",
+          "@value": "Sources by Service"
+        },
+        "type": "DASHBOARD",
+        "description": {
+          "@type": "string",
+          "@value": "This is a list of all sources that sent in messages to Graylog. You can narrow the timerange by zooming in on the message histogram, or you can increase the time range by specifying a broader one in the controls at the top. You can also specify filters to limit the results you are seeing. You can also add additional widgets to this dashboard, or adapt the appearance of existing widgets to suit your needs."
+        }
+      },
+      "constraints": [
+        {
+          "type": "server-version",
+          "version": ">=4.2.4+b643d2b"
+        }
+      ]
+    },
+    {
+      "v": "1",
+      "type": {
+        "name": "dashboard",
+        "version": "2"
+      },
+      "id": "cfd5e28b-48a3-47a1-a31e-759b9c381038",
+      "data": {
+        "summary": {
+          "@type": "string",
+          "@value": "Shows statistics of events from Kubernetes"
+        },
+        "search": {
+          "queries": [
+            {
+              "id": "c57859af-0654-4324-b6f2-202236d46ee7",
+              "timerange": {
+                "type": "relative",
+                "from": 300
+              },
+              "query": {
+                "type": "elasticsearch",
+                "query_string": ""
+              },
+              "search_types": [
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "count()",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 30
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "89e55267-6e4e-4f33-9ec3-9c2bc099742c",
+                  "column_groups": [],
+                  "sort": []
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": null,
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "offset": 0,
+                  "streams": [],
+                  "filter": null,
+                  "decorators": [],
+                  "type": "messages",
+                  "id": "6454e670-c741-449e-89a2-e891ab170298",
+                  "limit": 150
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message Count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "reason",
+                      "limit": 15
+                    },
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 15
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "13cd5bb3-533a-46ad-b812-a7aa37568011",
+                  "column_groups": [],
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message Count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "namespace",
+                      "limit": 15
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "afdb427b-7748-41f7-bd70-ca63d3845f3a",
+                  "column_groups": [],
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "count()",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "time",
+                      "field": "timestamp",
+                      "interval": {
+                        "type": "auto",
+                        "scaling": 1
+                      }
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "a6548ba0-25a5-4a04-96d5-6448bb9fe4d2",
+                  "column_groups": [],
+                  "sort": []
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "count()",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "involvedObjectKind",
+                      "limit": 15
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "5c1d4a38-6d9f-47de-8cad-f4e131d33ccf",
+                  "column_groups": [],
+                  "sort": []
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: Event AND NOT type: Normal"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "Message Count",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "time",
+                      "field": "timestamp",
+                      "interval": {
+                        "type": "auto",
+                        "scaling": 1
+                      }
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "6bff4270-a04e-461b-908e-57eac23cd903",
+                  "column_groups": [],
+                  "sort": []
+                },
+                {
+                  "query": {
+                    "type": "elasticsearch",
+                    "query_string": "kind: KubernetesEvent"
+                  },
+                  "name": "chart",
+                  "timerange": {
+                    "type": "relative",
+                    "from": 300
+                  },
+                  "streams": [],
+                  "series": [
+                    {
+                      "type": "count",
+                      "id": "count()",
+                      "field": null
+                    }
+                  ],
+                  "filter": null,
+                  "rollup": true,
+                  "row_groups": [
+                    {
+                      "type": "values",
+                      "field": "reason",
+                      "limit": 30
+                    }
+                  ],
+                  "type": "pivot",
+                  "id": "4b98ced7-1ab7-4f16-b78e-d0730bcb6c71",
+                  "column_groups": [],
+                  "sort": []
+                }
+              ]
+            }
+          ],
+          "parameters": [],
+          "requires": {},
+          "owner": "admin",
+          "created_at": "2024-04-03T09:46:55.374Z"
+        },
+        "created_at": "2024-04-03T08:28:05.204Z",
+        "requires": {},
+        "state": {
+          "c57859af-0654-4324-b6f2-202236d46ee7": {
+            "selected_fields": null,
+            "static_message_list_id": null,
+            "titles": {
+              "widget": {
+                "aca71e3d-2fbd-4cf6-b8ba-b3d30751734d": "Events count from namespaces by reason",
+                "0bb3e550-c464-45f4-aa35-6c4a314b34a2": "Events by namespace",
+                "64db3158-40fa-4da8-b195-08bfa048df9a": "Top events by reason",
+                "48c3895b-4f44-49e6-83c7-09ac97c0b0f9": "All events",
+                "71df311e-f7e8-422e-8ef1-60d864bd0f5d": "Events count by namespace",
+                "e0ac8bd4-ee6a-48c4-9196-14d730865d51": "Events by kind",
+                "7e57748b-bd09-437b-9868-d2d95bc5d87e": "Warning and error events",
+                "3b7b6727-51c6-405f-92e1-82eb9a44ee48": "Events count by namespace",
+                "b8d65563-0f4c-4876-aa64-5ff1973d7aae": "Events count"
+              },
+              "tab": {
+                "title": "Overview"
+              }
+            },
+            "widgets": [
+              {
+                "id": "aca71e3d-2fbd-4cf6-b8ba-b3d30751734d",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "table",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "reason",
+                      "type": "values",
+                      "config": {
+                        "limit": 15
+                      }
+                    },
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 15
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message Count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "48c3895b-4f44-49e6-83c7-09ac97c0b0f9",
+                "type": "messages",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "fields": [
+                    "timestamp",
+                    "reason",
+                    "namespace",
+                    "involvedObjectKind",
+                    "involvedObjectName"
+                  ],
+                  "show_message_row": true,
+                  "show_summary": true,
+                  "decorators": [],
+                  "sort": [
+                    {
+                      "type": "pivot",
+                      "field": "timestamp",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "e0ac8bd4-ee6a-48c4-9196-14d730865d51",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "pie",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "involvedObjectKind",
+                      "type": "values",
+                      "config": {
+                        "limit": 15
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": null
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": []
+                }
+              },
+              {
+                "id": "b8d65563-0f4c-4876-aa64-5ff1973d7aae",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "bar",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "timestamp",
+                      "type": "time",
+                      "config": {
+                        "interval": {
+                          "type": "auto",
+                          "scaling": 1
+                        }
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": null
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": {
+                    "barmode": "group"
+                  },
+                  "formatting_settings": null,
+                  "sort": []
+                }
+              },
+              {
+                "id": "64db3158-40fa-4da8-b195-08bfa048df9a",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "pie",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "reason",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": null
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": []
+                }
+              },
+              {
+                "id": "7e57748b-bd09-437b-9868-d2d95bc5d87e",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: Event AND NOT type: Normal"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "line",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "timestamp",
+                      "type": "time",
+                      "config": {
+                        "interval": {
+                          "type": "auto",
+                          "scaling": 1
+                        }
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message Count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": {
+                    "interpolation": "linear"
+                  },
+                  "formatting_settings": null,
+                  "sort": []
+                }
+              },
+              {
+                "id": "0bb3e550-c464-45f4-aa35-6c4a314b34a2",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "pie",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 30
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": null
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": []
+                }
+              },
+              {
+                "id": "71df311e-f7e8-422e-8ef1-60d864bd0f5d",
+                "type": "aggregation",
+                "filter": null,
+                "timerange": {
+                  "type": "relative",
+                  "from": 300
+                },
+                "query": {
+                  "type": "elasticsearch",
+                  "query_string": "kind: KubernetesEvent"
+                },
+                "streams": [],
+                "config": {
+                  "visualization": "table",
+                  "event_annotation": false,
+                  "row_pivots": [
+                    {
+                      "field": "namespace",
+                      "type": "values",
+                      "config": {
+                        "limit": 15
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "config": {
+                        "name": "Message Count"
+                      },
+                      "function": "count()"
+                    }
+                  ],
+                  "rollup": true,
+                  "column_pivots": [],
+                  "visualization_config": null,
+                  "formatting_settings": null,
+                  "sort": [
+                    {
+                      "type": "series",
+                      "field": "count()",
+                      "direction": "Descending"
+                    }
+                  ]
+                }
+              }
+            ],
+            "widget_mapping": {
+              "b8d65563-0f4c-4876-aa64-5ff1973d7aae": [
+                "a6548ba0-25a5-4a04-96d5-6448bb9fe4d2"
+              ],
+              "0bb3e550-c464-45f4-aa35-6c4a314b34a2": [
+                "89e55267-6e4e-4f33-9ec3-9c2bc099742c"
+              ],
+              "71df311e-f7e8-422e-8ef1-60d864bd0f5d": [
+                "afdb427b-7748-41f7-bd70-ca63d3845f3a"
+              ],
+              "e0ac8bd4-ee6a-48c4-9196-14d730865d51": [
+                "5c1d4a38-6d9f-47de-8cad-f4e131d33ccf"
+              ],
+              "7e57748b-bd09-437b-9868-d2d95bc5d87e": [
+                "6bff4270-a04e-461b-908e-57eac23cd903"
+              ],
+              "64db3158-40fa-4da8-b195-08bfa048df9a": [
+                "4b98ced7-1ab7-4f16-b78e-d0730bcb6c71"
+              ],
+              "aca71e3d-2fbd-4cf6-b8ba-b3d30751734d": [
+                "13cd5bb3-533a-46ad-b812-a7aa37568011"
+              ],
+              "48c3895b-4f44-49e6-83c7-09ac97c0b0f9": [
+                "6454e670-c741-449e-89a2-e891ab170298"
+              ]
+            },
+            "positions": {
+              "48c3895b-4f44-49e6-83c7-09ac97c0b0f9": {
+                "col": 1,
+                "row": 16,
+                "height": 5,
+                "width": "Infinity"
+              },
+              "aca71e3d-2fbd-4cf6-b8ba-b3d30751734d": {
+                "col": 7,
+                "row": 11,
+                "height": 4,
+                "width": 6
+              },
+              "64db3158-40fa-4da8-b195-08bfa048df9a": {
+                "col": 1,
+                "row": 11,
+                "height": 4,
+                "width": 6
+              },
+              "7e57748b-bd09-437b-9868-d2d95bc5d87e": {
+                "col": 7,
+                "row": 7,
+                "height": 4,
+                "width": 6
+              },
+              "e0ac8bd4-ee6a-48c4-9196-14d730865d51": {
+                "col": 1,
+                "row": 7,
+                "height": 4,
+                "width": 6
+              },
+              "71df311e-f7e8-422e-8ef1-60d864bd0f5d": {
+                "col": 7,
+                "row": 3,
+                "height": 4,
+                "width": 6
+              },
+              "0bb3e550-c464-45f4-aa35-6c4a314b34a2": {
+                "col": 1,
+                "row": 3,
+                "height": 4,
+                "width": 6
+              },
+              "b8d65563-0f4c-4876-aa64-5ff1973d7aae": {
+                "col": 1,
+                "row": 1,
+                "height": 2,
+                "width": "Infinity"
+              }
+            },
+            "formatting": {
+              "highlighting": []
+            },
+            "display_mode_settings": {
+              "positions": {}
+            }
+          }
+        },
+        "properties": [],
+        "owner": "admin",
+        "title": {
+          "@type": "string",
+          "@value": "Kubernetes Events"
+        },
+        "type": "DASHBOARD",
+        "description": {
+          "@type": "string",
+          "@value": "Kubernetes events sent to Graylog as messages. Events aggregated by types, reasons and namespaces. Below you can find table with all Kubernetes events occurred in the specific timerange. You can narrow or increase the timerange. You can also specify filters to limit the results you are seeing. You can also add additional widgets to this dashboard, or adapt the appearance of existing widgets to suit your needs."
+        }
+      },
+      "constraints": [
+        {
+          "type": "server-version",
+          "version": ">=4.3.15+17ed3ac"
+        }
+      ]
+    }
+  ]
+}

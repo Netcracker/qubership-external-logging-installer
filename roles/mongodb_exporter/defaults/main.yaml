@@ -1,0 +1,12 @@
+---
+mongodb_exporter_install: false
+mongodb_exporter_tarball: https://github.com/percona/mongodb_exporter/releases/download/v0.43.1/mongodb_exporter-0.43.1.linux-amd64.tar.gz
+mongodb_exporter_host_bin_dir: /usr/local/bin
+
+mongodb_exporter_listen_port: 9216
+mongodb_exporter_metrics_path: /metrics
+
+mongodb_exporter_flags: ["--collect-all","--compatible-mode"]
+
+validate_certs: false
+ssl_cert_file: ~

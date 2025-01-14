@@ -1,0 +1,27 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Prometheus Cadvisor
+After=network.target
+
+[Service]
+Type=simple
+StartLimitBurst=5
+StartLimitInterval=0
+Restart=on-failure
+RestartSec=1
+
+User={{ cadvisor_system_user }}
+Group={{ cadvisor_system_group }}
+
+ExecStart={{ cadvisor_host_bin_dir }}/cadvisor \
+    --port {{ cadvisor_listen_port }} \
+{% for option in cadvisor_runtime_optionts -%}
+    {{ option }} \
+{% endfor %}
+
+SyslogIdentifier=Cadvisor
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+
+[Install]
+WantedBy=multi-user.target

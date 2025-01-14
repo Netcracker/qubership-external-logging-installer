@@ -1,0 +1,402 @@
+---
+- name: Get 'default_index_set_id'
+  set_fact:
+    default_index_set_id: "{{ indexes_list | json_query(jq_default_index_set_id) }}"
+  vars:
+    jq_default_index_set_id: "json.index_sets[?default==`true`].id | [0]"
+
+- name: Get 'Default index set' stats
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}/stats
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+      Accept: application/json
+    return_content: true
+  register: default_index_set_stats
+  with_items:
+    - "{{ default_index_set_id }}"
+
+- name: Update the 'Default index set'
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/indexes/default_index.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - (update_content | bool) or (default_index_set_stats | json_query(jq_documents_number) | int == 0)
+  with_items:
+    - "{{ default_index_set_id }}"
+  vars:
+    jq_documents_number: "results[].json.documents | [0]"
+    template_vars:
+      shards: "{{ index_shards }}"
+      replicas: "{{ index_replicas }}"
+      max_size: "{{ max_size }}"
+      max_number_of_indices: "{{ max_number_of_indices }}"
+
+- name: Get index ids
+  set_fact:
+    audit_index_set_id: "{{ indexes_list | json_query(jq_audit_index_set_id) | default(omit) }}"
+    access_index_set_id: "{{ indexes_list | json_query(jq_access_index_set_id) | default(omit) }}"
+    int_index_set_id: "{{ indexes_list | json_query(jq_int_index_set_id) | default(omit) }}"
+    nginx_index_set_id: "{{ indexes_list | json_query(jq_nginx_index_set_id) | default(omit) }}"
+    k8s_events_index_set_id: "{{ indexes_list | json_query(jq_k8s_events_index_set_id) | default(omit) }}"
+  vars:
+    jq_audit_index_set_id: "json.index_sets[?index_prefix==`\"gray_audit\"`].id | [0]"
+    jq_access_index_set_id: "json.index_sets[?index_prefix==`\"gray_access\"`].id | [0]"
+    jq_int_index_set_id: "json.index_sets[?index_prefix==`\"gray_int\"`].id | [0]"
+    jq_nginx_index_set_id: "json.index_sets[?index_prefix==`\"gray_ingress_nginx\"`].id | [0]"
+    jq_k8s_events_index_set_id: "json.index_sets[?index_prefix==`\"gray_k8s_event\"`].id | [0]"
+
+- name: Get current date time
+  shell: "date +%Y-%m-%dT%H:%M:%S.%3NZ"
+  register: tstamp
+
+- name: Define current date time
+  set_fact:
+    current_date: "{{ tstamp.stdout }}"
+
+- name: Update the 'Audit index set'
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/indexes/audit_index.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - audit_logs_install | lower | trim == 'true'
+    - audit_index_set_id is defined
+    - audit_index_set_id is not none
+    - audit_index_set_id | trim | length > 0
+  with_items:
+    - "{{ audit_index_set_id }}"
+  vars:
+    template_vars:
+      creation_date: "{{ current_date }}"
+      rotation_period: "{{ audit_logs_rotation_period }}"
+      rotation_strategy: "{{ audit_logs_rotation_strategy }}"
+      shards: "{{ index_shards }}"
+      replicas: "{{ index_replicas }}"
+      max_size: "{{ audit_logs_max_size }}"
+      max_number_of_indices: "{{ audit_logs_max_number_of_indices }}"
+
+- name: Update the 'Access index set'
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/indexes/access_index.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - access_logs_install | lower | trim == 'true'
+    - access_index_set_id is defined
+    - access_index_set_id is not none
+    - access_index_set_id | trim | length > 0
+  with_items:
+    - "{{ access_index_set_id }}"
+  vars:
+    template_vars:
+      creation_date: "{{ current_date }}"
+      rotation_period: "{{ access_logs_rotation_period }}"
+      rotation_strategy: "{{ access_logs_rotation_strategy }}"
+      shards: "{{ index_shards }}"
+      replicas: "{{ index_replicas }}"
+      max_size: "{{ access_logs_max_size }}"
+      max_number_of_indices: "{{ access_logs_max_number_of_indices }}"
+
+- name: Update the 'Integration index set'
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/indexes/integration_index.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - integration_logs_install | lower | trim == 'true'
+    - int_index_set_id is defined
+    - int_index_set_id is not none
+    - int_index_set_id | trim | length > 0
+  with_items:
+    - "{{ int_index_set_id }}"
+  vars:
+    template_vars:
+      creation_date: "{{ current_date }}"
+      rotation_period: "{{ integration_logs_rotation_period }}"
+      rotation_strategy: "{{ integration_logs_rotation_strategy }}"
+      shards: "{{ index_shards }}"
+      replicas: "{{ index_replicas }}"
+      max_size: "{{ integration_logs_max_size }}"
+      max_number_of_indices: "{{ integration_logs_max_number_of_indices }}"
+
+- name: Update the 'Nginx index set'
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/indexes/nginx_index.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - nginx_logs_install | lower | trim == 'true'
+    - nginx_index_set_id is defined
+    - nginx_index_set_id is not none
+    - nginx_index_set_id | trim | length > 0
+  with_items:
+    - "{{ nginx_index_set_id }}"
+  vars:
+    template_vars:
+      creation_date: "{{ current_date }}"
+      rotation_period: "{{ nginx_logs_rotation_period }}"
+      rotation_strategy: "{{ nginx_logs_rotation_strategy }}"
+      shards: "{{ index_shards }}"
+      replicas: "{{ index_replicas }}"
+      max_size: "{{ nginx_logs_max_size }}"
+      max_number_of_indices: "{{ nginx_logs_max_number_of_indices }}"
+
+- name: Update the 'Kubernetes events index set'
+  uri:
+    url: https://localhost/api/system/indices/index_sets/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/indexes/k8s_events_index.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - k8s_events_install | lower | trim == 'true'
+    - k8s_events_index_set_id is defined
+    - k8s_events_index_set_id is not none
+    - k8s_events_index_set_id | trim | length > 0
+  with_items:
+    - "{{ k8s_events_index_set_id }}"
+  vars:
+    template_vars:
+      creation_date: "{{ current_date }}"
+      rotation_period: "{{ k8s_events_rotation_period }}"
+      rotation_strategy: "{{ k8s_events_rotation_strategy }}"
+      shards: "{{ index_shards }}"
+      replicas: "{{ index_replicas }}"
+      max_size: "{{ k8s_events_max_size }}"
+      max_number_of_indices: "{{ k8s_events_max_number_of_indices }}"
+
+- name: Create the 'Audit index set'
+  when:
+    - audit_logs_install | lower | trim == 'true'
+    - (audit_index_set_id is undefined) or (audit_index_set_id is none) or (audit_index_set_id | trim | length == 0)
+  block:
+    - name: Create Audit index
+      uri:
+        url: https://localhost/api/system/indices/index_sets/
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/indexes/audit_index.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: index_response
+      vars:
+        template_vars:
+          creation_date: "{{ current_date }}"
+          rotation_period: "{{ audit_logs_rotation_period }}"
+          rotation_strategy: "{{ audit_logs_rotation_strategy }}"
+          shards: "{{ index_shards }}"
+          replicas: "{{ index_replicas }}"
+          max_size: "{{ audit_logs_max_size }}"
+          max_number_of_indices: "{{ audit_logs_max_number_of_indices }}"
+
+    - name: Set 'audit_index_set_id'
+      set_fact:
+        audit_index_set_id: "{{ index_response.json.id }}"
+
+- name: Create the 'Access index set'
+  when:
+    - access_logs_install | lower | trim == 'true'
+    - (access_index_set_id is undefined) or (access_index_set_id is none) or (access_index_set_id | trim | length == 0)
+  block:
+    - name: Create Access index
+      uri:
+        url: https://localhost/api/system/indices/index_sets/
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/indexes/access_index.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: index_response
+      vars:
+        template_vars:
+          creation_date: "{{ current_date }}"
+          rotation_period: "{{ access_logs_rotation_period }}"
+          rotation_strategy: "{{ access_logs_rotation_strategy }}"
+          shards: "{{ index_shards }}"
+          replicas: "{{ index_replicas }}"
+          max_size: "{{ access_logs_max_size }}"
+          max_number_of_indices: "{{ access_logs_max_number_of_indices }}"
+
+    - name: Set 'access_index_set_id'
+      set_fact:
+        access_index_set_id: "{{ index_response.json.id }}"
+
+- name: Create the 'Integration index set'
+  when:
+    - integration_logs_install | lower | trim == 'true'
+    - (int_index_set_id is undefined) or (int_index_set_id is none) or (int_index_set_id | trim | length == 0)
+  block:
+    - name: Create Integration index
+      uri:
+        url: https://localhost/api/system/indices/index_sets/
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/indexes/integration_index.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: index_response
+      vars:
+        template_vars:
+          creation_date: "{{ current_date }}"
+          rotation_period: "{{ integration_logs_rotation_period }}"
+          rotation_strategy: "{{ integration_logs_rotation_strategy }}"
+          shards: "{{ index_shards }}"
+          replicas: "{{ index_replicas }}"
+          max_size: "{{ integration_logs_max_size }}"
+          max_number_of_indices: "{{ integration_logs_max_number_of_indices }}"
+
+    - name: Set 'int_index_set_id'
+      set_fact:
+        int_index_set_id: "{{ index_response.json.id }}"
+
+- name: Create the 'Nginx index set'
+  when:
+    - nginx_logs_install | lower | trim == 'true'
+    - (nginx_index_set_id is undefined) or (nginx_index_set_id is none) or (nginx_index_set_id | trim | length == 0)
+  block:
+    - name: Create Nginx index
+      uri:
+        url: https://localhost/api/system/indices/index_sets/
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/indexes/nginx_index.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: index_response
+      vars:
+        template_vars:
+          creation_date: "{{ current_date }}"
+          rotation_period: "{{ nginx_logs_rotation_period }}"
+          rotation_strategy: "{{ nginx_logs_rotation_strategy }}"
+          shards: "{{ index_shards }}"
+          replicas: "{{ index_replicas }}"
+          max_size: "{{ nginx_logs_max_size }}"
+          max_number_of_indices: "{{ nginx_logs_max_number_of_indices }}"
+
+    - name: Set 'nginx_index_set_id'
+      set_fact:
+        nginx_index_set_id: "{{ index_response.json.id }}"
+
+- name: Create the 'Kubernetes events index set'
+  when:
+    - k8s_events_install | lower | trim == 'true'
+    - (k8s_events_index_set_id is undefined) or (k8s_events_index_set_id is none) or (k8s_events_index_set_id | trim | length == 0)
+  block:
+    - name: Create Kubernetes events index
+      uri:
+        url: https://localhost/api/system/indices/index_sets/
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/indexes/k8s_events_index.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: index_response
+      vars:
+        template_vars:
+          creation_date: "{{ current_date }}"
+          rotation_period: "{{ k8s_events_rotation_period }}"
+          rotation_strategy: "{{ k8s_events_rotation_strategy }}"
+          shards: "{{ index_shards }}"
+          replicas: "{{ index_replicas }}"
+          max_size: "{{ k8s_events_max_size }}"
+          max_number_of_indices: "{{ k8s_events_max_number_of_indices }}"
+
+    - name: Set 'k8s_events_index_set_id'
+      set_fact:
+        k8s_events_index_set_id: "{{ index_response.json.id }}"

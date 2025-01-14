@@ -1,0 +1,87 @@
+---
+- name: Set docker image with registry
+  set_fact:
+    graylog_image: "{{ docker_registry }}/{{ graylog_image }}"
+  when:
+    - docker_registry is defined
+    - docker_registry != 0
+
+- name: Set storage (opensearch) or elasticsearch container name
+  set_fact:
+    storage_or_elasticsearch: "storage"
+
+- name: Set opensearch or elasticsearch path_repo
+  set_fact:
+    graylog_path_repo: "opensearch"
+
+- name: Pull graylog image
+  docker_image:
+    name: "{{ graylog_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+  when:
+    - not docker_registry_validate_certs|bool
+
+- name: Pull graylog image with local CA
+  docker_image:
+    name: "{{ graylog_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    ca_cert: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: Pull graylog image without local CA
+  docker_image:
+    name: "{{ graylog_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is not defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: Create and start a 'graylog' container
+  docker_container:
+    name: graylog_graylog_1
+    image: "{{ graylog_image }}"
+    state: started
+    purge_networks: true
+    recreate: true
+    restart_policy: always
+    security_opts:
+      - no-new-privileges
+    env:
+      GRAYLOG_SERVER_JAVA_OPTS: >
+        -Xms{{ graylog_heap_size_mb | default(2048) }}m -Xmx{{ graylog_heap_size_mb | default(2048) }}m
+        -Djna.tmpdir=/usr/share/graylog/data/plugin
+      GRAYLOG_ELASTICSEARCH_HOSTS: "http://admin:admin@{{ storage_or_elasticsearch }}:9200"
+      GRAYLOG_HTTP_EXTERNAL_URI: "https://{{ ansible_host }}/"
+      GRAYLOG_SNAPSHOT_DIRECTORY: "/usr/share/{{ graylog_path_repo }}/snapshots/{{ path_repo }}/"
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    ports: "{{ graylog_ports }}"
+    tmpfs:
+      - /tmp:exec,mode=777
+    read_only: true
+    volumes: "{{ graylog_volumes }}"
+    networks:
+      - name: logging
+        links:
+          - mongo
+          - "{{ storage_or_elasticsearch }}"
+        aliases:
+          - graylog
+
+- name: Wait for container will be started
+  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_graylog_1
+  register: result
+  until: result.stdout == 'running'
+  retries: 5
+  delay: 2

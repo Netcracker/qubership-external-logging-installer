@@ -1,0 +1,33 @@
+---
+########################################################################################################################
+#                                                  Docker settings
+########################################################################################################################
+
+fluentd_install: false
+fluentd_image: "ghcr.io/netcracker/qubership-fluentd:main"
+fluentd_uid: 111
+fluentd_gid: 111
+
+fluentd_log_level: warn
+
+########################################################################################################################
+#                                                  FluentD config
+########################################################################################################################
+
+fluentd_keep_custom_config: false
+fluentd_graylog_host: graylog_graylog_1
+fluentd_graylog_port: 12201
+
+########################################################################################################################
+#                                                  TLS config
+########################################################################################################################
+
+fluentd_tls_enabled: false
+fluentd_tls_no_default_ca: false
+fluentd_tls_version: ":TLSv1_2"
+# fluentd_tls_ca_file: ca.crt
+# fluentd_tls_cert_file: tls.crt
+# fluentd_tls_key_file: tls.key
+fluentd_tls_no_verify: false
+fluentd_tls_all_ciphers: true
+fluentd_tls_rescue_ssl_errors: false

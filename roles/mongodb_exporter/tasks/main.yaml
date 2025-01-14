@@ -1,0 +1,5 @@
+---
+- include_tasks: deploy_mongodb_exporter.yaml
+  tags: [mongodbexporter]
+  when:
+    - mongodb_exporter_install|bool

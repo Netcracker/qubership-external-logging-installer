@@ -1,0 +1,12 @@
+---
+- include_tasks: pre_deploy.yml
+  tags: [graylog_auth_proxy]
+  when: graylog_auth_proxy_enabled | bool
+
+- include_tasks: manage_certificates.yml
+  tags: [graylog_auth_proxy]
+  when: graylog_auth_proxy_enabled | bool
+
+- include_tasks: deploy_graylog_auth_proxy.yaml
+  tags: [graylog_auth_proxy]
+  when: graylog_auth_proxy_enabled | bool

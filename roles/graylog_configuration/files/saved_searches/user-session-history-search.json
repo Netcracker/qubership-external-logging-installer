@@ -1,0 +1,66 @@
+{
+  "id": "5f33c6369de1b46a5aa085c3",
+  "queries": [
+    {
+      "id": "0af939f7-0ad5-47a0-ab99-7878eb144e79",
+      "timerange": {
+        "type": "relative",
+        "range": 300
+      },
+      "query": {
+        "type": "elasticsearch",
+        "query_string": "message:CEF AND message:(LOGIN LOGOUT FORCED_LOGOUT SESSION_TIMEOUT)"
+      },
+      "search_types": [
+        {
+          "timerange": null,
+          "query": null,
+          "streams": [],
+          "id": "2a7e76a0-e976-4d21-bad0-d991552f102a",
+          "name": "chart",
+          "series": [
+            {
+              "type": "count",
+              "id": "count()",
+              "field": null
+            }
+          ],
+          "sort": [],
+          "rollup": true,
+          "type": "pivot",
+          "row_groups": [
+            {
+              "type": "time",
+              "field": "timestamp",
+              "interval": {
+                "type": "auto",
+                "scaling": 1
+              }
+            }
+          ],
+          "column_groups": [],
+          "filter": null
+        },
+        {
+          "timerange": null,
+          "query": null,
+          "streams": [],
+          "id": "67343b7e-e046-487c-8772-3e2eceaa0756",
+          "name": null,
+          "limit": 150,
+          "offset": 0,
+          "sort": [
+            {
+              "field": "timestamp",
+              "order": "DESC"
+            }
+          ],
+          "decorators": [],
+          "type": "messages",
+          "filter": null
+        }
+      ]
+    }
+  ],
+  "parameters": []
+}
