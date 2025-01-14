@@ -1,0 +1,17 @@
+{
+    "title": "output-duplicator",
+    "type": "org.graylog2.outputs.GelfOutput",
+    "configuration": {
+        "connect_timeout": 1000,
+        "hostname": "{{ host }}",
+        "max_inflight_sends": 512,
+        "port": {{ port }},
+        "protocol": "UDP",
+        "queue_size": 512,
+        "reconnect_delay": 500,
+        "tcp_keep_alive": false,
+        "tcp_no_delay": false,
+        "tls_trust_cert_chain": "<empty>",
+        "tls_verification_enabled": false
+    }
+}

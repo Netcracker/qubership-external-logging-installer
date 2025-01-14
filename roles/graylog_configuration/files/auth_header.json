@@ -1,0 +1,4 @@
+{
+  "username_header": "X-Forwarded-User",
+  "enabled": true
+}

@@ -1,0 +1,1053 @@
+---
+- name: Get stream ids
+  set_fact:
+    audit_logs_stream_id: "{{ streams_list | json_query(jq_audit_logs_stream_id) | default(omit) }}"
+    system_logs_stream_id: "{{ streams_list | json_query(jq_system_logs_stream_id) | default(omit) }}"
+    int_logs_stream_id: "{{ streams_list | json_query(jq_int_logs_stream_id) | default(omit) }}"
+    access_logs_stream_id: "{{ streams_list | json_query(jq_access_logs_stream_id) | default(omit) }}"
+    nginx_logs_stream_id: "{{ streams_list | json_query(jq_nginx_logs_stream_id) | default(omit) }}"
+    k8s_events_stream_id: "{{ streams_list | json_query(jq_k8s_events_stream_id) | default(omit) }}"
+  vars:
+    jq_audit_logs_stream_id: "json.streams[?title==`Audit logs`].id | [0]"
+    jq_system_logs_stream_id: "json.streams[?title==`System logs`].id | [0]"
+    jq_int_logs_stream_id: "json.streams[?title==`Integration logs`].id | [0]"
+    jq_access_logs_stream_id: "json.streams[?title==`Access logs`].id | [0]"
+    jq_nginx_logs_stream_id: "json.streams[?title==`Nginx logs`].id | [0]"
+    jq_k8s_events_stream_id: "json.streams[?title==`Kubernetes events`].id | [0]"
+
+- name: Update the streams
+  when:
+    - update_content | bool
+  block:
+    - name: Update the 'Audit logs' stream
+      uri:
+        url: https://localhost/api/streams/{{ audit_logs_stream_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - audit_logs_install | lower | trim == 'true'
+        - audit_logs_stream_id is defined
+        - audit_logs_stream_id is not none
+        - audit_logs_stream_id | trim | length > 0
+      vars:
+        template_vars:
+          description: Audit log messages from OC nodes sent through fluent bit
+          title: Audit logs
+          index_set_id: "{{ audit_index_set_id }}"
+
+    - name: Update the 'System logs' stream
+      uri:
+        url: https://localhost/api/streams/{{ system_logs_stream_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - system_logs_install | lower | trim == 'true'
+        - system_logs_stream_id is defined
+        - system_logs_stream_id is not none
+        - system_logs_stream_id | trim | length > 0
+      vars:
+        template_vars:
+          description: System log messages from OC nodes sent through fluent bit
+          title: System logs
+          index_set_id: "{{ default_index_set_id }}"
+
+    - name: Update the 'Integration logs' stream
+      uri:
+        url: https://localhost/api/streams/{{ int_logs_stream_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - integration_logs_install | lower | trim == 'true'
+        - int_logs_stream_id is defined
+        - int_logs_stream_id is not none
+        - int_logs_stream_id | trim | length > 0
+      vars:
+        template_vars:
+          description: Integration log messages from OC nodes sent through fluent bit
+          title: Integration logs
+          index_set_id: "{{ int_index_set_id }}"
+
+    - name: Update the 'Access logs' stream
+      uri:
+        url: https://localhost/api/streams/{{ access_logs_stream_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - access_logs_install | lower | trim == 'true'
+        - access_logs_stream_id is defined
+        - access_logs_stream_id is not none
+        - access_logs_stream_id | trim | length > 0
+      vars:
+        template_vars:
+          description: Access log messages from OC nodes sent through fluent bit
+          title: Access logs
+          index_set_id: "{{ access_index_set_id }}"
+
+    - name: Update the 'Nginx logs' stream
+      uri:
+        url: https://localhost/api/streams/{{ nginx_logs_stream_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - nginx_logs_install | lower | trim == 'true'
+        - nginx_logs_stream_id is defined
+        - nginx_logs_stream_id is not none
+        - nginx_logs_stream_id | trim | length > 0
+      vars:
+        template_vars:
+          description: Nginx log messages from OC nodes sent through fluent bit
+          title: Nginx logs
+          index_set_id: "{{ nginx_index_set_id }}"
+
+    - name: Update the 'Kubernetes events' stream
+      uri:
+        url: https://localhost/api/streams/{{ k8s_events_stream_id }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - k8s_events_install | lower | trim == 'true'
+        - k8s_events_stream_id is defined
+        - k8s_events_stream_id is not none
+        - k8s_events_stream_id | trim | length > 0
+      vars:
+        template_vars:
+          description: Kubernetes events from Cloud sent through fluent bit
+          title: Kubernetes events
+          index_set_id: "{{ k8s_events_index_set_id }}"
+
+- name: Create the 'Audit logs' stream
+  when:
+    - audit_logs_install | lower | trim == 'true'
+    - (audit_logs_stream_id is undefined) or (audit_logs_stream_id is none)
+      or (audit_logs_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'Audit logs' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: audit_logs_stream_response
+      vars:
+        template_vars:
+          description: Audit log messages from OC nodes sent through fluent bit
+          title: Audit logs
+          index_set_id: "{{ audit_index_set_id }}"
+
+    - name: Set 'audit_logs_stream_id'
+      set_fact:
+        audit_logs_stream_id: "{{ audit_logs_stream_response.json.stream_id }}"
+
+- name: Create the 'System logs' stream
+  when:
+    - system_logs_install | lower | trim == 'true'
+    - (system_logs_stream_id is undefined) or (system_logs_stream_id is none)
+      or (system_logs_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'System logs' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: system_logs_stream_response
+      vars:
+        template_vars:
+          description: System log messages from OC nodes sent through fluent bit
+          title: System logs
+          index_set_id: "{{ default_index_set_id }}"
+
+    - name: Set 'system_logs_stream_id'
+      set_fact:
+        system_logs_stream_id: "{{ system_logs_stream_response.json.stream_id }}"
+
+- name: Create the 'Integration logs' stream
+  when:
+    - integration_logs_install | lower | trim == 'true'
+    - (int_logs_stream_id is undefined) or (int_logs_stream_id is none) or (int_logs_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'Integration logs' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: int_logs_stream_response
+      vars:
+        template_vars:
+          description: Integration log messages from OC nodes sent through fluent bit
+          title: Integration logs
+          index_set_id: "{{ int_index_set_id }}"
+
+    - name: Set 'int_logs_stream_id'
+      set_fact:
+        int_logs_stream_id: "{{ int_logs_stream_response.json.stream_id }}"
+
+- name: Create the 'Access logs' stream
+  when:
+    - access_logs_install | lower | trim == 'true'
+    - (access_logs_stream_id is undefined) or (access_logs_stream_id is none)
+      or (access_logs_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'Access logs' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: access_logs_stream_response
+      vars:
+        template_vars:
+          description: Access log messages from OC nodes sent through fluent bit
+          title: Access logs
+          index_set_id: "{{ access_index_set_id }}"
+
+    - name: Set 'access_logs_stream_id'
+      set_fact:
+        access_logs_stream_id: "{{ access_logs_stream_response.json.stream_id }}"
+
+- name: Create the 'Nginx logs' stream
+  when:
+    - nginx_logs_install | lower | trim == 'true'
+    - (nginx_logs_stream_id is undefined)
+      or (nginx_logs_stream_id is none)
+      or (nginx_logs_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'Nginx logs' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: nginx_logs_stream_response
+      vars:
+        template_vars:
+          description: Nginx log messages from OC nodes sent through fluent bit
+          title: Nginx logs
+          index_set_id: "{{ nginx_index_set_id }}"
+
+    - name: Set 'nginx_logs_stream_id'
+      set_fact:
+        nginx_logs_stream_id: "{{ nginx_logs_stream_response.json.stream_id }}"
+
+- name: Create the 'Kubernetes events' stream
+  when:
+    - k8s_events_install | lower | trim == 'true'
+    - (k8s_events_stream_id is undefined)
+      or (k8s_events_stream_id is none)
+      or (k8s_events_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'Kubernetes events' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: k8s_events_stream_response
+      vars:
+        template_vars:
+          description: Kubernetes events from Cloud sent through fluent bit
+          title: Kubernetes events
+          index_set_id: "{{ k8s_events_index_set_id }}"
+
+    - name: Set 'k8s_events_stream_id'
+      set_fact:
+        k8s_events_stream_id: "{{ k8s_events_stream_response.json.stream_id }}"
+
+
+- name: Resume the streams
+  block:
+    - name: Resume 'Audit logs' stream
+      when: audit_logs_install | lower | trim == 'true'
+      uri:
+        url: https://localhost/api/streams/{{ item }}/resume
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code:
+          - 204
+        headers:
+          X-Requested-By: Graylog API Browser
+        body_format: json
+      with_items:
+        - "{{ audit_logs_stream_id }}"
+
+    - name: Resume 'System logs' stream
+      when: system_logs_install | lower | trim == 'true'
+      uri:
+        url: https://localhost/api/streams/{{ item }}/resume
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code:
+          - 204
+        headers:
+          X-Requested-By: Graylog API Browser
+        body_format: json
+      with_items:
+        - "{{ system_logs_stream_id }}"
+
+    - name: Resume 'Integration logs' stream
+      when: integration_logs_install | lower | trim == 'true'
+      uri:
+        url: https://localhost/api/streams/{{ item }}/resume
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code:
+          - 204
+        headers:
+          X-Requested-By: Graylog API Browser
+        body_format: json
+      with_items:
+        - "{{ int_logs_stream_id }}"
+
+    - name: Resume 'Access logs' stream
+      when: access_logs_install | lower | trim == 'true'
+      uri:
+        url: https://localhost/api/streams/{{ item }}/resume
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code:
+          - 204
+        headers:
+          X-Requested-By: Graylog API Browser
+        body_format: json
+      with_items:
+        - "{{ access_logs_stream_id }}"
+
+    - name: Resume 'Nginx logs' stream
+      when: nginx_logs_install | lower | trim == 'true'
+      uri:
+        url: https://localhost/api/streams/{{ item }}/resume
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code:
+          - 204
+        headers:
+          X-Requested-By: Graylog API Browser
+        body_format: json
+      with_items:
+        - "{{ nginx_logs_stream_id }}"
+
+    - name: Resume 'Kubernetes events' stream
+      when: k8s_events_install | lower | trim == 'true'
+      uri:
+        url: https://localhost/api/streams/{{ item }}/resume
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code:
+          - 204
+        headers:
+          X-Requested-By: Graylog API Browser
+        body_format: json
+      with_items:
+        - "{{ k8s_events_stream_id }}"
+
+- name: Get processing rule ids
+  set_fact:
+    audit_logs_rule_id: "{{ rules_list | json_query(fetch_audit_logs_rule_id) | default(omit) }}"
+    system_logs_rule_id: "{{ rules_list | json_query(fetch_system_logs_rule_id) | default(omit) }}"
+    remove_kubernetes_rule_id: "{{ rules_list | json_query(fetch_remove_kubernetes_rule_id) | default(omit) }}"
+    remove_kubernetes_labels_rule_id: "{{ rules_list | json_query(fetch_remove_kubernetes_labels_rule_id) | default(omit) }}"
+    unsupported_symbols_rule_id: "{{ rules_list | json_query(fetch_unsupported_symbols_rule_id) | default(omit) }}"
+    int_logs_rule_id: "{{ rules_list | json_query(fetch_int_logs_rule_id) | default(omit) }}"
+    access_logs_rule_id: "{{ rules_list | json_query(fetch_access_logs_rule_id) | default(omit) }}"
+    nginx_logs_rule_id: "{{ rules_list | json_query(fetch_nginx_logs_rule_id) | default(omit) }}"
+    k8s_events_rule_id: "{{ rules_list | json_query(fetch_k8s_events_rule_id) | default(omit) }}"
+  vars:
+    fetch_audit_logs_rule_id: "json[?title==`Route Audit logs`].id | [0]"
+    fetch_system_logs_rule_id: "json[?title==`Route System logs`].id | [0]"
+    fetch_remove_kubernetes_rule_id: "json[?title==`Remove kubernetes field`].id | [0]"
+    fetch_remove_kubernetes_labels_rule_id: "json[?title==`Remove kubernetes labels field`].id | [0]"
+    fetch_unsupported_symbols_rule_id: "json[?title==`Processing unsupported symbols`].id | [0]"
+    fetch_int_logs_rule_id: "json[?title==`Route Integration logs`].id | [0]"
+    fetch_access_logs_rule_id: "json[?title==`Route Access logs`].id | [0]"
+    fetch_nginx_logs_rule_id: "json[?title==`Route Nginx logs`].id | [0]"
+    fetch_k8s_events_rule_id: "json[?title==`Route Kubernetes events`].id | [0]"
+
+- name: Update the processing rules
+  when:
+    - update_content | bool
+  block:
+    - name: Update the 'Route Audit logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - audit_logs_install | lower | trim == 'true'
+        - audit_logs_rule_id is defined
+        - audit_logs_rule_id is not none
+        - audit_logs_rule_id | trim | length > 0
+      with_items:
+        - "{{ audit_logs_rule_id }}"
+      vars:
+        route_to_stream_id: "{{ audit_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/audit_logs.rule.j2"
+        template_vars:
+          rule_description: Route Audit logs to the appropriate stream
+          rule_title: Route Audit logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Route System logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - system_logs_install | lower | trim == 'true'
+        - system_logs_rule_id is defined
+        - system_logs_rule_id is not none
+        - system_logs_rule_id | trim | length > 0
+      with_items:
+        - "{{ system_logs_rule_id }}"
+      vars:
+        route_to_stream_id: "{{ system_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/system_logs.rule.j2"
+        template_vars:
+          rule_description: Route System logs to the appropriate stream
+          rule_title: Route System logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Remove kubernetes field' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - remove_kubernetes_rule_id is defined
+        - remove_kubernetes_rule_id is not none
+        - remove_kubernetes_rule_id | trim | length > 0
+      with_items:
+        - "{{ remove_kubernetes_rule_id }}"
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/remove_kubernetes.rule.j2"
+        template_vars:
+          rule_description: "Remove kubernetes field"
+          rule_title: Remove kubernetes field
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Remove kubernetes labels field' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - remove_kubernetes_labels_rule_id is defined
+        - remove_kubernetes_labels_rule_id is not none
+        - remove_kubernetes_labels_rule_id | trim | length > 0
+      with_items:
+        - "{{ remove_kubernetes_labels_rule_id }}"
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/remove_kubernetes_labels.rule.j2"
+        template_vars:
+          rule_description: "Remove kubernetes labels field"
+          rule_title: Remove kubernetes labels field
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Processing unsupported symbols' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - unsupported_symbols_rule_id is defined
+        - unsupported_symbols_rule_id is not none
+        - unsupported_symbols_rule_id | trim | length > 0
+      with_items:
+        - "{{ unsupported_symbols_rule_id }}"
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/unsupported_symbol.rule.j2"
+        template_vars:
+          rule_description: "Processing unsupported symbols (Replace '/' to '_')"
+          rule_title: Processing unsupported symbols
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Route Integration logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - integration_logs_install | lower | trim == 'true'
+        - int_logs_rule_id is defined
+        - int_logs_rule_id is not none
+        - int_logs_rule_id | trim | length > 0
+      with_items:
+        - "{{ int_logs_rule_id }}"
+      vars:
+        route_to_stream_id: "{{ int_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/int_logs.rule.j2"
+        template_vars:
+          rule_description: Route Integration logs to the appropriate stream
+          rule_title: Route Integration logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Route Access logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - access_logs_install | lower | trim == 'true'
+        - access_logs_rule_id is defined
+        - access_logs_rule_id is not none
+        - access_logs_rule_id | trim | length > 0
+      with_items:
+        - "{{ access_logs_rule_id }}"
+      vars:
+        route_to_stream_id: "{{ access_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/access_logs.rule.j2"
+        template_vars:
+          rule_description: Route Access logs to the appropriate stream
+          rule_title: Route Access logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Nginx logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - nginx_logs_install | lower | trim == 'true'
+        - nginx_logs_rule_id is defined
+        - nginx_logs_rule_id is not none
+        - nginx_logs_rule_id | trim | length > 0
+      with_items:
+        - "{{ nginx_logs_rule_id }}"
+      vars:
+        route_to_stream_id: "{{ nginx_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/nginx_logs.rule.j2"
+        template_vars:
+          rule_description: Route Nginx logs to the appropriate stream
+          rule_title: Route Nginx logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Update the 'Route Kubernetes events' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      when:
+        - k8s_events_install | lower | trim == 'true'
+        - k8s_events_rule_id is defined
+        - k8s_events_rule_id is not none
+        - k8s_events_rule_id | trim | length > 0
+      with_items:
+        - "{{ k8s_events_rule_id }}"
+      vars:
+        route_to_stream_id: "{{ k8s_events_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/k8s_events.rule.j2"
+        template_vars:
+          rule_description: Route Kubernetes events to the appropriate stream
+          rule_title: Route Kubernetes events
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+- name: Create the 'Route Audit logs' processing rule
+  when:
+    - audit_logs_install | lower | trim == 'true'
+    - (audit_logs_rule_id is undefined) or (audit_logs_rule_id is none) or (audit_logs_rule_id | trim | length == 0)
+  block:
+    - name: Create an 'Route Audit logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: audit_logs_rule_response
+      vars:
+        route_to_stream_id: "{{ audit_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/audit_logs.rule.j2"
+        template_vars:
+          rule_description: Route Audit logs to the appropriate stream
+          rule_title: Route Audit logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'audit_logs_rule_id'
+      set_fact:
+        audit_logs_rule_id: "{{ audit_logs_rule_response.json.id }}"
+
+- name: Create the 'Route System logs' processing rule
+  when:
+    - system_logs_install | lower | trim == 'true'
+    - (system_logs_rule_id is undefined) or (system_logs_rule_id is none) or (system_logs_rule_id | trim | length == 0)
+  block:
+    - name: Create an 'Route System logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: system_logs_rule_response
+      vars:
+        route_to_stream_id: "{{ system_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/system_logs.rule.j2"
+        template_vars:
+          rule_description: Route System logs to the appropriate stream
+          rule_title: Route System logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'audit_logs_rule_id'
+      set_fact:
+        system_logs_rule_id: "{{ system_logs_rule_response.json.id }}"
+
+- name: Create the 'Remove kubernetes field' processing rule
+  when:
+    - ((remove_kubernetes_rule_id is undefined) or (remove_kubernetes_rule_id is none)
+      or (remove_kubernetes_rule_id | trim | length == 0))
+  block:
+    - name: Create an 'Remove kubernetes field' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: remove_kubernetes_rule_response
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/remove_kubernetes.rule.j2"
+        template_vars:
+          rule_description: "Remove kubernetes field"
+          rule_title: Remove kubernetes field
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'remove_kubernetes_rule_id'
+      set_fact:
+        remove_kubernetes_rule_id: "{{ remove_kubernetes_rule_response.json.id }}"
+
+- name: Create the 'Remove kubernetes labels field' processing rule
+  when:
+    - ((remove_kubernetes_labels_rule_id is undefined) or (remove_kubernetes_labels_rule_id is none)
+      or (remove_kubernetes_labels_rule_id | trim | length == 0))
+  block:
+    - name: Create an 'Remove kubernetes labels field' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: remove_kubernetes_labels_rule_response
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/remove_kubernetes_labels.rule.j2"
+        template_vars:
+          rule_description: "Remove kubernetes labels field"
+          rule_title: Remove kubernetes labels field
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'remove_kubernetes_labels_rule_id'
+      set_fact:
+        remove_kubernetes_labels_rule_id: "{{ remove_kubernetes_labels_rule_response.json.id }}"
+
+- name: Create the 'Processing unsupported symbols' processing rule
+  when:
+    - (unsupported_symbols_enabled | lower | trim != 'false')
+      and ((unsupported_symbols_rule_id is undefined) or (unsupported_symbols_rule_id is none)
+      or (unsupported_symbols_rule_id | trim | length == 0))
+  block:
+    - name: Create an 'Processing unsupported symbols' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: unsupported_symbols_rule_response
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/unsupported_symbol.rule.j2"
+        template_vars:
+          rule_description: "Processing unsupported symbols (Replace '/' to '_')"
+          rule_title: Processing unsupported symbols
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'unsupported_symbols_rule_id'
+      set_fact:
+        unsupported_symbols_rule_id: "{{ unsupported_symbols_rule_response.json.id }}"
+
+- name: Create the 'Route Integration logs' processing rule
+  when:
+    - integration_logs_install | lower | trim == 'true'
+    - (int_logs_rule_id is undefined) or (int_logs_rule_id is none) or (int_logs_rule_id | trim | length == 0)
+  block:
+    - name: Create an 'Route Integration logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: int_logs_rule_response
+      vars:
+        route_to_stream_id: "{{ int_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/int_logs.rule.j2"
+        template_vars:
+          rule_description: Route Integration logs to the appropriate stream
+          rule_title: Route Integration logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'int_logs_rule_id'
+      set_fact:
+        int_logs_rule_id: "{{ int_logs_rule_response.json.id }}"
+
+- name: Create the 'Route Access logs' processing rule
+  when:
+    - access_logs_install | lower | trim == 'true'
+    - (access_logs_rule_id is undefined) or (access_logs_rule_id is none) or (access_logs_rule_id | trim | length == 0)
+  block:
+    - name: Create an 'Route Access logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: access_logs_rule_response
+      vars:
+        route_to_stream_id: "{{ access_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/access_logs.rule.j2"
+        template_vars:
+          rule_description: Route Access logs to the appropriate stream
+          rule_title: Route Access logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'access_logs_rule_id'
+      set_fact:
+        access_logs_rule_id: "{{ access_logs_rule_response.json.id }}"
+
+- name: Create the 'Route Nginx logs' processing rule
+  when:
+    - nginx_logs_install | lower | trim == 'true'
+    - ((nginx_logs_rule_id is undefined)
+      or (nginx_logs_rule_id is none)
+      or (nginx_logs_rule_id | trim | length == 0))
+  block:
+    - name: Create an 'Route Nginx logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: nginx_logs_rule_response
+      vars:
+        route_to_stream_id: "{{ nginx_logs_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/nginx_logs.rule.j2"
+        template_vars:
+          rule_description: Route Nginx logs to the appropriate stream
+          rule_title: Route Nginx logs
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'nginx_logs_rule_id'
+      set_fact:
+        nginx_logs_rule_id: "{{ nginx_logs_rule_response.json.id }}"
+
+- name: Create the 'Route Kubernetes events' processing rule
+  when:
+    - k8s_events_install | lower | trim == 'true'
+    - ((k8s_events_rule_id is undefined)
+      or (k8s_events_rule_id is none)
+      or (k8s_events_rule_id | trim | length == 0))
+  block:
+    - name: Create an 'Route Kubernetes events' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: k8s_events_rule_response
+      vars:
+        route_to_stream_id: "{{ k8s_events_stream_id }}"
+        processing_rule_source: "{{ role_path }}/files/processing_rules/k8s_events.rule.j2"
+        template_vars:
+          rule_description: Route Kubernetes events to the appropriate stream
+          rule_title: Route Kubernetes events
+          rule_source: "{{ lookup('template', processing_rule_source) }}"
+
+    - name: Set 'k8s_events_rule_id'
+      set_fact:
+        k8s_events_rule_id: "{{ k8s_events_rule_response.json.id }}"
+
+- name: Set 'default_stream_id' as Default Stream ID
+  set_fact:
+    default_stream_id: "{{ streams_list | json_query(fetch_default_stream_id) }}"
+  vars:
+    fetch_default_stream_id: "json.streams[?title==`Default Stream`].id | [0]"
+
+- name: Set 'default_stream_id' as All messages stream ID
+  set_fact:
+    default_stream_id: "{{ streams_list | json_query(fetch_all_messages_stream_id) }}"
+  vars:
+    fetch_all_messages_stream_id: "json.streams[?title==`All messages`].id | [0]"
+  when:
+    - (default_stream_id is undefined) or (default_stream_id is none) or (default_stream_id | trim | length == 0)

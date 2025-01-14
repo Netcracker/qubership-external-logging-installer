@@ -1,0 +1,6 @@
+rule \"Route Other site logs\"
+when
+  from_input(id: \"{{ input_id }}\")
+then
+  route_to_stream(id: \"{{ route_to_stream_id }}\", remove_from_default: true);
+end

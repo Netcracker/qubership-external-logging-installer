@@ -1,0 +1,10 @@
+---
+- include_tasks: deploy_cadvisor_systemd_service.yaml
+  tags: [cadvisor]
+  when: cadvisor_install|bool
+
+- include_tasks: uninstall_cadvisor_systemd_service.yaml
+  tags: [cadvisor]
+  when:
+    - not cadvisor_install|bool
+    - cadvisor_uninstall|bool

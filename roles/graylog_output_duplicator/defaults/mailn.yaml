@@ -1,0 +1,10 @@
+## This parameters specify port which is used for replication set up.
+# default: 12202
+#
+duplicator_default_port: 12202
+
+## Allow to turn on the duplication of logs from the left host to the right and from the right to the left.
+# For correct operation, the parameter `other_side_graylog_host` must be specified.
+# default: false
+#
+duplicator_enabled: "{{ other_side_graylog_host | default('') | trim | length > 0 | ternary(true, false) }}"

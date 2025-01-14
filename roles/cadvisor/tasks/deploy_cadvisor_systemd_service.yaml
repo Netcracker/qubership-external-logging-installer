@@ -1,0 +1,138 @@
+---
+- name: Set artifact path
+  block:
+    - name: Set tarball url with registry
+      set_fact:
+        cadvisor_binary_url: "{{ raw_artifacts_registry }}/{{ cadvisor_binary }}"
+      when:
+        - raw_artifacts_registry is defined
+        - raw_artifacts_registry is not none
+
+    - name: Set tarball url
+      set_fact:
+        cadvisor_binary_url: "{{ cadvisor_binary }}"
+      when:
+        - raw_artifacts_registry is not defined
+
+    - name: Set tarball custom url
+      set_fact:
+        cadvisor_binary_url: "{{ cadvisor_custom_binary }}"
+      when:
+        - cadvisor_custom_binary is defined
+        - cadvisor_custom_binary is not none
+
+- name: Download cAdvisor with credentials
+  when:
+    - raw_artifacts_registry_username is defined
+    - raw_artifacts_registry_password is defined
+  block:
+    - name: Download cAdvisor tarball
+      get_url:
+        url: "{{ cadvisor_binary_url }}"
+        dest: "/tmp/cadvisor"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+        validate_certs: no
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+      when: not raw_artifacts_registry_validate_certs | bool
+
+    - name: Download cAdvisor tarball with local CA cert
+      get_url:
+        url: "{{ cadvisor_binary_url }}"
+        dest: "/tmp/cadvisor"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+
+    - name: Download cAdvisor tarball without local CA cert
+      get_url:
+        url: "{{ cadvisor_binary_url }}"
+        dest: "/tmp/cadvisor"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+      when: 
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+
+- name: Download cAdvisor without credentials
+  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+  block:
+    - name: Download cAdvisor tarball
+      get_url:
+        url: "{{ cadvisor_binary_url }}"
+        dest: "/tmp/cadvisor"
+        validate_certs: no
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+      when: not raw_artifacts_registry_validate_certs | bool
+
+    - name: Download cAdvisor tarball with local CA cert
+      get_url:
+        url: "{{ cadvisor_binary_url }}"
+        dest: "/tmp/cadvisor"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+
+    - name: Download cAdvisor tarball without local CA cert
+      get_url:
+        url: "{{ cadvisor_binary_url }}"
+        dest: "/tmp/cadvisor"
+      register: _download_tarball
+      until: _download_tarball is succeeded
+      retries: 5
+      delay: 2
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+
+- name: Propagate cAdvisor binary
+  copy:
+    src: /tmp/cadvisor
+    dest: "{{ cadvisor_host_bin_dir }}/cadvisor"
+    remote_src: yes
+    mode: 0750
+    owner: "{{ exporters_system_user }}"
+    group: "{{ exporters_system_group }}"
+    force: yes
+  notify: Restart cAdvisor service
+
+- name: Copy cAdvisor systemd service file
+  template:
+    src: cadvisor.service.jinja
+    dest: /etc/systemd/system/cadvisor.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart cAdvisor service
+  when: not cadvisor_keep_custom_config|bool
+
+- name: Start and enable cAdvisor service
+  systemd:
+    name: cadvisor
+    enabled: yes
+    state: started
+    daemon_reload: yes

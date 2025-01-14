@@ -1,0 +1,74 @@
+---
+- name: Collect elasticsearch configs
+  set_fact:
+    elasticsearch_configs: "{{ elasticsearch_configs | default([]) + content.requests }}"
+  vars:
+    content: "{{ lookup('file','{{ item }}') | from_json }}"
+  with_fileglob:
+    - "{{ role_path }}/files/elasticsearch_configs/*.json"
+
+- name: Copy necessary files
+  when: elasticsearch_configs is defined
+  block:
+    - name: Copy configuration into target machine
+      copy:
+        content: "{{ body }}"
+        dest: "{{ file }}"
+      vars:
+        body: "{{ item.1.body | default('{}') | to_json | string }}"
+        file: "{{ graylog_volume }}/elasticsearch/config/request_body-{{ item.0 }}.json"
+      with_indexed_items: "{{ elasticsearch_configs }}"
+      loop_control:
+        label: "{{ { 'method': item.1.method, 'url': item.1.url, 'file': file } }}"
+
+      # The "sefcontext" ansible task does not work here, please check it again after ansible upgrade
+    - name: Modify SELinux context
+      command: "chcon -t container_file_t {{ file }}"
+      vars:
+        file: "{{ graylog_volume }}/elasticsearch/config/request_body-{{ item.0 }}.json"
+      with_indexed_items: "{{ elasticsearch_configs }}"
+      loop_control:
+        label: "{{ { 'method': item.1.method, 'url': item.1.url, 'file': file } }}"
+      ignore_errors: true
+      when:
+        - ansible_facts['distribution'] != "Ubuntu"
+
+    - name: Send configuration into elasticsearch
+      command: |
+        docker exec --tty graylog_elasticsearch_1 \
+        curl \
+          --request {{ item.1.method }} \
+          --max-time {{ response_timeout }} \
+          --header 'Content-Type: application/json' \
+          --data '@/usr/share/elasticsearch/config/request_body-{{ item.0 }}.json' \
+           http://localhost:9200/{{ item.1.url }}
+      with_indexed_items: "{{ elasticsearch_configs }}"
+      register: out
+      loop_control:
+        label: "{{ { 'method': item.1.method, 'url': item.1.url, 'response': out.stdout_lines } }}"
+
+    - name: Remove confiuguration files from target machine
+      file:
+        state: absent
+        path: "{{ file }}"
+      vars:
+        file: "{{ graylog_volume }}/elasticsearch/config/request_body-{{ item.0 }}.json"
+      with_indexed_items: "{{ elasticsearch_configs }}"
+      loop_control:
+        label: "{{ { 'method': item.1.method, 'url': item.1.url, 'file': file} }}"
+
+- name: Install path to archive directory
+  uri:
+    url: http://localhost:9200/_snapshot/{{ path_repo }}
+    validate_certs: false
+    user: admin
+    password: admin
+    force_basic_auth: true
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    body: "{{ lookup('template', '{{ role_path }}/files/elasticsearch_archiving/data.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  vars:
+    template_vars:
+      path_repo: "{{ path_repo }}"

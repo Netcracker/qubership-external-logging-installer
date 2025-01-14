@@ -1,0 +1,111 @@
+{
+  "id": "5f33c6669de1b46a5aa085c4",
+  "type": "SEARCH",
+  "title": "User session history",
+  "summary": "",
+  "description": "",
+  "search_id": "5f33c6369de1b46a5aa085c3",
+  "properties": [],
+  "requires": {},
+  "state": {
+    "0af939f7-0ad5-47a0-ab99-7878eb144e79": {
+      "selected_fields": null,
+      "static_message_list_id": null,
+      "titles": {
+        "widget": {
+          "4824af09-80c6-4f1d-ab58-331d4e9bee98": "Message Count",
+          "58ae7420-6bc0-4d52-a3f6-c17f49a6c1b5": "All Messages"
+        }
+      },
+      "widgets": [
+        {
+          "id": "58ae7420-6bc0-4d52-a3f6-c17f49a6c1b5",
+          "type": "messages",
+          "filter": null,
+          "timerange": null,
+          "query": null,
+          "streams": [],
+          "config": {
+            "fields": [
+              "timestamp",
+              "source",
+              "message"
+            ],
+            "show_message_row": true,
+            "decorators": [],
+            "sort": [
+              {
+                "type": "pivot",
+                "field": "timestamp",
+                "direction": "Descending"
+              }
+            ]
+          }
+        },
+        {
+          "id": "4824af09-80c6-4f1d-ab58-331d4e9bee98",
+          "type": "aggregation",
+          "filter": null,
+          "timerange": null,
+          "query": null,
+          "streams": [],
+          "config": {
+            "row_pivots": [
+              {
+                "field": "timestamp",
+                "type": "time",
+                "config": {
+                  "interval": {
+                    "type": "auto",
+                    "scaling": null
+                  }
+                }
+              }
+            ],
+            "column_pivots": [],
+            "series": [
+              {
+                "config": {
+                  "name": null
+                },
+                "function": "count()"
+              }
+            ],
+            "sort": [],
+            "visualization": "bar",
+            "visualization_config": null,
+            "formatting_settings": null,
+            "rollup": true,
+            "event_annotation": false
+          }
+        }
+      ],
+      "widget_mapping": {
+        "4824af09-80c6-4f1d-ab58-331d4e9bee98": [
+          "2a7e76a0-e976-4d21-bad0-d991552f102a"
+        ],
+        "58ae7420-6bc0-4d52-a3f6-c17f49a6c1b5": [
+          "67343b7e-e046-487c-8772-3e2eceaa0756"
+        ]
+      },
+      "positions": {
+        "4824af09-80c6-4f1d-ab58-331d4e9bee98": {
+          "col": 1,
+          "row": 1,
+          "height": 2,
+          "width": "Infinity"
+        },
+        "58ae7420-6bc0-4d52-a3f6-c17f49a6c1b5": {
+          "col": 1,
+          "row": 3,
+          "height": 6,
+          "width": "Infinity"
+        }
+      },
+      "formatting": null,
+      "display_mode_settings": {
+        "positions": {}
+      }
+    }
+  }
+}

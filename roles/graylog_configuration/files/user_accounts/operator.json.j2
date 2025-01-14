@@ -1,0 +1,33 @@
+{
+  "username": "operator",
+  "password": "{{ password }}",
+  "email": "o@o.o",
+  "first_name":"operator",
+  "last_name":"operator",
+  "permissions": [
+    "users:edit:operator",
+    "users:passwordchange:operator",
+    "clusterconfigentry:read",
+    "indexercluster:read",
+    "messagecount:read",
+    "journal:read",
+    "messages:analyze",
+    "inputs:read",
+    "metrics:read",
+    "savedsearches:edit",
+    "fieldnames:read",
+    "buffers:read",
+    "system:read",
+    "savedsearches:create",
+    "jvmstats:read",
+    "decorators:read",
+    "throughput:read",
+    "savedsearches:read",
+    "messages:read"
+  ],
+  "roles": [
+    "Operator",
+    "Reader"
+  ],
+  "session_timeout_ms": 3600000
+}

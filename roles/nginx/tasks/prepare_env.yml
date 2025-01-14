@@ -1,0 +1,45 @@
+---
+- name: Ensure necessary directories exist and is available
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    recurse: true
+  with_items:
+    - { path: "{{ graylog_volume }}/nginx/ssl/", mode: "0600", owner: "{{ nginx_uid }}", group: "{{ nginx_gid }}" }
+    - { path: "{{ graylog_volume }}/nginx/conf.d/", mode: "0600", owner: "{{ nginx_uid }}", group: "{{ nginx_gid }}" }
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Prepare Nginx config
+  template:
+    src: "{{ role_path }}/files/configs/nginx/conf.d/graylog.conf.j2"
+    dest: "{{ graylog_volume }}/nginx/conf.d/graylog.conf"
+
+- name: Generate OpenSSL private key and certificate for NGINX
+  when:
+    - (ssl_certificate is undefined)
+      or (ssl_certificate_key is undefined)
+      or (ssl_certificate | trim | length == 0)
+      or (ssl_certificate_key | trim | length == 0)
+  block:
+    # Generate an OpenSSL private key with the default values (4096 bits, RSA)
+    - name: Generate an OpenSSL private key for NGINX
+      openssl_privatekey:
+        path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.pem"
+
+    # Generate an OpenSSL Certificate Signing Request
+    - name: Generate an OpenSSL Certificate for NGINX
+      openssl_csr:
+        path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.csr"
+        privatekey_path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.pem"
+        common_name: "{{ ansible_host }}"
+
+    - name: Generate a Self Signed OpenSSL certificate for NGINX
+      openssl_certificate:
+        path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.crt"
+        privatekey_path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.pem"
+        csr_path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.csr"
+        provider: selfsigned

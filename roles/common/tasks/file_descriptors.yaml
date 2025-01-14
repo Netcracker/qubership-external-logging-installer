@@ -1,0 +1,26 @@
+---
+- name: Set file-max limit
+  sysctl:
+    name: fs.file-max
+    value: "1618107"
+    state: present
+    reload: yes
+
+- name: Set vm.max_map_count
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: yes
+
+- name: Setting-up nofles and nproc limit for users
+  pam_limits:
+    domain: "{{ item.domain }}"
+    limit_type: "{{ item.limit_type }}"
+    limit_item: "{{ item.limit_item }}"
+    value: "{{ item.value }}"
+  loop:
+    # Add nofile and nproc, both soft and hard, limit for the user db_user with a comment.
+    # Type "-" for enforcing both soft and hard resource limits together for more details read `man limits.conf`.
+    - { domain: "*", limit_type: "-", limit_item: "nofile", value: 260000 }
+    - { domain: "*", limit_type: "-", limit_item: "nproc", value: 32766 }

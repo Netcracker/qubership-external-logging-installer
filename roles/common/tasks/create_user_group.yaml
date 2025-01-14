@@ -1,0 +1,18 @@
+---
+- name: Create all-exporter group
+  group:
+    name: "{{ exporters_system_group }}"
+    state: present
+    system: yes
+  when: (exporters_system_user != "root") or (exporters_system_group != "root")
+
+- name: Create all-exporter user
+  user:
+    name: "{{ exporters_system_user }}"
+    groups:
+      - "{{ exporters_system_group }}"
+    append: yes
+    shell: /usr/sbin/nologin
+    state: present
+    system: yes
+  when: (exporters_system_user != "root") or (exporters_system_group != "root")

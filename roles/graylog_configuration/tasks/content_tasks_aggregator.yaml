@@ -1,0 +1,69 @@
+---
+- name: Check for port 443 to become open on the localhost, don't start checking for 4 seconds
+  wait_for:
+    host: localhost
+    port: 443
+    delay: 4
+    connect_timeout: 1
+
+- name: Wait for Graylog server to startup
+  uri:
+    url: https://localhost
+    validate_certs: false
+    return_content: true
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+  register: webpage
+  until: webpage.status == 200
+  delay: 1
+  retries: 99
+
+- name: Waiting while the Graylog is fully started
+  wait_for:
+    timeout: 60
+
+- name: Initialize generic lists
+  include_tasks: "{{ role_path }}/module_utils/initialize_generic_lists.yaml"
+  when:
+    - (deploy_content | bool) or (duplicator_enabled | bool)
+
+- name: HTTP header authentication management tasks
+  include_tasks: "content_manage_tasks/manage_auth_header.yaml"
+  when:
+    - (deploy_content | bool) or (graylog_auth_proxy_enabled | bool)
+
+- name: Content deployment tasks
+  when:
+    - deploy_content | bool
+  # We can't do more tasks in this block due to Ansible issue https://github.com/ansible/ansible/issues/23609
+  block:
+    - name: Grok patterns management tasks
+      include_tasks: content_manage_tasks/manage_grok_patterns.yaml
+
+    - name: Index set management tasks
+      include_tasks: content_manage_tasks/manage_index_sets.yaml
+
+    - name: Inputs management tasks
+      include_tasks: content_manage_tasks/manage_inputs.yaml
+
+    - name: Extractors management tasks
+      include_tasks: content_manage_tasks/manage_extractors.yaml
+
+    - name: Streams management tasks
+      include_tasks: content_manage_tasks/manage_streams.yaml
+
+    - name: Pipelines management tasks
+      include_tasks: content_manage_tasks/manage_pipelines.yaml
+
+    - name: Content packs management tasks
+      include_tasks: content_manage_tasks/manage_content_packs.yaml
+
+    - name: Saved searches management tasks
+      include_tasks: content_manage_tasks/manage_saved_searches.yaml
+
+    - name: User accounts management tasks
+      include_tasks: content_manage_tasks/manage_user_accounts.yaml
+
+- name: OpenSearch config management tasks
+  include_tasks: "content_manage_tasks/manage_opensearch_configs.yaml"

@@ -1,0 +1,224 @@
+---
+- name: Configuring Docker
+  become: true
+  any_errors_fatal: true
+  when:
+    - configure_docker is undefined or configure_docker | lower | trim != 'false'
+  block:
+    - name: Archive docker daemon.json repo files for backup
+      shell: cd /etc/docker && tar -czvf /etc/docker/daemon_json_`date +"%Y-%m-%d-%H-%M-%S"`.tgz daemon.json
+      ignore_errors: true
+
+    - name: Delete docker daemon.json repo file after backup
+      file:
+        path: "/etc/docker/daemon.json"
+        state: absent
+        force: true
+      ignore_errors: true
+
+    - name: Set flag centos7
+      set_fact:
+        centos7: true
+      when:
+        - ansible_facts['distribution'] == "CentOS"
+        - ansible_facts['distribution_major_version'] == "7"
+
+    - name: Check docker storage options
+      shell: cat /etc/sysconfig/docker-storage && cat /etc/sysconfig/docker-storage-setup
+      register: docker_storage_options
+      when:
+        - centos7 is defined
+
+    - name: Check the need to add overlay2 driver by OS
+      set_fact:
+        need_overlay2: true
+      when:
+        - centos7 is defined
+        - docker_storage_options.stdout.find('overlay2') == -1
+
+    - name: Add docker config in /etc/docker
+      when: 
+        - ansible_facts['distribution'] != "Amazon"
+      block:
+        - name: Create docker config directory
+          file:
+            path: /etc/docker
+            state: directory
+            mode: 0600
+            owner: root
+            group: root
+
+        - name: Add insecure docker repository, overlay2 driver and bridge0 in dockerd config
+          template:
+            src: "{{ role_path }}/templates/daemon.json.j2"
+            dest: "/etc/docker/daemon.json"
+            force: true
+            backup: true
+
+    - name: Amazon Linux add options in /etc/sysconfig/docker config for docker
+      block:
+        - name: Write docker options and docker registry in config
+          lineinfile:
+            dest: /etc/sysconfig/docker
+            regexp: '^OPTIONS=.*$'
+            line: "OPTIONS='\
+              --log-level=info \
+              --log-driver=json-file \
+              --log-opt max-size=50m \
+              --log-opt max-file=6 \
+              --storage-driver=overlay2 \
+              {% if docker_registry is defined %} --insecure-registry={{ docker_registry }} {% endif %} \
+              {% if change_docker_network_allowed is defined and change_docker_network_allowed %} --bridge=bridge0 {% endif %}'"
+      when:
+        - ansible_facts['distribution'] == "Amazon"
+
+    - name: Set pids-limit docker option
+      when:
+        - centos7 is defined
+        - docker_pids_limit is defined
+        - docker_pids_limit | int(-1) >= 0
+      block:
+        - name: Deleting old pids-limit options
+          replace:
+            path: /etc/sysconfig/docker
+            regexp: '--default-pids-limit=[0-9]*\s{0,}'
+          ignore_errors: true
+        - name: Adding new pids-limit options
+          replace:
+            path: /etc/sysconfig/docker
+            regexp: "^OPTIONS='"
+            replace: "OPTIONS='--default-pids-limit={{ docker_pids_limit }} "
+          ignore_errors: true
+
+    - name: Configure docker for Centos 7
+      when:
+        - centos7 is defined
+      block:
+        - name: Set ulimit nproc docker option
+          when:
+            - docker_threads_hard_limit is defined
+            - docker_threads_hard_limit | int(-1) >= 0
+            - docker_threads_soft_limit is defined
+            - docker_threads_soft_limit | int(-1) >= 0
+          block:
+            - name: Deleting old ulimit nproc options
+              replace:
+                path: /etc/sysconfig/docker
+                regexp: '--default-ulimit nproc=[0-9]*:[0-9]*\s{0,}'
+
+            - name: Adding new ulimit nproc options
+              replace:
+                path: /etc/sysconfig/docker
+                regexp: "^OPTIONS='"
+                replace: "OPTIONS='--default-ulimit nproc={{ default_ulimit_nproc }} "
+              vars:
+                default_ulimit_nproc: "{{ docker_threads_soft_limit }}:{{ docker_threads_hard_limit }}"
+
+        - name: Check default bridge
+          stat:
+            path: /etc/sysconfig/network-scripts/ifcfg-bridge0
+          register: bridge_file
+
+        - name: Configure default bridge
+          when:
+            - change_docker_network_allowed is defined
+            - change_docker_network_allowed | lower | trim == 'true'
+            - not(bridge_file.stat.exists | bool)
+          block:
+            - name: Add script for configure bridge0 and remove docker0
+              template:
+                src: "{{ role_path }}/templates/configs/ifcfg-bridge0"
+                dest: /etc/sysconfig/network-scripts/ifcfg-bridge0
+                mode: 644
+
+            - name: Restart network service
+              service:
+                name: network
+                state: restarted
+                enabled: true
+
+            - name: Remove docker0
+              shell: |
+                ip link set dev br0 up
+                ip link set dev docker0 down;
+                ip link del name dev br0;
+                iptables -t nat -F POSTROUTING;
+
+            - name: Update audit.rules
+              blockinfile:
+                dest: /etc/audit/rules.d/audit.rules
+                block: |
+                  # Rules to audit all Docker daemon activities
+                  -w /etc/docker/daemon.json -k docker
+                  -w /usr/bin/docker-containerd -k docker
+                  -w /usr/bin/docker -k docker
+                  -w /var/lib/docker -k docker
+                  -w /etc/docker -k docker
+                  -w /usr/lib/systemd/system/docker.service -k docker
+                  -w /usr/lib/systemd/system/docker.sock -k docker
+                  ##########
+                state: present
+                create: true
+
+            - name: Restart auditd
+              command: /sbin/service auditd restart
+              args:
+                warn: false    # set warn=false to prevent warnings
+
+    - name: Update owner and group of certs.d
+      file:
+        path: /etc/docker/certs.d
+        state: directory
+        owner: root
+        group: root
+        mode: 0444
+        recurse: true
+
+    - name: Restart docker service
+      service:
+        name: docker
+        state: restarted
+        enabled: true
+
+- name: Create a logging network
+  docker_network:
+    name: logging
+    state: present
+
+- name: Log into registry and force re-authorization (without validation certs)
+  when: 
+    - docker_registry_username is defined
+    - docker_registry_password is defined
+    - not docker_registry_validate_certs|bool
+  docker_login:
+    registry_url: "{{ docker_registry }}"
+    username: "{{ docker_registry_username }}"
+    password: "{{ docker_registry_password }}"
+    reauthorize: true
+
+- name: Log into registry and force re-authorization with local CA
+  when: 
+    - docker_registry_username is defined
+    - docker_registry_password is defined
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is defined
+  docker_login:
+    registry_url: "{{ docker_registry }}"
+    username: "{{ docker_registry_username }}"
+    password: "{{ docker_registry_password }}"
+    ca_cert: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
+    validate_certs: true
+    reauthorize: true
+
+- name: Log into registry and force re-authorization without local CA
+  when: 
+    - docker_registry_username is defined
+    - docker_registry_password is defined
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is not defined
+  docker_login:
+    registry_url: "{{ docker_registry }}"
+    username: "{{ docker_registry_username }}"
+    password: "{{ docker_registry_password }}"
+    validate_certs: true
+    reauthorize: true

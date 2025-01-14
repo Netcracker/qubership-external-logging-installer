@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration packages="org.graylog2.log4j" shutdownHook="disable">
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{ISO8601}][%p]%m%n"/>
+        </Console>
+        <Console name="STDOUT_ACCESS" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{ISO8601}][%p]%m%n"/>
+            <!-- Try to catch only login, logout and change password events -->
+            <RegexFilter
+                    regex="^.*?&quot;((POST|DELETE) api/system/sessions(/.*?)?|PUT api/users/.*?/password|GET api/users/.*?)&quot;.*$"
+                    onMatch="ACCEPT" 
+                    onMismatch="DENY"/>
+        </Console>
+        <!-- Internal Graylog log appender. Please do not disable. This makes internal log messages available via REST calls. -->
+        <Memory name="graylog-internal-logs" bufferSizeBytes="10MB"/>
+    </Appenders>
+    <Loggers>
+        <!-- Application Loggers -->
+        <Logger name="org.graylog2" level="{{ graylog_log_level | lower }}"/>
+        <Logger name="com.github.joschi.jadconfig" level="warn"/>
+        <!-- this emits a harmless warning for ActiveDirectory every time which we can't work around :( -->
+        <Logger name="org.apache.directory.api.ldap.model.message.BindRequestImpl" level="error"/>
+        <!-- Prevent DEBUG message about Lucene Expressions not found. -->
+        <Logger name="org.elasticsearch.script" level="warn"/>
+        <!-- Disable messages from the version check -->
+        <Logger name="org.graylog2.periodical.VersionCheckThread" level="off"/>
+        <!-- Suppress crazy byte array dump of Drools -->
+        <Logger name="org.drools.compiler.kie.builder.impl.KieRepositoryImpl" level="warn"/>
+        <!-- Silence chatty natty -->
+        <Logger name="com.joestelmach.natty.Parser" level="warn"/>
+        <!-- Silence Kafka log chatter -->
+        <Logger name="kafka.log.Log" level="warn"/>
+        <Logger name="kafka.log.OffsetIndex" level="warn"/>
+        <!-- Silence useless session validation messages -->
+        <Logger name="org.apache.shiro.session.mgt.AbstractValidatingSessionManager" level="warn"/>
+        <Logger name="org.graylog2.rest.accesslog" level="{{ graylog_accesslog_log_level | lower }}" additivity="false">
+            <AppenderRef ref="STDOUT_ACCESS"/>
+        </Logger>
+        <Root level="warn">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="graylog-internal-logs"/>
+        </Root>
+    </Loggers>
+</Configuration>

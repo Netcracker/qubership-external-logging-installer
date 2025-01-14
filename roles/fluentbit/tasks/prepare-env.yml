@@ -1,0 +1,100 @@
+---
+- name: Ensure necessary directories exist and is available
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    recurse: true
+  with_items:
+    - {path: "{{ graylog_volume }}/fluent-bit/", mode: "0777", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
+    - {path: "{{ graylog_volume }}/fluent-bit/conf/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
+    - {path: "{{ graylog_volume }}/fluent-bit/certs/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
+    - {path: "{{ graylog_volume }}/fluent-bit/db/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Define FluentBit volumes
+  set_fact:
+    fluentbit_volumes:
+      - "{{ graylog_volume }}/fluent-bit/db:/fluent-bit/etc/db:z"
+      - "{{ graylog_volume }}/fluent-bit/conf/:/fluent-bit/etc/conf/:ro,z"
+      - "{{ graylog_volume }}/fluent-bit/certs/:/fluent-bit/etc/certs/:ro,z"
+      - "{{ graylog_volume }}/fluent-bit/conf/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro,z"
+      - "{{ graylog_volume }}/fluent-bit/conf/parsers.conf:/fluent-bit/etc/parsers.conf:ro,z"
+      - "/var/run/docker.sock:/var/run/docker.sock:rw,z"
+      - "/var/log:/var/log:ro"
+      - "/etc/hostname:/etc/docker-hostname:ro"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro,z"
+      - "/etc/docker/daemon.json:/etc/docker/daemon.json:ro"
+
+- name: Copy the necessary files
+  vars:
+    dest_config_path: "{{ graylog_volume }}/fluent-bit/conf"
+  block:
+    - name: Clean FluentBit configuration folder
+      file:
+        path: "{{ dest_config_path }}"
+        state: absent
+
+    - name: Create FluentBit config dir
+      file:
+        path: "{{ dest_config_path }}"
+        state: directory
+        mode: "0775"
+        owner: "{{ fluentbit_uid }}"
+        group: "{{ fluentbit_gid }}"
+
+    - name: Copy template Graylog output config file
+      template:
+        src: "output-graylog.conf.j2"
+        dest: "{{ dest_config_path }}/output-graylog.conf"
+
+    - name: Copy FluentBit config files to configuration directory
+      copy:
+        src: "{{ item }}"
+        dest: "{{ dest_config_path }}"
+      with_fileglob:
+        - "{{ work_dir }}/inputs/*.conf"
+        - "{{ work_dir }}/filters/*.conf"
+        - "{{ work_dir }}/outputs/*.conf"
+        - "{{ work_dir }}/*.conf"
+        - "{{ work_dir }}/*.lua"
+      vars:
+        work_dir: "{{ role_path }}/files/conf"
+      loop_control:
+        label: "{{ item | basename }}"
+
+    - name: Write config to custom-input.conf
+      copy:
+        content: "{{ fluentbit_custom_input_conf | replace('\\n', '\n') }}"
+        dest: "{{ dest_config_path }}/custom-input.conf"
+      when:
+        - fluentbit_custom_input_conf is defined
+        - fluentbit_custom_input_conf is not none
+        - fluentbit_custom_input_conf | trim | length > 0
+
+    - name: Write config to custom-filter.conf
+      copy:
+        content: "{{ fluentbit_custom_filter_conf | replace('\\n', '\n') }}"
+        dest: "{{ dest_config_path }}/custom-filter.conf"
+      when:
+        - fluentbit_custom_filter_conf is defined
+        - fluentbit_custom_filter_conf is not none
+        - fluentbit_custom_filter_conf | trim | length > 0
+
+    - name: Write config to custom-output.conf
+      copy:
+        content: "{{ fluentbit_custom_output_conf | replace('\\n', '\n') }}"
+        dest: "{{ dest_config_path }}/custom-output.conf"
+      when:
+        - fluentbit_custom_output_conf is defined
+        - fluentbit_custom_output_conf is not none
+        - fluentbit_custom_output_conf | trim | length > 0
+
+    - name: Copy new fluentbit.conf from role's default
+      template:
+        src: "fluentbit.conf.j2"
+        dest: "{{ dest_config_path }}/fluent-bit.conf"
+  when: not fluentbit_keep_custom_config|bool

@@ -1,0 +1,91 @@
+---
+########################################################################################################################
+#                                           Logging-Graylog common variables
+########################################################################################################################
+
+####################################################### Common #########################################################
+
+validate_certs: false
+ssl_cert_file:
+
+## Allow to turn on a new stage message processing, which replace "/" symbols to "_" inside "labels" field
+# default: true
+#
+unsupported_symbols_enabled: true
+
+## Parameters to turn on streams of logs, its` rotation strategy and rotation periods. Rotation periods are presented as ISO 8601 Duration.
+# If `*_rotation_strategy` is `sizeBased`, `*_rotation_period` will be ignored.
+#
+system_logs_install: true
+
+audit_logs_install: true
+audit_logs_rotation_strategy: "sizeBased"
+audit_logs_rotation_period: "P1M"
+audit_logs_max_size: 1073741824
+audit_logs_max_number_of_indices: 5
+
+integration_logs_install: false
+integration_logs_rotation_strategy: "timeBased"
+integration_logs_rotation_period: "P1M"
+integration_logs_max_size: 1073741824
+integration_logs_max_number_of_indices: 10
+
+access_logs_install: false
+access_logs_rotation_strategy: "timeBased"
+access_logs_rotation_period: "P1M"
+access_logs_max_size: 1073741824
+access_logs_max_number_of_indices: 10
+
+nginx_logs_install: false
+nginx_logs_rotation_strategy: "timeBased"
+nginx_logs_rotation_period: "P1M"
+nginx_logs_max_size: 1073741824
+nginx_logs_max_number_of_indices: 10
+
+k8s_events_install: true
+k8s_events_rotation_strategy: "timeBased"
+k8s_events_rotation_period: "P1M"
+k8s_events_max_size: 1073741824
+k8s_events_max_number_of_indices: 5
+
+graylog_dashboard_id: "0fac53ed-df74-4ba6-88c2-aa16b4b8542d"
+
+## The maximum amount of time in seconds to wait for a response from the Graylog API.
+# default: 60
+#
+response_timeout: "{{ ((lookup('env', 'graylog_api_timeout') | int) > 0) | ternary(lookup('env', 'graylog_api_timeout'), '60') }}"
+
+## Allow deployment of Graylog content configurations during a logging installation.
+# default: true
+#
+deploy_content: "{{ (content_deploy_policy | default('only-create') == 'skip') | ternary(false, true) }}"
+
+## Allow forced updating of all Graylog content configurations during logging installation.
+# default: false
+#
+update_content: "{{ (content_deploy_policy | default('only-create') == 'force-update') | ternary(true, false) }}"
+
+## Users initial passwords of users.
+#
+auditviewer_password: auditViewer
+operator_password: operator
+telegraf_operator_password: telegraf_operator
+
+## The number of Elasticsearch replicas used per index.
+# default: 0
+#
+index_replicas: 0
+
+## The number of Elasticsearch shards used per index.
+# default: 1
+#
+index_shards: 1
+
+########################################################################################################################
+#                                               Services settings
+########################################################################################################################
+
+## Graylog count of processors for outputbuffer and processbuffer
+# default: processbuffer_processors=5 and outputbuffer_processors=5
+#
+graylog_api_timeout: 60

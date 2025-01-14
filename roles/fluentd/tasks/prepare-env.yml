@@ -1,0 +1,104 @@
+---
+- name: Ensure necessary directories exist and is available
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    recurse: true
+  with_items:
+    - {path: "{{ graylog_volume }}/fluentd/", mode: "0777", owner: "{{ fluentd_uid }}", group: "{{ fluentd_gid }}"}
+    - {path: "{{ graylog_volume }}/fluentd/conf.d/", mode: "0775", owner: "{{ fluentd_uid }}", group: "{{ fluentd_gid }}"}
+    - {path: "{{ graylog_volume }}/fluentd/certs/", mode: "0775", owner: "{{ fluentd_uid }}", group: "{{ fluentd_gid }}"}
+    - {path: "{{ graylog_volume }}/fluentd/pos/", mode: "0775", owner: "{{ fluentd_uid }}", group: "{{ fluentd_gid }}"}
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Define FluentD volumes
+  set_fact:
+    fluentd_volumes:
+      - "{{ graylog_volume }}/fluentd/pos:/fluentd/etc/pos:z"
+      - "{{ graylog_volume }}/fluentd/conf.d/:/fluentd/etc/conf.d/:ro,z"
+      - "{{ graylog_volume }}/fluentd/certs/:/fluentd/etc/certs/:ro,z"
+      - "{{ graylog_volume }}/fluentd/conf.d/fluentd.conf:/fluentd/etc/fluent.conf:ro,z"
+      - "/var/run/fluentd/fluentd.pid:/var/run/fluentd/fluentd.pid:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock:rw,z"
+      - "/var/log:/var/log:ro"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro,z"
+      - "/etc/hostname:/etc/docker-hostname:ro"
+      - "/etc/docker/daemon.json:/etc/docker/daemon.json:ro"
+
+- name: Copy the necessary files
+  vars:
+    dest_config_path: "{{ graylog_volume }}/fluentd/conf.d"
+  block:
+    - name: Clean FluentD configuration folder
+      file:
+        path: "{{ dest_config_path }}"
+        state: absent
+
+    - name: Create FluentD config dir
+      file:
+        path: "{{ dest_config_path }}"
+        state: directory
+        mode: "0775"
+        owner: "{{ fluentd_uid }}"
+        group: "{{ fluentd_gid }}"
+
+    - name: Copy template Graylog output config file
+      template:
+        src: "output-graylog.conf.j2"
+        dest: "{{ dest_config_path }}/output-graylog.conf"
+
+    - name: Copy template FluentD system config file
+      template:
+        src: "system.conf.j2"
+        dest: "{{ dest_config_path }}/system.conf"
+
+    - name: Copy FluentD config files to configuration directory
+      copy:
+        src: "{{ item }}"
+        dest: "{{ dest_config_path }}"
+      with_fileglob:
+        - "{{ work_dir }}/inputs/*.conf"
+        - "{{ work_dir }}/filters/*.conf"
+        - "{{ work_dir }}/outputs/*.conf"
+        - "{{ work_dir }}/*.conf"
+      vars:
+        work_dir: "{{ role_path }}/files/conf.d"
+      loop_control:
+        label: "{{ item | basename }}"
+
+    - name: Write config to custom-input.conf
+      copy:
+        content: "{{ fluentd_custom_input_conf | replace('\\n', '\n') }}"
+        dest: "{{ dest_config_path }}/custom-input.conf"
+      when:
+        - fluentd_custom_input_conf is defined
+        - fluentd_custom_input_conf is not none
+        - fluentd_custom_input_conf | trim | length > 0
+
+    - name: Write config to custom-filter.conf
+      copy:
+        content: "{{ fluentd_custom_filter_conf | replace('\\n', '\n') }}"
+        dest: "{{ dest_config_path }}/custom-filter.conf"
+      when:
+        - fluentd_custom_filter_conf is defined
+        - fluentd_custom_filter_conf is not none
+        - fluentd_custom_filter_conf | trim | length > 0
+
+    - name: Write config to custom-output.conf
+      copy:
+        content: "{{ fluentd_custom_output_conf | replace('\\n', '\n') }}"
+        dest: "{{ dest_config_path }}/custom-output.conf"
+      when:
+        - fluentd_custom_output_conf is defined
+        - fluentd_custom_output_conf is not none
+        - fluentd_custom_output_conf | trim | length > 0
+
+    - name: Copy new fluentd.conf from role's default
+      copy:
+        src: "{{ role_path }}/files/conf.d/fluentd.conf"
+        dest: "{{ dest_config_path }}/fluentd.conf"
+  when: not fluentd_keep_custom_config|bool

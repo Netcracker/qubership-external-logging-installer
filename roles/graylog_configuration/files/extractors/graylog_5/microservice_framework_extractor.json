@@ -1,0 +1,15 @@
+{
+  "title": "Microservice Framework Backend",
+  "extractor_type": "grok",
+  "cursor_strategy": "copy",
+  "target_field": "",
+  "source_field": "message",
+  "extractor_config": {
+    "grok_pattern": "%{QS_MFBACKEND}",
+    "named_captures_only": true
+  },
+  "converters": [],
+  "condition_type": "REGEX",
+  "condition_value": ".*",
+  "order": 0
+}

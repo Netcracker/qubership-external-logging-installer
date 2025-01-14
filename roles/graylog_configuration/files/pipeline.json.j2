@@ -1,0 +1,30 @@
+{
+   "title": "Logs routing",
+   "description": "Routing log messages from 'Default Stream' to the appropriate streams",
+   "source": "pipeline \"Logs routing\"\nstage 0 match either\nrule \"Remove kubernetes field\"\nrule \"Route Audit logs\"\nrule \"Route System logs\"\nrule \"Route Integration logs\"\nrule \"Route Access logs\"\n{% if duplicator_enabled | d() | bool %}rule \"Route Other site logs\"\n{% endif %}\n{% if unsupported_symbols_enabled | d() | bool %}rule \"Processing unsupported symbols\"\n{% endif %}\n{% if nginx_logs_install | d() | bool %}rule \"Route Nginx logs\"\n{% endif %}\n{% if k8s_events_install | d() | bool %}rule \"Route Kubernetes events\"\n{% endif %}end",
+   "stages": [
+      {
+         "stage": 0,
+         "match": "EITHER",
+         "rules": [
+            "Remove kubernetes field",
+            "Route Audit logs",
+            "Route System logs",
+            "Route Integration logs",
+            "Route Access logs"
+{% if duplicator_enabled | d() | bool %}
+            ,"Route Other site logs"
+{% endif %}
+{% if unsupported_symbols_enabled | d() | bool %}
+            ,"Processing unsupported symbols"
+{% endif %}
+{% if nginx_logs_install | d() | bool %}
+            ,"Route Nginx logs"
+{% endif %}
+{% if k8s_events_install | d() | bool %}
+            ,"Route Kubernetes events"
+{% endif %}
+         ]
+      }
+   ]
+}

@@ -1,0 +1,36 @@
+---
+- name: Create directory for registries CA certificates
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ ssl_data_host_path }}"
+
+- name: Copy CA cert for Raw registry from local path
+  copy:
+    src: "{{ ssl_module_files_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+    dest: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+    owner: root
+    group: root
+    force: yes
+  when:
+    - raw_artifacts_registry_validate_certs is defined
+    - raw_artifacts_registry_validate_certs | bool
+    - raw_artifacts_registry_ca_cert_file is defined
+    - ssl_module_files_path is defined
+
+- name: Copy CA cert for Docker registry from local path
+  copy:
+    src: "{{ ssl_module_files_path }}/{{ docker_registry_ca_cert_file }}"
+    dest: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
+    owner: root
+    group: root
+    force: yes
+  when:
+    - docker_registry_validate_certs is defined
+    - docker_registry_validate_certs | bool
+    - docker_registry_ca_cert_file is defined
+    - ssl_module_files_path is defined

@@ -1,0 +1,7 @@
+---
+- name: Install FluentBit
+  block:
+    - import_tasks: prepare-env.yml
+    - import_tasks: run-fluentbit.yml
+  when:
+    - fluentbit_install | bool

@@ -1,0 +1,446 @@
+---
+- name: Get duplicator output id
+  set_fact:
+    output_duplicator_id: "{{ outputs_list | json_query(fetch_output_duplicator_id) | default(omit) }}"
+  vars:
+    fetch_output_duplicator_id: "json.outputs[?title==`output-duplicator`].id | [0]"
+
+- name: Update an output duplicator
+  uri:
+    url: https://localhost/api/system/outputs/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/outputs/output-duplicator.json.j2') }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - output_duplicator_id is defined
+    - output_duplicator_id is not none
+    - output_duplicator_id | trim | length > 0
+  with_items:
+    - "{{ output_duplicator_id }}"
+  vars:
+    host: "{{ other_side_graylog_host }}"
+    port: "{{ duplicator_default_port }}"
+
+- name: Create an output duplicator
+  when:
+    - (output_duplicator_id is undefined) or (output_duplicator_id is none) or (output_duplicator_id | trim | length == 0)
+  block:
+    - name: Create an output duplicator
+      uri:
+        url: https://localhost/api/system/outputs
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/outputs/output-duplicator.json.j2') }}"
+        body_format: json
+      register: output_response
+      vars:
+        host: "{{ other_side_graylog_host }}"
+        port: "{{ duplicator_default_port }}"
+
+    - name: Set 'output_duplicator_id'
+      set_fact:
+        output_duplicator_id: "{{ output_response.json.id }}"
+
+- name: Get duplicator input id
+  set_fact:
+    input_duplicator_id: "{{ inputs_list | json_query(fetch_input_duplicator_id) | default(omit) }}"
+  vars:
+    fetch_input_duplicator_id: "json.inputs[?attributes.port==`{{ duplicator_default_port }}`].id | [0]"
+
+- name: Update an input duplicator
+  uri:
+    url: https://localhost/api/system/inputs/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 201
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/inputs/udp_input.json.j2') }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - input_duplicator_id is defined
+    - input_duplicator_id is not none
+    - input_duplicator_id | trim | length > 0
+  with_items:
+    - "{{ input_duplicator_id }}"
+  vars:
+    port: "{{ duplicator_default_port }}"
+
+- name: Create an input duplicator
+  when:
+    - (input_duplicator_id is undefined) or (input_duplicator_id is none) or (input_duplicator_id | trim | length == 0)
+  block:
+    - name: Create an input duplicator
+      uri:
+        url: https://localhost/api/system/inputs
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/inputs/udp_input.json.j2') }}"
+        body_format: json
+      register: input_response
+      vars:
+        port: "{{ duplicator_default_port }}"
+
+    - name: Set 'input_duplicator_id'
+      set_fact:
+        input_duplicator_id: "{{ input_response.json.id }}"
+
+- name: Get 'Other site logs' stream id
+  set_fact:
+    other_site_logs_stream_id: "{{ streams_list | json_query(jq_other_site_logs_stream_id) | default(omit) }}"
+  vars:
+    jq_other_site_logs_stream_id: "json.streams[?title==`Other site logs`].id | [0]"
+
+- name: Get 'default_index_id'
+  set_fact:
+    default_index_set_id: "{{ indexes_list | json_query(jq_default_index_set_id) }}"
+  vars:
+    jq_default_index_set_id: "json.index_sets[?default==`true`].id | [0]"
+
+- name: Update the 'Other site logs' stream
+  uri:
+    url: https://localhost/api/streams/{{ other_site_logs_stream_id }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - other_site_logs_stream_id is defined
+    - other_site_logs_stream_id is not none
+    - other_site_logs_stream_id | trim | length > 0
+  vars:
+    template_vars:
+      description: Other site log messages from other side Graylog
+      title: Other site logs
+      index_set_id: "{{ default_index_set_id }}"
+
+- name: Create the 'Other site logs' stream
+  when:
+    - (other_site_logs_stream_id is undefined) or (other_site_logs_stream_id is none) or (other_site_logs_stream_id | trim | length == 0)
+  block:
+    - name: Create the 'Other site logs' stream
+      uri:
+        url: https://localhost/api/streams
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: other_site_logs_stream_response
+      vars:
+        template_vars:
+          description: Other site log messages from other side Graylog
+          title: Other site logs
+          index_set_id: "{{ default_index_set_id }}"
+
+    - name: Set 'audit_logs_stream_id'
+      set_fact:
+        other_site_logs_stream_id: "{{ other_site_logs_stream_response.json.stream_id }}"
+
+- name: Get 'Route Other site logs' processing rule id
+  set_fact:
+    other_site_logs_rule_id: "{{ rules_list | json_query(fetch_other_site_logs_rule_id) | default(omit) }}"
+  vars:
+    fetch_other_site_logs_rule_id: "json[?title==`Route Other site logs`].id | [0]"
+
+- name: Update the 'Route Other site logs' processing rule
+  uri:
+    url: https://localhost/api/system/pipelines/rule/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - update_content | bool
+    - other_site_logs_rule_id is defined
+    - other_site_logs_rule_id is not none
+    - other_site_logs_rule_id | trim | length > 0
+  with_items:
+    - "{{ other_site_logs_rule_id }}"
+  vars:
+    processing_rule_source: "{{ role_path }}/files/processing_rules/other_site_logs.rule.j2"
+    custom_params:
+      input_id: "{{ input_duplicator_id }}"
+      route_to_stream_id: "{{ other_site_logs_stream_id }}"
+    template_vars:
+      rule_description: Route Other site logs to the appropriate stream
+      rule_title: Route Other site logs
+      rule_source: "{{ lookup('template', processing_rule_source, template_vars=custom_params) }}"
+
+- name: Create the 'Route Other site logs' processing rule
+  when:
+    - (other_site_logs_rule_id is undefined) or (other_site_logs_rule_id is none) or (other_site_logs_rule_id | trim | length == 0)
+  block:
+    - name: Create the 'Route Other site logs' processing rule
+      uri:
+        url: https://localhost/api/system/pipelines/rule
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body_format: json
+      register: other_site_logs_rule_response
+      vars:
+        processing_rule_source: "{{ role_path }}/files/processing_rules/other_site_logs.rule.j2"
+        custom_params:
+          input_id: "{{ input_duplicator_id }}"
+          route_to_stream_id: "{{ other_site_logs_stream_id }}"
+        template_vars:
+          rule_description: Route Other site logs to the appropriate stream
+          rule_title: Route Other site logs
+          rule_source: "{{ lookup('template', processing_rule_source, template_vars=custom_params) }}"
+
+    - name: Set 'other_site_logs_rule_id'
+      set_fact:
+        other_site_logs_rule_id: "{{ other_site_logs_rule_response.json.id }}"
+
+- name: Resume the 'Other site logs' stream
+  uri:
+    url: https://localhost/api/streams/{{ item }}/resume
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 204
+    headers:
+      X-Requested-By: Graylog API Browser
+    body_format: json
+  with_items:
+    - "{{ other_site_logs_stream_id }}"
+
+- name: Get audit logs stream id
+  set_fact:
+    audit_logs_stream_id: "{{ streams_list | json_query(fetch_audit_logs_stream_id) | default(omit) }}"
+  vars:
+    fetch_audit_logs_stream_id: "json.outputs[?title==`Audit logs`].id | [0]"
+  when: audit_logs_stream_id is undefined
+
+- name: Get audit logs rule ids
+  set_fact:
+    audit_logs_rule_id: "{{ rules_list | json_query(fetch_audit_logs_rule_id) | default(omit) }}"
+  vars:
+    fetch_audit_logs_rule_id: "json[?title==`Route Audit logs`].id | [0]"
+  when: audit_logs_rule_id is undefined
+
+- name: Get system logs rule ids
+  set_fact:
+    system_logs_rule_id: "{{ rules_list | json_query(fetch_system_logs_rule_id) | default(omit) }}"
+  vars:
+    fetch_system_logs_rule_id: "json[?title==`Route System logs`].id | [0]"
+  when: system_logs_rule_id is undefined
+
+- name: Get remove kubernetes rule ids
+  set_fact:
+    remove_kubernetes_rule_id: "{{ rules_list | json_query(fetch_remove_kubernetes_rule_id) | default(omit) }}"
+  vars:
+    fetch_remove_kubernetes_rule_id: "json[?title==`Remove kubernetes field`].id | [0]"
+  when: remove_kubernetes_rule_id is undefined
+
+- name: Get remove kubernetes labels rule ids
+  set_fact:
+    remove_kubernetes_labels_rule_id: "{{ rules_list | json_query(fetch_remove_kubernetes_labels_rule_id) | default(omit) }}"
+  vars:
+    fetch_remove_kubernetes_labels_rule_id: "json[?title==`Remove kubernetes labels field`].id | [0]"
+  when: remove_kubernetes_labels_rule_id is undefined
+
+- name: Get unsupported symbols logs rule ids
+  set_fact:
+    unsupported_symbols_rule_id: "{{ rules_list | json_query(fetch_unsupported_symbols_rule_id) | default(omit) }}"
+  vars:
+    fetch_unsupported_symbols_rule_id: "json[?title==`Processing unsupported symbols`].id | [0]"
+  when: unsupported_symbols_rule_id is undefined
+
+- name: Configure Audit logs rule
+  set_fact:
+    audit_logs_rule:
+      rule_id: "{{ audit_logs_rule_id }}"
+      rule_title: "Route Audit logs"
+      rule_description: "Route Audit logs to the appropriate stream"
+      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/audit_logs.rule.j2', template_vars=template_vars) }}"
+  vars:
+    template_vars:
+      input_id: "{{ input_duplicator_id }}"
+      route_to_stream_id: "{{ audit_logs_stream_id }}"
+
+- name: Configure Remove kubernetes rule
+  set_fact:
+    remove_kubernetes_rule:
+      rule_id: "{{ remove_kubernetes_rule_id }}"
+      rule_title: "Remove kubernetes field"
+      rule_description: "Remove kubernetes field"
+      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/remove_kubernetes.rule.j2') }}"
+
+- name: Configure Remove kubernetes labels rule
+  set_fact:
+    remove_kubernetes_labels_rule:
+      rule_id: "{{ remove_kubernetes_labels_rule_id }}"
+      rule_title: "Remove kubernetes labels field"
+      rule_description: "Remove kubernetes labels field"
+      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/remove_kubernetes_labels.rule.j2') }}"
+
+- name: Configure Processing unsupported symbols rule
+  set_fact:
+    unsupported_symbols_rule:
+      rule_id: "{{ unsupported_symbols_rule_id }}"
+      rule_title: "Processing unsupported symbols"
+      rule_description: "Processing unsupported symbols (Replace '/' to '_')"
+      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/unsupported_symbol.rule.j2') }}"
+
+- name: Get system logs stream id
+  set_fact:
+    system_logs_stream_id: "{{ streams_list | json_query(fetch_system_logs_stream_id) | default(omit) }}"
+  vars:
+    fetch_system_logs_stream_id: "json.outputs[?title==`System logs`].id | [0]"
+  when: system_logs_stream_id is undefined
+
+- name: Configure System logs rule
+  set_fact:
+    system_logs_rule:
+      rule_id: "{{ system_logs_rule_id }}"
+      rule_title: "Route System logs"
+      rule_description: "Route System logs to the appropriate stream"
+      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/system_logs.rule.j2', template_vars=template_vars) }}"
+  vars:
+    template_vars:
+      input_id: "{{ input_duplicator_id }}"
+      route_to_stream_id: "{{ system_logs_stream_id }}"
+
+- name: Update a processing rules
+  uri:
+    url: https://localhost/api/system/pipelines/rule/{{ item.rule_id }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - item.rule_id | trim | length > 0
+  with_items:
+    - "{{ remove_kubernetes_rule }}"
+    - "{{ remove_kubernetes_labels_rule }}"
+    - "{{ audit_logs_rule }}"
+    - "{{ system_logs_rule }}"
+    - "{{ unsupported_symbols_rule }}"
+  vars:
+    template_vars:
+      rule_description: "{{ item.rule_description }}"
+      rule_title: "{{ item.rule_title }}"
+      rule_source: "{{ item.rule_source }}"
+
+- name: Get 'Logs routing' pipeline id
+  set_fact:
+    logs_routing_pipeline_id: "{{ pipelines_list | json_query(jq_logs_routing_pipeline_stages) | default(omit) }}"
+  vars:
+    jq_logs_routing_pipeline_stages: "json[?title==`Logs routing`].id | [0]"
+  when: logs_routing_pipeline_id is undefined
+
+- name: Update stages in the 'Logs routing' pipeline
+  uri:
+    url: https://localhost/api/system/pipelines/pipeline/{{ item }}
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: PUT
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/pipeline.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  with_items:
+    - "{{ logs_routing_pipeline_id }}"
+  vars:
+    template_vars:
+      duplicator_enabled: "{{ duplicator_enabled | bool }}"
+
+- name: Set 'default_stream_id'
+  set_fact:
+    default_stream_id: "{{ streams_list | json_query(fetch_default_stream_id) }}"
+  vars:
+    fetch_default_stream_id: "json.streams[?title==`Default Stream`].id | [0]"
+  when:
+    - (default_stream_id is undefined) or (default_stream_id is none) or (default_stream_id | trim | length == 0)
+
+- name: Set 'default_stream_id' as All messages stream ID
+  set_fact:
+    default_stream_id: "{{ streams_list | json_query(fetch_all_messages_stream_id) }}"
+  vars:
+    fetch_all_messages_stream_id: "json.streams[?title==`All messages`].id | [0]"
+  when:
+    - (default_stream_id is undefined) or (default_stream_id is none) or (default_stream_id | trim | length == 0)
+
+- name: Associate an output with streams
+  uri:
+    url: https://localhost/api/streams/{{ item }}/outputs
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 202
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/stream_outputs.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  when:
+    - item | trim | length > 0
+  with_items:
+    - "{{ default_stream_id }}"
+    - "{{ audit_logs_stream_id }}"
+    - "{{ system_logs_stream_id }}"
+  vars:
+    template_vars:
+      outputs_id: "{{ output_duplicator_id }}"

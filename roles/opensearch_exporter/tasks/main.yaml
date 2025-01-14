@@ -1,0 +1,5 @@
+---
+- include_tasks: deploy_elasticsearch_exporter.yaml
+  tags: [elasticsearchexporter]
+  when:
+    - elasticsearch_exporter_install|bool

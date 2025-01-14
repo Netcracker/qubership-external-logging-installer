@@ -1,0 +1,32 @@
+---
+- name: Check if chrony exists  # noqa 403
+  command: chronyd --version
+  register: result
+  ignore_errors: True
+
+- name: Configure chrony
+  when: result is success
+  block:
+    - name: Convert ntp servers to list
+      set_fact:
+        ntp_servers_list: "{{ ntp_server.split(',') }}"
+
+    - name: Configure chrony Centos and RHEL
+      template:
+        src: "{{ role_path }}/templates/configs/chrony.conf.j2"
+        dest: "/etc/chrony.conf"
+      when:
+        - ansible_facts['distribution'] != "Ubuntu"
+
+    - name: Configure chrony Ubuntu
+      template:
+        src: "{{ role_path }}/templates/configs/chrony.conf.j2"
+        dest: "/etc/chrony/chrony.conf"
+      when:
+        - ansible_facts['distribution'] == "Ubuntu"
+
+    - name: Start chrony
+      service:
+        name: chronyd
+        enabled: true
+        state: restarted

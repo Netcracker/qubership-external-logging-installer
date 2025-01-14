@@ -1,0 +1,33 @@
+{
+  "username": "auditViewer",
+  "password": "{{ password }}",
+  "email": "av@av.av",
+  "first_name":"auditViewer",
+  "last_name":"auditViewer",
+  "permissions": [
+    "users:edit:auditViewer",
+    "users:passwordchange:auditViewer",
+    "clusterconfigentry:read",
+    "indexercluster:read",
+    "messagecount:read",
+    "journal:read",
+    "messages:analyze",
+    "inputs:read",
+    "metrics:read",
+    "savedsearches:edit",
+    "fieldnames:read",
+    "buffers:read",
+    "system:read",
+    "savedsearches:create",
+    "jvmstats:read",
+    "decorators:read",
+    "throughput:read",
+    "savedsearches:read",
+    "messages:read"
+  ],
+  "roles": [
+    "AuditViewer",
+    "Reader"
+  ],
+  "session_timeout_ms": 3600000
+}

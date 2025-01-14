@@ -1,0 +1,37 @@
+<store ignore_error>
+  @type gelf
+  host {{ fluentd_graylog_host }}
+  port {{ fluentd_graylog_port }}
+  protocol tcp
+{% if fluentd_tls_enabled is defined and fluentd_tls_enabled is not none and fluentd_tls_enabled | lower | trim == 'true' %}
+  tls true
+  tls_options {
+    # Supported tls_options:
+    #   'no_default_ca' [Boolean] prevents OpenSSL from using the systems CA store.
+    #   'version' [Symbol] any of :TLSv1, :TLSv1_1, :TLSv1_2 (default)
+    #   'ca' [String] the path to a custom CA store
+    #   'cert' [String, IO] the client certificate file
+    #   'key' [String, IO] the key for the client certificate
+    #   'all_ciphers' [Boolean] allows any ciphers to be used, may be insecure
+    #   'rescue_ssl_errors' [Boolean] similar to rescue_network_errors in notifier.rb, allows SSL exceptions to be raised
+    #   'no_verify' [Boolean] disable peer verification
+    "no_default_ca":  "{{ fluentd_tls_no_default_ca }}",
+    "version": "{{ fluentd_tls_version }}",
+    "ca": {% if fluentd_tls_ca_file | length > 0 %}"/fluentd/etc/certs/{{ fluentd_tls_ca_file }}"{% else %}""{% endif %},
+    "cert": {% if fluentd_tls_cert_file | length > 0 %}"/fluentd/etc/certs/{{ fluentd_tls_cert_file }}"{% else %}""{% endif %},
+    "key": {% if fluentd_tls_key_file | length > 0 %}"/fluentd/etc/certs/{{ fluentd_tls_key_file }}"{% else %}""{% endif %},
+    "all_ciphers": "{{ fluentd_tls_all_ciphers }}",
+    "rescue_ssl_errors": "{{ fluentd_tls_rescue_ssl_errors }}",
+    "no_verify": "{{ fluentd_tls_no_verify }}"
+  }
+{% else %}
+  tls false
+{% endif %}
+  retry_wait 1s
+  <buffer>
+    flush_interval 60s
+    chunk_limit_size 16m
+    queue_limit_length 16
+    retry_forever true
+  </buffer>
+</store>

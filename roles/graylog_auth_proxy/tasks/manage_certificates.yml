@@ -1,0 +1,108 @@
+---
+- name: Prepare custom certificates
+  when:
+    - certificates is defined
+    - certificates is not none
+    - certificates | trim | length > 0
+  delegate_to: 127.0.0.1
+  block:
+    - name: Prepare CA cert file for LDAP or OAuth server
+      copy:
+        src: "/tmp/{{ graylog_auth_proxy_ca_file }}"
+        dest: "{{ role_path }}/files/CA.crt"
+      delegate_to: 127.0.0.1
+      when:
+        - graylog_auth_proxy_ca_file is defined
+        - graylog_auth_proxy_ca_file is not none
+        - graylog_auth_proxy_ca_file | trim | length > 0
+
+    - name: Prepare cert file for LDAP or OAuth server
+      copy:
+        src: "/tmp/{{ graylog_auth_proxy_cert_file }}"
+        dest: "{{ role_path }}/files/Certificate.crt"
+      delegate_to: 127.0.0.1
+      when:
+        - graylog_auth_proxy_cert_file is defined
+        - graylog_auth_proxy_cert_file is not none
+        - graylog_auth_proxy_cert_file | trim | length > 0
+
+    - name: Prepare key file for LDAP or OAuth server
+      copy:
+        src: "/tmp/{{ graylog_auth_proxy_key_file }}"
+        dest: "{{ role_path }}/files/Key.key"
+      delegate_to: 127.0.0.1
+      when:
+        - graylog_auth_proxy_key_file is defined
+        - graylog_auth_proxy_key_file is not none
+        - graylog_auth_proxy_key_file | trim | length > 0
+
+- name: Prepare custom certificates from local path
+  when:
+    - certificates is not defined
+    - ssl_module_files_path is defined
+  delegate_to: 127.0.0.1
+  block:
+    - name: Prepare CA cert file for LDAP or OAuth server
+      copy:
+        src: "{{ ssl_module_files_path }}/{{ graylog_auth_proxy_ca_file }}"
+        dest: "{{ role_path }}/files/CA.crt"
+      delegate_to: 127.0.0.1
+      when:
+        - graylog_auth_proxy_ca_file is defined
+        - graylog_auth_proxy_ca_file is not none
+        - graylog_auth_proxy_ca_file | trim | length > 0
+
+    - name: Prepare cert file for LDAP or OAuth server
+      copy:
+        src: "{{ ssl_module_files_path }}/{{ graylog_auth_proxy_cert_file }}"
+        dest: "{{ role_path }}/files/Certificate.crt"
+      delegate_to: 127.0.0.1
+      when:
+        - graylog_auth_proxy_cert_file is defined
+        - graylog_auth_proxy_cert_file is not none
+        - graylog_auth_proxy_cert_file | trim | length > 0
+
+    - name: Prepare key file for LDAP or OAuth server
+      copy:
+        src: "{{ ssl_module_files_path }}/{{ graylog_auth_proxy_key_file }}"
+        dest: "{{ role_path }}/files/Key.key"
+      delegate_to: 127.0.0.1
+      when:
+        - graylog_auth_proxy_key_file is defined
+        - graylog_auth_proxy_key_file is not none
+        - graylog_auth_proxy_key_file | trim | length > 0
+
+- name: Copy cert files
+  block:
+    - name: Copy CA certificate for LDAP or OAuth server
+      copy:
+        src: "{{ role_path }}/files/CA.crt"
+        dest: "{{ graylog_volume }}/graylog-auth-proxy/ssl/CA.crt"
+        force: true
+        backup: true
+      when:
+        - graylog_auth_proxy_ca_file is defined
+        - graylog_auth_proxy_ca_file is not none
+        - graylog_auth_proxy_ca_file | trim | length > 0
+
+    - name: Copy client certificate for LDAP or OAuth server
+      copy:
+        src: "{{ role_path }}/files/Certificate.crt"
+        dest: "{{ graylog_volume }}/graylog-auth-proxy/ssl/Certificate.crt"
+        force: true
+        backup: true
+      when:
+        - graylog_auth_proxy_cert_file is defined
+        - graylog_auth_proxy_cert_file is not none
+        - graylog_auth_proxy_cert_file | trim | length > 0
+
+    - name: Copy private key for LDAP or OAuth server
+      copy:
+        src: "{{ role_path }}/files/Key.key"
+        dest: "{{ graylog_volume }}/graylog-auth-proxy/ssl/Key.key"
+        force: true
+        backup: true
+      when:
+        - graylog_auth_proxy_key_file is defined
+        - graylog_auth_proxy_key_file is not none
+        - graylog_auth_proxy_key_file | trim | length > 0

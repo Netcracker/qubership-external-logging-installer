@@ -1,0 +1,75 @@
+---
+- name: Get 'Logs routing' pipeline id
+  set_fact:
+    logs_routing_pipeline_id: "{{ pipelines_list | json_query(jq_logs_routing_pipeline_stages) | default(omit) }}"
+  vars:
+    jq_logs_routing_pipeline_stages: "json[?title==`Logs routing`].id | [0]"
+
+- name: Update a processing pipeline
+  when:
+    - update_content | bool
+  block:
+    - name: Update a processing pipeline
+      uri:
+        url: https://localhost/api/system/pipelines/pipeline/{{ item }}
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: PUT
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/pipeline.json.j2') }}"
+        body_format: json
+      when:
+        - logs_routing_pipeline_id is defined
+        - logs_routing_pipeline_id is not none
+        - logs_routing_pipeline_id | trim | length > 0
+      with_items:
+        - "{{ logs_routing_pipeline_id }}"
+
+- name: Create a processing pipeline
+  when:
+    - (logs_routing_pipeline_id is undefined) or (logs_routing_pipeline_id is none) or (logs_routing_pipeline_id | trim | length == 0)
+  block:
+    - name: Create a processing pipeline
+      uri:
+        url: https://localhost/api/system/pipelines/pipeline
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 200
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ lookup('template', '{{ role_path }}/files/pipeline.json.j2') }}"
+        body_format: json
+      register: processing_pipeline_response
+
+    - name: Set logs_routing_pipeline_id
+      set_fact:
+        logs_routing_pipeline_id: "{{ processing_pipeline_response.json.id }}"
+
+- name: Connect processing pipelines to the Default Stream
+  uri:
+    url: https://localhost/api/system/pipelines/connections/to_stream
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: POST
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      X-Requested-By: Graylog API Browser
+    body: "{{ lookup('template', '{{ role_path }}/files/connection_to_stream.json.j2', template_vars=template_vars) }}"
+    body_format: json
+  vars:
+    template_vars:
+      pipeline_id: "{{ logs_routing_pipeline_id }}"
+      stream_id_to_connect: "{{ default_stream_id }}"
+  when: default_stream_id is defined

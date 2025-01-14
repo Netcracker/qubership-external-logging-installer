@@ -1,0 +1,15 @@
+---
+node_exporter_install: false
+
+node_exporter_listen_port: 9100
+node_exporter_telemetry_path: /metrics
+
+node_exporter_host_bin_dir: /usr/local/bin
+node_exporter_tarball: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+
+node_exporter_ignored_mount_points: '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+
+node_exporter_flags: []
+
+validate_certs: false
+ssl_cert_file: ~

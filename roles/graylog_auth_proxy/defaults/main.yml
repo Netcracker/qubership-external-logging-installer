@@ -1,0 +1,50 @@
+---
+########################################################################################################################
+#                                                  Docker settings
+########################################################################################################################
+
+graylog_auth_proxy_enabled: false
+graylog_auth_proxy_image: "ghcr.io/netcracker/qubership-graylog-auth-proxy:main"
+
+proxy_uid: 108
+proxy_gid: 108
+
+########################################################################################################################
+#                                                  graylog-auth-proxy settings
+########################################################################################################################
+
+graylog_auth_proxy_log_level: "INFO"
+graylog_auth_proxy_requests_timeout: 30
+graylog_auth_proxy_auth_type: "ldap"
+htpasswd: ""
+# LDAP parameters
+ldap_url: "ldap://localhost:389"
+ldap_start_tls: false
+ldap_over_ssl: false
+disable_referrals: false
+base_dn: ""
+bind_dn: ""
+ldap_filter: "(cn=%(username)s)"
+# OAuth parameters
+oauth_host: ""
+oauth_authorization_path: ""
+oauth_token_path: ""
+oauth_userinfo_path: ""
+oauth_redirect_uri: ""
+oauth_client_id: ""
+oauth_client_secret: ""
+oauth_scopes: "openid profile roles"
+oauth_user_jsonpath: "preferred_username"
+oauth_roles_jsonpath: "realm_access.roles[*]"
+# Graylog parameters
+pre_created_users: "admin,auditViewer,operator,telegraf_operator,graylog-sidecar,graylog_api_th_user"
+passwd_rotation_interval: 3
+role_mapping: '[]'
+stream_mapping: ''
+realm: "Restricted"
+cookie_name: "authproxy"
+# SSL certificates for LDAP or OAuth providers
+graylog_auth_proxy_skip_verify: false
+graylog_auth_proxy_ca_file: ""
+graylog_auth_proxy_cert_file: ""
+graylog_auth_proxy_key_file: ""

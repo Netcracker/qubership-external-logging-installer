@@ -1,0 +1,78 @@
+---
+- name: Set docker images with registry
+  set_fact:
+    opensearch_image: "{{ docker_registry }}/{{ opensearch_image }}"
+  when:
+    - docker_registry is defined
+    - docker_registry != 0
+
+- name: Pull opensearch image
+  docker_image:
+    name: "{{ opensearch_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+  when:
+    - not docker_registry_validate_certs|bool
+
+- name: Pull opensearch image with local CA
+  docker_image:
+    name: "{{ opensearch_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    ca_cert: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: Pull opensearch image without local CA
+  docker_image:
+    name: "{{ opensearch_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is not defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: Create and start a 'opensearch' container
+  docker_container:
+    name: graylog_storage_1
+    image: "{{ opensearch_image }}"
+    state: started
+    purge_networks: true
+    recreate: true
+    restart_policy: always
+    ports:
+      - 127.0.0.1:9200:9200
+    security_opts:
+      - no-new-privileges
+    env:
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+    ulimits:
+      - memlock:-1:-1
+    read_only: true
+    tmpfs:
+      - /tmp:exec
+    volumes:
+      - "{{ graylog_volume }}/opensearch:/usr/share/opensearch/data:z"
+      - "{{ graylog_volume }}/opensearch/snapshots:/usr/share/opensearch/snapshots:z"
+      # - "{{ graylog_volume }}/opensearch/plugins:/usr/share/opensearch/plugins:z"
+      - "opensearch-logs:/usr/share/opensearch/logs:z"
+      - "opensearch-config:/usr/share/opensearch/config:z"
+      - "{{ graylog_volume }}/graylog/data/archives:/usr/share/opensearch/data/{{ path_repo }}:z"
+    networks:
+      - name: logging
+        aliases:
+          - storage
+
+- name: Wait for containers will be started
+  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_storage_1  # noqa 206
+  register: result
+  until: result.stdout == 'running'
+  retries: 5
+  delay: 2

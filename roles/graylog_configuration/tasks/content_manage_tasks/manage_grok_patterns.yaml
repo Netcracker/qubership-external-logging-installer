@@ -1,0 +1,62 @@
+---
+- name: Grok patterns management tasks
+  vars:
+    grok_pattern_file: "{{ lookup('file','{{ role_path }}/files/grok_patterns.json') | from_json }}"
+    grok_pattern_names: "{{ grok_pattern_file.patterns | map(attribute='name') | list }}"
+    grok_patterns_from_graylog: "{{ grok_patterns_list.json.patterns }}"
+    grok_pattern_names_from_graylog: "{{ grok_patterns_from_graylog | map(attribute='name') | list }}"
+  block:
+    - name: Update the grok patterns
+      when:
+        - update_content | bool
+      block:
+        - name: Set 'grok_patterns_to_update'
+          set_fact:
+            grok_patterns_to_update: "{{ grok_pattern_names | intersect(grok_pattern_names_from_graylog) }}"
+
+        - name: Update the required grok patterns
+          uri:
+            url: https://localhost/api/system/grok/{{ pattern_id }}
+            validate_certs: false
+            user: admin
+            password: "{{ root_password }}"
+            force_basic_auth: true
+            method: PUT
+            timeout: "{{ response_timeout }}"
+            status_code: 200
+            headers:
+              X-Requested-By: Graylog API Browser
+            body: "{{ pattern_config }}"
+            body_format: json
+          with_items:
+            - "{{ grok_patterns_to_update }}"
+          vars:
+            pattern_config: "{{ grok_pattern_file | json_query(fetch_grok_pattern_config) }}"
+            fetch_grok_pattern_config: "patterns[?name=='{{ item }}'] | [0]"
+            pattern_id: "{{ grok_patterns_from_graylog | json_query(fetch_grok_pattern_id) }}"
+            fetch_grok_pattern_id: "[?name=='{{ item }}'].id | [0]"
+          loop_control:
+            label: "{{ item }}, id={{ pattern_id }}"
+
+    - name: Create the required grok patterns
+      uri:
+        url: https://localhost/api/system/grok
+        validate_certs: false
+        user: admin
+        password: "{{ root_password }}"
+        force_basic_auth: true
+        method: POST
+        timeout: "{{ response_timeout }}"
+        status_code: 201
+        headers:
+          X-Requested-By: Graylog API Browser
+        body: "{{ pattern_config }}"
+        body_format: json
+      with_items:
+        - "{{ grok_patterns_to_create }}"
+      vars:
+        grok_patterns_to_create: "{{ grok_pattern_names | difference(grok_pattern_names_from_graylog) }}"
+        pattern_config: "{{ grok_pattern_file | json_query(fetch_grok_pattern_config) }}"
+        fetch_grok_pattern_config: "patterns[?name=='{{ item }}'] | [0]"
+      loop_control:
+        label: "{{ item }}"

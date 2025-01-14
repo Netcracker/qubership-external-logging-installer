@@ -1,0 +1,120 @@
+---
+- name: Get a list of all outputs
+  uri:
+    url: https://localhost/api/system/outputs
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: outputs_list
+
+- name: Get a list of all inputs
+  uri:
+    url: https://localhost/api/system/inputs
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: inputs_list
+
+- name: Get a list of all streams
+  uri:
+    url: https://localhost/api/streams
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: streams_list
+
+- name: Get a list of all processing rules
+  uri:
+    url: https://localhost/api/system/pipelines/rule
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: rules_list
+
+- name: Get all processing pipelines
+  uri:
+    url: https://localhost/api/system/pipelines/pipeline
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: pipelines_list
+
+- name: Get a list of all index sets
+  uri:
+    url: https://localhost/api/system/indices/index_sets
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: indexes_list
+
+- name: Get all grok patterns
+  uri:
+    url: https://localhost/api/system/grok
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: grok_patterns_list
+
+- name: Get all saved searches
+  uri:
+    url: https://localhost/api/views
+    validate_certs: false
+    user: admin
+    password: "{{ root_password }}"
+    force_basic_auth: true
+    method: GET
+    timeout: "{{ response_timeout }}"
+    status_code: 200
+    headers:
+      Accept: application/json
+    return_content: true
+  register: saved_searches_list

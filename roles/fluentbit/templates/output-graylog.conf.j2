@@ -1,0 +1,29 @@
+[OUTPUT]
+    Name                      gelf
+    Match                     parsed.**
+    Host                      {{ fluentbit_graylog_host }}
+    Port                      {{ fluentbit_graylog_port }}
+    Mode                      tcp
+    Gelf_Short_Message_Key    log
+    Gelf_Full_Message_Key     log
+    Gelf_Host_Key             hostname
+    storage.total_limit_size  {{ fluentbit_graylog_total_limit_size }}
+    Retry_Limit               32
+{% if fluentbit_tls_enabled is defined and fluentbit_tls_enabled is not none and fluentbit_tls_enabled | lower | trim == 'true' %}
+    tls                       On
+{% if fluentbit_tls_verify is defined and fluentbit_tls_verify is not none %}
+    tls.verify                {{ fluentbit_tls_verify }}
+{% endif %}
+{% if fluentbit_tls_ca is defined and fluentbit_tls_ca is not none %}
+    tls.ca_file               "/fluent-bit/etc/certs/{{ fluentbit_tls_ca }}"
+{% endif %}
+{% if fluentbit_tls_cert is defined and fluentbit_tls_cert is not none %}
+    tls.crt_file              "/fluent-bit/etc/certs/{{ fluentbit_tls_cert }}"
+{% endif %}
+{% if fluentbit_tls_key is defined and fluentbit_tls_key is not none %}
+    tls.key_file              "/fluent-bit/etc/certs/{{ fluentbit_tls_key }}"
+{% endif %}
+{% if fluentbit_tls_key_passwd is defined and fluentbit_tls_key_passwd is not none %}
+    tls.key_passwd            "/fluent-bit/etc/certs/{{ fluentbit_tls_key_passwd }}"
+{% endif %}
+{% endif %}

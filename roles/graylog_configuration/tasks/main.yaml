@@ -1,0 +1,7 @@
+---
+- include_tasks: manage_content_packs.yaml
+  tags: [graylog_provisioning]
+  when: content_pack_paths is defined and content_pack_paths is not none
+
+- include_tasks: content_tasks_aggregator.yaml
+  tags: [graylog_provisioning]

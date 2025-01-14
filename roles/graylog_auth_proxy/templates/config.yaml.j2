@@ -1,0 +1,177 @@
+host: 0.0.0.0
+port: 8888
+metrics-port: 8889
+
+{% if graylog_auth_proxy_log_level is defined and graylog_auth_proxy_log_level|length %}
+log-level: "{{ graylog_auth_proxy_log_level }}"
+{% else %}
+log-level: "INFO"
+{% endif %}
+
+cookie: "{{ cookie_name }}"
+
+{% if graylog_auth_proxy_requests_timeout is defined and ((graylog_auth_proxy_requests_timeout | int) > 0) %}
+requests-timeout: {{ graylog_auth_proxy_requests_timeout }}
+{% else %}
+requests-timeout: 30
+{% endif %}
+
+{% if graylog_auth_proxy_auth_type is defined and graylog_auth_proxy_auth_type|length %}
+auth-type: "{{ graylog_auth_proxy_auth_type }}"
+{% else %}
+auth-type: "ldap"
+{% endif %}
+
+{% if graylog_auth_proxy_auth_type | lower | trim == 'oauth' %}
+
+{% if oauth_host is defined and oauth_host|length %}
+oauth-host: "{{ oauth_host }}"
+{% else %}
+oauth-host: ""
+{% endif %}
+
+{% if oauth_authorization_path is defined and oauth_authorization_path|length %}
+oauth-authorization-path: "{{ oauth_authorization_path }}"
+{% else %}
+oauth-authorization-path: ""
+{% endif %}
+
+{% if oauth_token_path is defined and oauth_token_path|length %}
+oauth-token-path: "{{ oauth_token_path }}"
+{% else %}
+oauth-token-path: ""
+{% endif %}
+
+{% if oauth_userinfo_path is defined and oauth_userinfo_path|length %}
+oauth-userinfo-path: "{{ oauth_userinfo_path }}"
+{% else %}
+oauth-userinfo-path: ""
+{% endif %}
+
+{% if oauth_redirect_uri is defined and oauth_redirect_uri|length %}
+oauth-redirect-uri: "{{ oauth_redirect_uri }}"
+{% else %}
+oauth-redirect-uri: ""
+{% endif %}
+
+{% if oauth_client_id is defined and oauth_client_id|length %}
+oauth-client-id: "{{ oauth_client_id }}"
+{% else %}
+oauth-client-id: ""
+{% endif %}
+
+{% if oauth_client_secret is defined and oauth_client_secret|length %}
+oauth-client-secret: "{{ oauth_client_secret }}"
+{% endif %}
+
+{% if htpasswd is defined and htpasswd|length %}
+oauth-htpasswd: "./.htpasswd"
+{% endif %}
+
+{% if oauth_scopes is defined and oauth_scopes|length %}
+oauth-scopes: "{{ oauth_scopes }}"
+{% else %}
+oauth-scopes: "openid profile roles"
+{% endif %}
+
+{% if oauth_user_jsonpath is defined and oauth_user_jsonpath|length %}
+oauth-user-jsonpath: "{{ oauth_user_jsonpath }}"
+{% else %}
+oauth-user-jsonpath: "preferred_username"
+{% endif %}
+
+{% if oauth_roles_jsonpath is defined and oauth_roles_jsonpath|length %}
+oauth-roles-jsonpath: "{{ oauth_roles_jsonpath }}"
+{% else %}
+oauth-roles-jsonpath: "realm_access.roles[*]"
+{% endif %}
+
+{% else %}
+
+{% if ldap_url is defined and ldap_url|length %}
+ldap-url: "{{ ldap_url }}"
+{% else %}
+ldap-url: "ldap://localhost:389"
+{% endif %}
+
+ldap-starttls: {{ ldap_start_tls }}
+ldap-over-ssl: {{ ldap_over_ssl }}
+
+disable-referrals: {{ disable_referrals }}
+
+http-realm: "{{ realm }}"
+
+{% if base_dn is defined and base_dn|length %}
+base-dn: "{{ base_dn }}"
+{% else %}
+base-dn: ""
+{% endif %}
+
+{% if bind_dn is defined and bind_dn|length %}
+bind-dn: "{{ bind_dn }}"
+{% else %}
+bind-dn: ""
+{% endif %}
+
+{% if bind_password is defined and bind_password|length %}
+bind-password: "{{ bind_password }}"
+{% endif %}
+
+{% if htpasswd is defined and htpasswd|length %}
+htpasswd: "./.htpasswd"
+{% endif %}
+
+{% if ldap_filter is defined and ldap_filter|length %}
+filter: "{{ ldap_filter }}"
+{% else %}
+filter: "(cn=%(username)s)"
+{% endif %}
+
+{% endif %}
+
+graylog-admin-user: "graylog_api_th_user"
+graylog-host: "http://graylog:9000"
+
+{% if pre_created_users is defined and pre_created_users|length %}
+graylog-pre-created-users: "{{ pre_created_users }}"
+{% else %}
+graylog-pre-created-users: "admin,auditViewer,operator,telegraf_operator,graylog-sidecar,graylog_api_th_user"
+{% endif %}
+
+{% if passwd_rotation_interval is defined and ((passwd_rotation_interval | int) > 0) %}
+rotation-pass-interval: {{ passwd_rotation_interval }}
+{% else %}
+rotation-pass-interval: 3
+{% endif %}
+
+{% if role_mapping is defined and role_mapping|length %}
+role-mapping: '{{ role_mapping }}'
+{% else %}
+role-mapping: '[]'
+{% endif %}
+
+{% if stream_mapping is defined and stream_mapping|length %}
+stream-mapping: '{{ stream_mapping }}'
+{% else %}
+stream-mapping: ''
+{% endif %}
+
+auth-tls-insecure-skip-verify: {{ graylog_auth_proxy_skip_verify }}
+
+{% if graylog_auth_proxy_ca_file|length > 0 %}
+auth-tls-ca-file: "/usr/share/ssl/CA.crt"
+{% else %}
+auth-tls-ca-file: ""
+{% endif %}
+
+{% if graylog_auth_proxy_cert_file|length > 0 %}
+auth-tls-cert-file: "/usr/share/ssl/Certificate.crt"
+{% else %}
+auth-tls-cert-file: ""
+{% endif %}
+
+{% if graylog_auth_proxy_key_file|length > 0 %}
+auth-tls-key-file: "/usr/share/ssl/Key.key"
+{% else %}
+auth-tls-key-file: ""
+{% endif %}

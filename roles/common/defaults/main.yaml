@@ -1,0 +1,15 @@
+---
+exporters_system_user: monitoring_exporters
+exporters_system_group: monitoring_exporters
+
+main_config_host_path_exporter: /etc/monitoring_exporters
+
+validate_certs: false
+ssl_cert_file: ~
+
+ssl_data_host_path: /etc/logging/ssl
+
+raw_artifacts_registry_ca_cert_file: ~
+raw_artifacts_registry_validate_certs: false
+
+docker_registry_validate_certs: false

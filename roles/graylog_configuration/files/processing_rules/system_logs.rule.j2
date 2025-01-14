@@ -1,0 +1,9 @@
+rule \"Route System logs\"
+when
+{% if input_id is defined %}
+  (NOT (from_input(id: \"{{ input_id }}\"))) AND
+{% endif %}
+  (to_bool(regex(pattern: \"var.log.messages|var.log.syslog|systemd\", value: to_string($message.tag)).matches))
+then
+  route_to_stream(id: \"{{ route_to_stream_id }}\", remove_from_default: true);
+end

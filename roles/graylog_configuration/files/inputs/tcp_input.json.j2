@@ -1,0 +1,21 @@
+{
+  "title": "input-{{ port }}",
+  "configuration": {
+    "recv_buffer_size": 1048576,
+    "tcp_keepalive": false,
+    "use_null_delimiter": true,
+    "tls_client_auth_cert_file": "",
+    "bind_address": "0.0.0.0",
+    "tls_cert_file": {% if tls_enabled and tls_cert_file is defined %}"/usr/share/graylog/data/ssl/Certificate.crt"{% else %}""{% endif %},
+    "decompress_size_limit": 8388608,
+    "port": {{ port }},
+    "tls_key_file": {% if tls_enabled and tls_key_file is defined %}"/usr/share/graylog/data/ssl/Key.key"{% else %}""{% endif %},
+    "tls_enable": {{ tls_enabled }},
+    "tls_key_password": {% if tls_enabled and tls_key_password is defined %}"{{ tls_key_password }}"{% else %}""{% endif %},
+    "max_message_size": 2097152,
+    "tls_client_auth": "disabled",
+    "override_source": null
+  },
+  "type": "org.graylog2.inputs.gelf.tcp.GELFTCPInput",
+  "global": true
+}

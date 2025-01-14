@@ -1,0 +1,68 @@
+---
+########################################################################################################################
+#                                           Logging-Graylog common variables
+########################################################################################################################
+
+####################################################### Common #########################################################
+
+## This parameters specify port which is used for replication set up.
+# default: 12202
+#
+duplicator_default_port: 12202
+
+## Allow to turn on the duplication of logs from the left host to the right and from the right to the left.
+# For correct operation, the parameter `other_side_graylog_host` must be specified.
+# default: false
+#
+duplicator_enabled: "{{ other_side_graylog_host | default('') | trim | length > 0 | ternary(true, false) }}"
+
+supported_os_families:
+  - Ubuntu
+  - CentOS
+  - OracleLinux
+  - RedHat
+  - Amazon
+  - Rocky
+
+graylog_default_volume: /var/lib
+
+########################################################################################################################
+#                                                  Docker settings
+########################################################################################################################
+
+## Set Docker PIDs limits.
+# default: 4096
+#
+docker_pids_limit: 4096
+
+## Set Docker Treads limits: soft and hard
+# it is recommended to change both limits
+# it is not set by default
+# docker_threads_soft_limit: 4096
+# docker_threads_hard_limit: 8192
+
+# TODO: remove graylog_elasticsearch_1 deletion
+docker_containers:
+  - graylog_graylog_1
+  - graylog_web_1
+  - graylog_elasticsearch_1
+  - graylog_storage_1
+  - graylog_mongo_1
+  - graylog_fluentd_1
+  - graylog_fluentbit_1
+
+########################################################################################################################
+#                                               Services settings
+########################################################################################################################
+
+## Graylog count of processors for outputbuffer and processbuffer
+# default: processbuffer_processors=5 and outputbuffer_processors=5
+#
+processbuffer_processors: 5
+outputbuffer_processors: 5
+
+
+docker_registry_validate_certs: false
+# docker_registry_ca_cert_file:
+
+docker_container_timeout: 300

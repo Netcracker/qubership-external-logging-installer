@@ -1,0 +1,161 @@
+---
+- name: Set artifact download path
+  block:
+    - name: Set elasticsearch-exporter tarball url with registry
+      set_fact:
+        elasticsearch_exporter_tarball_url: "{{ raw_artifacts_registry}}/{{ elasticsearch_exporter_tarball }}"
+      when:
+        - raw_artifacts_registry is defined
+        - raw_artifacts_registry is not none
+
+    - name: Set elasticsearch-exporter tarball custom url
+      set_fact:
+        elasticsearch_exporter_tarball_url: "{{ elasticsearch_exporter_custom_tarball }}"
+      when:
+        - elasticsearch_exporter_custom_tarball is defined
+        - elasticsearch_exporter_custom_tarball is not none
+
+- name: Download elasticsearch-exporter archive with credentials
+  when:
+    - raw_artifacts_registry_username is defined
+    - raw_artifacts_registry_password is defined
+  block:
+    - name: Download elasticsearch-exporter archive
+      when: not raw_artifacts_registry_validate_certs | bool
+      get_url:
+        url: "{{ elasticsearch_exporter_tarball_url }}"
+        dest: "/tmp/elasticsearch_exporter.tar.gz"
+        validate_certs: no
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download elasticsearch-exporter archive with SSL-certificate
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+      get_url:
+        url: "{{ elasticsearch_exporter_tarball_url }}"
+        dest: "/tmp/elasticsearch_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download elasticsearch-exporter archive without SSL-certificate
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+      get_url:
+        url: "{{ elasticsearch_exporter_tarball_url }}"
+        dest: "/tmp/elasticsearch_exporter.tar.gz"
+        url_username: "{{ raw_artifacts_registry_username }}"
+        url_password: "{{ raw_artifacts_registry_password }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+- name: Download elasticsearch-exporter archive without credentials
+  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
+  block:
+    - name: Download elasticsearch-exporter archive
+      when: not raw_artifacts_registry_validate_certs | bool
+      get_url:
+        url: "{{ elasticsearch_exporter_tarball_url }}"
+        dest: "/tmp/elasticsearch_exporter.tar.gz"
+        validate_certs: no
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download elasticsearch-exporter archive with SSL-certificate
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is defined
+      get_url:
+        url: "{{ elasticsearch_exporter_tarball_url }}"
+        dest: "/tmp/elasticsearch_exporter.tar.gz"
+      environment:
+        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Download elasticsearch-exporter archive without SSL-certificate
+      when:
+        - raw_artifacts_registry_validate_certs | bool
+        - raw_artifacts_registry_ca_cert_file is not defined
+      get_url:
+        url: "{{ elasticsearch_exporter_tarball_url }}"
+        dest: "/tmp/elasticsearch_exporter.tar.gz"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+
+- name: Unarchive elasticsearch-exporter binary
+  unarchive:
+    src: "/tmp/elasticsearch_exporter.tar.gz"
+    dest: /tmp
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Propagate elasticsearch-exporter binary
+  copy:
+    src: /tmp/elasticsearch_exporter
+    dest: "{{ elasticsearch_exporter_host_bin_dir }}/elasticsearch_exporter"
+    remote_src: yes
+    mode: 0750
+    owner: "{{ exporters_system_user }}"
+    group: "{{ exporters_system_group }}"
+    force: yes
+  notify: Restart Elasticsearch exporter
+
+- name: Discover credentials for elasticsearch-exporter
+  when:
+    - elasticsearch_exporter_admin_username is not defined
+    - elasticsearch_exporter_admin_password is not defined
+  block:
+    - name: Set elasticsearch-exporter credentials from OpenSearch parameters
+      set_fact:
+        elasticsearch_exporter_admin_username: "{{ opensearch_admin_username }}"
+        elasticsearch_exporter_admin_password: "{{ opensearch_admin_password }}"
+      when:
+        - opensearch_admin_username is defined
+        - opensearch_admin_username is not none
+        - opensearch_admin_password is defined
+        - opensearch_admin_password is not none
+
+- name: Copy elasticsearch-exporter systemd service file
+  template:
+    src: elasticsearch_exporter.service.jinja
+    dest: /etc/systemd/system/elasticsearch_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart Elasticsearch exporter
+
+- name: Start and enable elasticsearch-exporter service
+  systemd:
+    name: elasticsearch_exporter
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Delete temporary files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/tmp/elasticsearch_exporter"
+    - "/tmp/elasticsearch_exporter.tar.gz"

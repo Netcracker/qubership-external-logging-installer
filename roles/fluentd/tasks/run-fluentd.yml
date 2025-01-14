@@ -1,0 +1,70 @@
+---
+- name: Set docker image with registry
+  set_fact:
+    fluentd_image: "{{ docker_registry }}/{{ fluentd_image }}"
+  when:
+    - docker_registry is defined
+    - docker_registry != 0
+
+- name: Pull FluentD image
+  docker_image:
+    name: "{{ fluentd_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+  when:
+    - not docker_registry_validate_certs|bool
+
+- name: Pull FluentDt image with local CA
+  docker_image:
+    name: "{{ fluentd_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    ca_cert: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: Pull FluentD image without local CA
+  docker_image:
+    name: "{{ fluentd_image }}"
+    timeout: "{{ docker_container_timeout }}"
+    source: pull
+    validate_certs: true
+  when:
+    - docker_registry_validate_certs|bool
+    - docker_registry_ca_cert_file is not defined
+    - docker_registry_username is not defined
+    - docker_registry_password is not defined
+
+- name: FluentD container start
+  docker_container:
+    name: graylog_fluentd_1
+    image: "{{ fluentd_image }}"
+    state: started
+    purge_networks: true
+    recreate: true
+    restart_policy: always
+    privileged: true
+    security_opts:
+      - no-new-privileges
+    ports:
+      - 24220:24220
+      - 24224:24224
+    read_only: false
+    volumes: "{{ fluentd_volumes }}"
+    networks:
+      - name: logging
+        links:
+          - graylog
+        aliases:
+          - fluentd
+
+- name: Wait for FluentD to start
+  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_fluentd_1  # noqa 206
+  register: result
+  until: result.stdout == 'running'
+  delay: 2
+  retries: 5

@@ -1,0 +1,32 @@
+---
+########################################################################################################################
+#                                                  Docker settings
+########################################################################################################################
+
+fluentbit_install: true
+fluentbit_image: "fluent/fluent-bit:3.2.2"
+fluentbit_uid: 110
+fluentbit_gid: 110
+
+fluentbit_log_level: warn
+
+########################################################################################################################
+#                                                  FluentBit config
+########################################################################################################################
+
+fluentbit_keep_custom_config: false
+fluentbit_graylog_host: graylog_graylog_1
+fluentbit_graylog_port: 12201
+fluentbit_graylog_total_limit_size: 512M
+fluentbit_total_limit_size: 1024M
+
+########################################################################################################################
+#                                                  TLS config
+########################################################################################################################
+
+fluentbit_tls_enabled: false
+fluentbit_tls_verify: true
+# fluentbit_tls_ca: ca.crt
+# fluentbit_tls_cert: tls.crt
+# fluentbit_tls_key: tls.key
+# fluentbit_tls_key_passwd: passwd

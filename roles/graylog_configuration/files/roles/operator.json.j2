@@ -1,0 +1,18 @@
+{
+   "name":"Operator",
+   "description":"Default operator role",
+   "permissions":[
+{% if other_site_logs_stream_id is defined and other_site_logs_stream_id | length %}
+      "streams:read:{{ other_site_logs_stream_id }}"
+{% endif %}
+      "streams:read:{{ all_events_stream_id }}",
+      "streams:read:{{ default_stream_id }}",
+      "streams:read:{{ all_system_events_stream_id }}",
+      "streams:read:{{ system_logs_stream_id }}",
+      "dashboards:read:{{ sources_dashboard_id }}"
+{% if k8s_events_dashboard_id is defined and k8s_events_dashboard_id | length %}
+      ,"dashboards:read:{{ k8s_events_dashboard_id }}"
+{% endif %}
+   ],
+   "read_only":true
+}
