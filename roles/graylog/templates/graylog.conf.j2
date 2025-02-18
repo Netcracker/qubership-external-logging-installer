@@ -598,11 +598,11 @@ lb_recognition_period_seconds = 3
 
 # MongoDB connection string
 # See https://docs.mongodb.com/manual/reference/connection-string/ for details
-mongodb_uri = mongodb://mongo/graylog
+#mongodb_uri = mongodb://mongo/graylog
 
 # Authenticate against the MongoDB server
 # '+'-signs in the username or password need to be replaced by '%2B'
-#mongodb_uri = mongodb://grayloguser:secret@localhost:27017/graylog
+mongodb_uri = mongodb://{{ mongodb_graylog_username }}:{{ mongodb_graylog_password }}@mongo:27017/graylog
 
 # Use a replica set instead of a single host
 #mongodb_uri = mongodb://grayloguser:secret@localhost:27017,localhost:27018,localhost:27019/graylog

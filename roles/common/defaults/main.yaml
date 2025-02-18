@@ -13,3 +13,6 @@ raw_artifacts_registry_ca_cert_file: ~
 raw_artifacts_registry_validate_certs: false
 
 docker_registry_validate_certs: false
+
+mongodb_graylog_username: graylog
+mongodb_graylog_password: graylog

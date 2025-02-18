@@ -68,3 +68,56 @@
   until: result.stdout == 'running'
   retries: 5
   delay: 2
+
+- name: Pause for 5 seconds
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: Create MongoDB admin user if not exists
+  shell: |
+    docker exec graylog_mongo_1 mongo admin --eval '
+    db.createUser({
+      user: "{{ mongodb_root_username }}",
+      pwd: "{{ mongodb_root_password }}",
+      roles: [{ role: "root", db: "admin" }]
+    });
+    '
+  ignore_errors: true
+
+- name: Create MongoDB graylog user if not exists
+  shell: |
+    docker exec graylog_mongo_1 mongo graylog --eval '
+    db.createUser({
+      user: "{{ mongodb_graylog_username }}",
+      pwd: "{{ mongodb_graylog_password }}",
+      roles: [{ role: "readWrite", db: "graylog" }]
+    });
+    '
+  ignore_errors: true
+
+- name: Restart MongoDB container with --auth enabled
+  docker_container:
+    name: graylog_mongo_1
+    image: "{{ mongo_image }}"
+    state: started
+    purge_networks: true
+    recreate: true
+    restart_policy: always
+    security_opts:
+      - no-new-privileges
+    tmpfs:
+      - /tmp
+    read_only: true
+    ports:
+      - 27017:27017
+    env:
+      MONGO_INITDB_ROOT_USERNAME: "{{ mongodb_root_username }}"
+      MONGO_INITDB_ROOT_PASSWORD: "{{ mongodb_root_password }}"
+    volumes:
+      - "{{ graylog_volume }}/mongodb/data/db:/data/db:z"
+    networks:
+      - name: logging
+        aliases:
+          - mongo
+    command: mongod --wiredTigerEngineConfigString="cache_size=512M" --auth
+    recreate: true
