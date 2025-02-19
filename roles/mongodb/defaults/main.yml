@@ -6,3 +6,6 @@
 mongo_image: "mongo:5.0.30"
 
 mongo_upgrade: false
+
+mongodb_root_username: admin
+mongodb_root_password: admin
