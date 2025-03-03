@@ -11,4 +11,4 @@ on:
 
 jobs:
   run-lint:
-    uses: Netcracker/qubership-workflow-hub/.github/workflows/super-linter.yml@main
+    uses: Netcracker/qubership-workflow-hub/.github/workflows/super-linter.yaml@main
