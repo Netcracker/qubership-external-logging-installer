@@ -18,7 +18,7 @@
 - name: Set default mongodb-exporter flags
   set_fact:
     mongodb_exporter_default_flags:
-      - "--mongodb.uri=mongodb://{{ mongodb_graylog_username }}:{{ mongodb_graylog_password }}@127.0.0.1:27017/"
+      - "--mongodb.uri=mongodb://{{ mongodb_root_username }}:{{ mongodb_root_password }}@127.0.0.1:27017/"
 
 - name: Compile custom and default MongoDB exporter flags
   set_fact:
