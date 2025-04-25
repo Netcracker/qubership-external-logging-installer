@@ -27,7 +27,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 104,
+  "id": 228,
   "links": [],
   "panels": [
     {
@@ -98,7 +98,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Shows the uptime of MongoDB instance on VM",
       "fieldConfig": {
@@ -172,7 +172,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (mongodb_instance_uptime_seconds{instance=~\"$host\"})",
@@ -187,7 +187,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Shows statistics of operations with types \"insert\", \"query\", \"update\", \"delete\", \"getmore\"",
       "fieldConfig": {
@@ -258,7 +258,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "sum(rate(mongodb_mongod_op_counters_total{instance=~\"$host\",type!=\"command\"}[$interval]) or irate(mongodb_mongod_op_counters_total{instance=~\"$host\",type!=\"command\"}[5m]) or rate(mongodb_op_counters_total{instance=~\"$host\",type!=\"command\"}[$interval]) or irate(mongodb_op_counters_total{instance=~\"$host\",type!=\"command\"}[5m]))",
@@ -273,7 +273,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Shows combined latency",
       "fieldConfig": {
@@ -344,7 +344,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_op_latencies_latency_total{instance=~\"$host\",type=\"command\"}[$interval]) / (rate(mongodb_mongod_op_latencies_ops_total{instance=~\"$host\",type=\"command\"}[$interval]) > 0) or\nirate(mongodb_mongod_op_latencies_latency_total{instance=~\"$host\",type=\"command\"}[5m]) / (irate(mongodb_mongod_op_latencies_ops_total{instance=~\"$host\",type=\"command\"}[5m]) > 0))",
@@ -359,7 +359,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "This shows the role of the selected service. Normally this should be one of ``PRIMARY``, ``SECONDARY`` and ``ARBITER``, but if the system is newly added it could show ``STARTUP2`` during its initial sync.",
       "fieldConfig": {
@@ -454,7 +454,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "max by (instance) (mongodb_up{instance=~\"$host\"})",
@@ -469,7 +469,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Read more about [Replica Set Member States](https://docs.mongodb.com/manual/reference/replica-states/).",
       "fieldConfig": {
@@ -584,7 +584,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "sum by (set) (mongodb_up{instance=~\"$host\"})",
@@ -613,7 +613,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Ops or Replicated Ops/sec classified by legacy wire protocol type (query, insert, update, delete, getmore). And (from the internal TTL threads) the docs deletes/sec by TTL indexes.",
       "fieldConfig": {
@@ -704,7 +704,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_op_counters_total{instance=~\"$host\", type!=\"command\"}[$interval]) or \nirate(mongodb_mongod_op_counters_total{instance=~\"$host\", type!=\"command\"}[5m]) or \nrate(mongodb_mongos_op_counters_total{instance=~\"$host\", type!=\"command\"}[$interval]) or \nirate(mongodb_mongos_op_counters_total{instance=~\"$host\", type!=\"command\"}[5m]))",
@@ -720,7 +720,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_op_counters_repl_total{instance=~\"$host\", type!~\"(command|query|getmore)\"}[$interval]) or \nirate(mongodb_mongod_op_counters_repl_total{instance=~\"$host\", type!~\"(command|query|getmore)\"}[5m]) or\nrate(mongodb_mongos_op_counters_repl_total{instance=~\"$host\", type!~\"(command|query|getmore)\"}[$interval]) or \nirate(mongodb_mongos_op_counters_repl_total{instance=~\"$host\", type!~\"(command|query|getmore)\"}[5m]))",
@@ -736,7 +736,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_metrics_ttl_deleted_documents_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_ttl_deleted_documents_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_ttl_deleted_documents_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongos_metrics_ttl_deleted_documents_total{instance=~\"$host\"}[5m]))",
@@ -756,7 +756,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Average latency of operations (classified by read, write, or (other) command)",
       "fieldConfig": {
@@ -847,7 +847,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance,type) (rate(mongodb_mongod_op_latencies_latency_total{instance=~\"$host\"}[$interval]) / (rate(mongodb_mongod_op_latencies_ops_total{instance=~\"$host\"}[$interval]) > 0) or irate(mongodb_mongod_op_latencies_latency_total{instance=~\"$host\"}[5m]) / (irate(mongodb_mongod_op_latencies_ops_total{instance=~\"$host\"}[5m]) > 0))",
@@ -863,7 +863,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "TCP connections (Incoming)",
       "fieldConfig": {
@@ -954,7 +954,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (mongodb_mongod_connections{instance=~\"$host\", state=\"current\"} or\nmongodb_mongos_connections{instance=~\"$host\", state=\"current\"} or\nmongodb_connections{instance=~\"$host\", state=\"current\"})",
@@ -974,7 +974,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Open cursors. Includes idle cursors.",
       "fieldConfig": {
@@ -1065,7 +1065,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance,state) (mongodb_mongod_metrics_cursor_open{instance=~\"$host\"} or\nmongodb_mongod_cursors{instance=~\"$host\"} or\nmongodb_mongos_metrics_cursor_open{instance=~\"$host\"} or \nmongodb_mongos_cursors{instance=~\"$host\"})",
@@ -1085,7 +1085,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Docs per second inserted, updated, deleted or returned. (N.b. not 1-to-1 with operation counts.)",
       "fieldConfig": {
@@ -1176,7 +1176,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance,state) (rate(mongodb_mongod_metrics_document_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_document_total{instance=~\"$host\"}[5m]))",
@@ -1196,7 +1196,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Operations queued due to a lock.",
       "fieldConfig": {
@@ -1287,7 +1287,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance,type) (mongodb_mongod_global_lock_current_queue{instance=~\"$host\"})",
@@ -1307,7 +1307,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Ratio of Documents returned or Index entries scanned / full documents scanned",
       "fieldConfig": {
@@ -1355,8 +1355,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1397,7 +1396,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "sum(rate(mongodb_mongod_metrics_document_total{instance=~\"$host\", state=\"returned\"}[$interval]))/\nsum(rate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\", state=\"scanned_objects\"}[$interval])) \nor\nsum(irate(mongodb_mongod_metrics_document_total{instance=~\"$host\", state=\"returned\"}[5m]))/\nsum(irate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\", state=\"scanned_objects\"}[5m]))",
@@ -1413,7 +1412,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "(sum(rate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\", state=\"scanned\"}[$interval]))/\nsum(rate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\", state=\"scanned_objects\"}[$interval])) \nor\nsum(irate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\", state=\"scanned\"}[5m]))/\nsum(irate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\", state=\"scanned_objects\"}[5m])))",
@@ -1433,7 +1432,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "This panel shows the number of objects (both data (scanned_objects) and index (scanned)) as well as the number of documents that were moved to a new location due to the size of the document growing. Moved documents only apply to the MMAPv1 storage engine.",
       "fieldConfig": {
@@ -1482,8 +1481,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1524,7 +1522,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_query_executor_total{instance=~\"$host\"}[5m]))",
@@ -1540,7 +1538,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_metrics_record_moves_total{instance=~\"$host\"}[$interval]) or irate(mongodb_mongod_metrics_record_moves_total{instance=~\"$host\"}[5m]))",
@@ -1559,7 +1557,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Legacy driver operation: Number of, and Sum of time spent, per second executing getLastError commands to confirm write concern.",
       "fieldConfig": {
@@ -1608,8 +1606,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1650,7 +1647,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_metrics_get_last_error_wtime_total_milliseconds{instance=~\"$host\"}[$__rate_interval]) or \nirate(mongodb_mongod_metrics_get_last_error_wtime_total_milliseconds{instance=~\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_get_last_error_wtime_total_milliseconds{instance=~\"$host\"}[$__rate_interval]) or \nirate(mongodb_mongos_metrics_get_last_error_wtime_total_milliseconds{instance=~\"$host\"}[5m]))",
@@ -1670,7 +1667,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Legacy driver operation: Number of getLastError commands that timed out trying to confirm write concern.",
       "fieldConfig": {
@@ -1719,8 +1716,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1781,7 +1777,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_metrics_get_last_error_wtime_num_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_get_last_error_wtime_num_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_get_last_error_wtime_num_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongos_metrics_get_last_error_wtime_num_total{instance=~\"$host\"}[5m]))",
@@ -1797,7 +1793,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_metrics_get_last_error_wtimeouts_total{instance=~\"$host\"}[$interval]) or\nirate(mongodb_mongod_metrics_get_last_error_wtimeouts_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_get_last_error_wtimeouts_total{instance=~\"$host\"}[$interval]) or\nirate(mongodb_mongos_metrics_get_last_error_wtimeouts_total{instance=~\"$host\"}[5m]))",
@@ -1817,7 +1813,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "This panel shows the number of assert events per second on average over the given time period. In most cases assertions are trivial, but you would want to check your log files if this counter spikes or is consistently high.",
       "fieldConfig": {
@@ -1865,8 +1861,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1907,7 +1902,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance,type) (rate(mongodb_mongod_asserts_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongod_asserts_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_mongos_asserts_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongos_asserts_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_asserts_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_asserts_total{instance=~\"$host\"}[5m]))",
@@ -1927,7 +1922,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": ""
+        "uid": "PC3E95692D54ABCC0"
       },
       "description": "Unix or Window memory page faults. Not necessarily from mongodb.",
       "fieldConfig": {
@@ -1976,8 +1971,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2018,7 +2012,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": ""
+            "uid": "PC3E95692D54ABCC0"
           },
           "editorMode": "code",
           "expr": "avg by (instance) (rate(mongodb_mongod_extra_info_page_faults_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongod_extra_info_page_faults_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_mongos_extra_info_page_faults_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_mongos_extra_info_page_faults_total{instance=~\"$host\"}[5m]) or\nrate(mongodb_extra_info_page_faults_total{instance=~\"$host\"}[$interval]) or \nirate(mongodb_extra_info_page_faults_total{instance=~\"$host\"}[5m]))",
@@ -2065,14 +2059,14 @@
         "auto_count": 200,
         "auto_min": "1s",
         "current": {
-          "text": "$__auto",
-          "value": "$__auto"
+          "text": "1s",
+          "value": "1s"
         },
         "label": "Interval",
         "name": "interval",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "1s",
             "value": "1s"
           },
@@ -2119,7 +2113,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": ""
+          "uid": "PC3E95692D54ABCC0"
         },
         "definition": "label_values(gl_input_throughput,cluster)",
         "includeAll": true,
@@ -2143,15 +2137,16 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": ""
+          "uid": "PC3E95692D54ABCC0"
         },
-        "definition": "label_values(mongodb_up,instance)",
+        "definition": "label_values(gl_input_throughput,instance)",
         "includeAll": false,
         "name": "host",
         "options": [],
         "query": {
-          "query": "label_values(mongodb_up,instance)",
-          "refId": "StandardVariableQuery"
+          "qryType": 1,
+          "query": "label_values(gl_input_throughput,instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
         "regex": "",
@@ -2167,6 +2162,6 @@
   "timezone": "",
   "title": "MongoDB Summary (VM)",
   "uid": "",
-  "version": 6,
+  "version": 3,
   "weekStart": ""
 }
