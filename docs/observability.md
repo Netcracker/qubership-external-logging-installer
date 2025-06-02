@@ -150,7 +150,7 @@ This means:
 #### **OpenSearch (Text Format)**  
 ```bash
 [2024-01-04T17:50:58,716][INFO ][o.o.j.s.JobSweeper] [opensearch-0] Running full sweep  
-[2024-01-04T17:51:09,665][INFO ][sgaudit] [opensearch-0] {"audit_request_effective_user":"netcrk","audit_trace_indices":["graylog_0"],"audit_request_origin":"REST"}  
+[2024-01-04T17:51:09,665][INFO ][sgaudit] [opensearch-0] {"audit_request_effective_user":"user","audit_trace_indices":["graylog_0"],"audit_request_origin":"REST"}  
 ```
 
 ---
