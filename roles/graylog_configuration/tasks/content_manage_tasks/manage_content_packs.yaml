@@ -96,7 +96,7 @@
       register: uninstall_results
       no_log: true
 
-    - name: Print Uninstall dashboards results 
+    - name: Print Uninstall dashboards results
       debug:
         msg: "Uninstalled installation_id={{ item.item }} → status={{ item.status }}"
       loop: "{{ uninstall_results.results }}"
