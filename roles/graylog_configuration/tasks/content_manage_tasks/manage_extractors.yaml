@@ -161,7 +161,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/replace_timestamp_extractor.json') }}"
+        body: "{{ lookup('file', '{{ role_path }}/{{ content_extractors_dir }}/microservice_framework_extractor.json') }}"
         body_format: json
       when:
         - extractor_id | trim | length != 0
