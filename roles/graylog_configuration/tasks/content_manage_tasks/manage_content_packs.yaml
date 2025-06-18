@@ -78,9 +78,9 @@
       vars:
         jq_dashboard: "json.installations[?content_pack_id==`{{ qubership_content_pack_id }}`]._id | [0]"
 
-    - name: Uninstall dashboard
+    - name: Uninstall dashboards
       uri:
-        url: https://localhost/api/system/content_packs/{{ qubership_content_pack_id }}/installations/{{ installation_id }}
+        url: https://localhost/api/system/content_packs/{{ qubership_content_pack_id }}/installations/{{ item }}
         validate_certs: false
         user: admin
         password: "{{ root_password }}"
@@ -90,6 +90,16 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
+      loop: "{{ installation_ids }}"
+      loop_control:
+        label: "{{ item }}"
+      register: uninstall_results
+      no_log: true
+
+    - name: Print Uninstall dashboards results
+      debug:
+        msg: "Uninstalled installation_id={{ item.item }} → status={{ item.status }}"
+      loop: "{{ uninstall_results.results }}"
 
     - name: Delete content-pack
       uri:
