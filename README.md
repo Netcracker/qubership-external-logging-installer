@@ -12,7 +12,7 @@ An Ansible-based automation tool for deploying a complete enterprise logging inf
 ## Features
 
 - **Complete logging stack deployment** with Graylog, OpenSearch, and MongoDB
-- **Automated SSL/TLS certificate management** for secure communications  
+- **Automated SSL/TLS certificate management** for secure communications
 - **Multi-protocol log ingestion** supporting Syslog, GELF, and container logs
 - **Built-in monitoring** with Prometheus exporters for all components
 - **Load balancing and high availability** with Nginx and Keepalived support
@@ -25,13 +25,13 @@ An Ansible-based automation tool for deploying a complete enterprise logging inf
 ## Requirements
 
 ### Supported Operating Systems
-- **Ubuntu:** 22.04 LTS (recommended), 20.04 LTS  
+- **Ubuntu:** 22.04 LTS (recommended), 20.04 LTS
 - **RHEL-based:** CentOS 8.x, RHEL 8.x, Oracle Linux 8.x, Rocky Linux 8.6+, 9.2+
 - **Cloud:** Amazon Linux 2
 
 ### Hardware Requirements
 - **CPU:** 4+ vCPU (12+ for high throughput)
-- **RAM:** 8+ GB (24+ GB for high throughput) 
+- **RAM:** 8+ GB (24+ GB for high throughput)
 - **Storage:** 1000+ IOPS, SSD recommended
 - **Network:** Opened ports 22, 80, 443, 514, 12201, 12202
 
@@ -68,7 +68,7 @@ An Ansible-based automation tool for deploying a complete enterprise logging inf
        graylog_install: true
    EOF
    ```
-   
+
    **Important:** Edit `inventory.yml` with your actual server IP and required configuration parameters. See the [Installation Guide](docs/installation.md) for detailed configuration options and examples.
 
 4. **Run the playbook:**
@@ -91,7 +91,7 @@ After installation, access the Graylog web interface at `https://your-server/` u
 # Syslog UDP
 logger -n your-server -P 514 "Test log message"
 
-# GELF TCP  
+# GELF TCP
 echo '{"version":"1.1","host":"test","short_message":"Hello Graylog"}' | nc your-server 12201
 ```
 
@@ -125,7 +125,7 @@ all:
     check_prerequisites_enabled: false
 ```
 
-**Production:**  
+**Production:**
 ```yaml
 all:
   vars:
@@ -139,7 +139,7 @@ For complete configuration reference, see [docs/installation.md](docs/installati
 ## Documentation
 
 - [📖 Installation Guide](docs/installation.md) - Complete installation and configuration reference
-- [🔐 MongoDB Authentication](docs/mongodb_authentication.md) - Database security setup  
+- [🔐 MongoDB Authentication](docs/mongodb_authentication.md) - Database security setup
 - [🔍 Observability](docs/observability.md) - Monitoring and metrics configuration
 - [🔑 Password Change Guide](docs/password-change-guide.md) - Security management
 
@@ -156,18 +156,18 @@ flowchart TD
     D --> F[(OpenSearch<br/>Log Storage)]
     D --> G[Auth Proxy]
     G --> H[LDAP/OAuth]
-    
+
     I[Prometheus] --> J[Node Exporter]
-    I --> K[MongoDB Exporter] 
+    I --> K[MongoDB Exporter]
     I --> L[OpenSearch Exporter]
     I --> M[cAdvisor]
-    
+
     N[Grafana] --> I
 ```
 
 The architecture consists of:
 - **Data Plane:** FluentBit/FluentD collectors → Nginx proxy → Graylog processing → OpenSearch storage
-- **Control Plane:** MongoDB for configuration, Auth Proxy for authentication  
+- **Control Plane:** MongoDB for configuration, Auth Proxy for authentication
 - **Monitoring:** Prometheus exporters feeding into Grafana dashboards
 
 ## Testing
@@ -205,7 +205,7 @@ curl -k https://localhost/api/system/cluster/nodes
 We welcome contributions! Please follow these steps:
 
 1. Sign the [Contributor License Agreement](https://pages.netcracker.com/cla-main.html)
-2. Read the [Code of Conduct](CODE-OF-CONDUCT.md)  
+2. Read the [Code of Conduct](CODE-OF-CONDUCT.md)
 3. Fork the repository and create a feature branch
 4. Make your changes and ensure tests pass
 5. Submit a pull request with a clear description
