@@ -8,8 +8,8 @@
   block:
     - name: Download custom certificates with credentials
       when:
-      - raw_artifacts_registry_username is defined
-      - raw_artifacts_registry_password is defined
+        - raw_artifacts_registry_username is defined
+        - raw_artifacts_registry_password is defined
       block:
         - name: Download zip-file
           when: not raw_artifacts_registry_validate_certs | bool

@@ -74,7 +74,7 @@ Note: actually, for non-root user the script sends REST request to change passwo
 
 ### Change user password via Graylog REST API
 
-To change user password you need to know it\`s Id that consists of 24 symbols (`[a-z0-9]`). It can be found in URL
+To change user password you need to know it\`s ID that consists of 24 symbols (`[a-z0-9]`). It can be found in URL
 in browser on user\`s page or if you have grants you can get it by GET request `http://<host>/api/users`.
 To send request you can be authorized as user you want to change.
 

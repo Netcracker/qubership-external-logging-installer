@@ -177,7 +177,6 @@ changeUserPassword() {
 ###
 # shellcheck disable=SC2181
 if [ "$?" -eq 0 ]; then
-# shellcheck enable=SC2181
     echo "[INFO] SSH connection successfully established"
 else
     echo "[ERROR] Connection failure. Check that you have defined the correct host/ssh key/ssh_user for the connection."
