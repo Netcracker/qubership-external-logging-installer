@@ -7,8 +7,8 @@ sudo rm -rf /srv/docker/graylog/*
 curl -X POST -v -H "Content-Type: application/json" -d '{"vault":"'$restore_vault'", "dbs":["db1"]}' localhost:8080/restore
 
 until [ -f $status_file ]; do
-     echo 'wait for restore command ending'
-     sleep 10
+    echo 'wait for restore command ending'
+    sleep 10
 done
 rm -f $status_file
 echo 'Data restored successfully. Starting containers'

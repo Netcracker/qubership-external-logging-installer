@@ -105,12 +105,12 @@ changeAdminPassword() {
 ###
 changeUserPassword() {
     command="curl --user ${1}:${2} \
-                         --header 'X-Requested-By: Graylog API Browser' \
-                         --insecure \
-                         --silent \
-                         --location \
-                         --request GET \
-                         --write-out %{http_code} "https://localhost/api/users/${1}""
+                        --header 'X-Requested-By: Graylog API Browser' \
+                        --insecure \
+                        --silent \
+                        --location \
+                        --request GET \
+                        --write-out %{http_code} "https://localhost/api/users/${1}""
     response="$(eval $command)"
     responseCode=$(echo $response | grep "[0-9]\{3\}$" -o)
     case ${responseCode} in
