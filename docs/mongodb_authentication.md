@@ -1,8 +1,8 @@
+# Enable Authentication to MongoDB
+
 * [Enable Authentication to MongoDB](#enable-authentication-to-mongodb)
   * [Supply credentials](#supply-credentials)
   * [User details](#user-details)
-
-# Enable Authentication to MongoDB
 
 Graylog uses MongoDB to store configurations. In earlier versions of `external-logging-installer`, MongoDB was
 installed without any access control enabled so that Graylog could connect to MongoDB without supplying credentials.

@@ -15,7 +15,7 @@
   * [Dashboards](#dashboards)
     * [Dashboard Management](#dashboard-management)
     * [How to Use Dashboards in Grafana](#how-to-use-dashboards-in-grafana)
-    * [Available Dashboards:](#available-dashboards)
+    * [Available Dashboards](#available-dashboards)
   * [Logging](#logging)
     * [Example Log Formats](#example-log-formats)
       * [Graylog (Text Format)](#graylog-text-format)
@@ -43,11 +43,12 @@ To enable metrics collection from Graylog, the following resources need to be cr
 
 ### 1. Deploy Required Exporters
 
-To collect and display metrics in Grafana, we must deploy the necessary exporters for the services we want to monitor. By default, these exporters are disabled and must be explicitly enabled in the configuration.
+To collect and display metrics in Grafana, we must deploy the necessary exporters for the services we want to monitor.
+By default, these exporters are disabled and must be explicitly enabled in the configuration.
 
 Here’s an example configuration that ensures all required exporters are installed:
 
-```
+```yaml
 node_exporter_install: true
 mongodb_exporter_install: true
 elasticsearch_exporter_install: true
@@ -104,20 +105,21 @@ spec:
 
 All **Logging VM** components that expose metrics are integrated with the monitoring system.
 This means:
-- Metrics are enabled and exposed in **Prometheus** format.
-- ServiceMonitors/PodMonitors are created during deployment to integrate with Prometheus.
+
+* Metrics are enabled and exposed in **Prometheus** format.
+* ServiceMonitors/PodMonitors are created during deployment to integrate with Prometheus.
 
 ### Components with Metrics
 
-- Graylog
-- MongoDB
-- OpenSearch
+* Graylog
+* MongoDB
+* OpenSearch
 
 ### Metrics
 
-- **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
-- **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
-- **OpenSearch** → [OpenSearch Metrics Docs](https://docs.opensearch.org/latest/monitoring-your-cluster/metrics/getting-started/)
+* **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
+* **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
+* **OpenSearch** → [OpenSearch Metrics Docs](https://docs.opensearch.org/latest/monitoring-your-cluster/metrics/getting-started/)
 
 ---
 
@@ -125,10 +127,10 @@ This means:
 
 ### Dashboard Management
 
-- Dashboards are now included as part of the **external-logging-installer** because:
-  - It **decouples dashboard lifecycle** from logging stack updates.
-  - It **allows independent management** of dashboards without affecting the logging stack.
-  - It is **easier to maintain and deploy** across multiple clusters.
+* Dashboards are now included as part of the **external-logging-installer** because:
+  * It **decouples dashboard lifecycle** from logging stack updates.
+  * It **allows independent management** of dashboards without affecting the logging stack.
+  * It is **easier to maintain and deploy** across multiple clusters.
 
 ### How to Use Dashboards in Grafana
 
@@ -137,18 +139,18 @@ This means:
 3. Paste the **JSON content** of the required dashboard.
 4. Click **Import** to start using it.
 
-### Available Dashboards:
+### Available Dashboards
 
-- [Graylog Metrics Dashboard](/grafana/dashboards/monitoring/Graylog_(VM).json)
-- [MongoDB Metrics Dashboard](/grafana/dashboards/monitoring/Graylog_(VM).json)
-- [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)
+* [Graylog Metrics Dashboard](/grafana/dashboards/monitoring/Graylog_(VM).json)
+* [MongoDB Metrics Dashboard](/grafana/dashboards/monitoring/Graylog_(VM).json)
+* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)
 
 ---
 
 ## Logging
 
-- Logs from **Graylog**, **MongoDB**, and **OpenSearch** are collected directly from the VM.
-- The logs can be viewed via **Graylog** UI or **centralized logging storage**.
+* Logs from **Graylog**, **MongoDB**, and **OpenSearch** are collected directly from the VM.
+* The logs can be viewed via **Graylog** UI or **centralized logging storage**.
 
 ### Example Log Formats
 
@@ -177,13 +179,13 @@ This means:
 
 ## Tracing
 
-- **Graylog does not support Tracing.**
-- No integration with **Jaeger** or **OpenTelemetry** is available.
+* **Graylog does not support Tracing.**
+* No integration with **Jaeger** or **OpenTelemetry** is available.
 
 ---
 
 ## Profiler
 
-- **Profiler is not supported** due to Graylog's **SSPL license** restrictions.
+* **Profiler is not supported** due to Graylog's **SSPL license** restrictions.
 
 ---
