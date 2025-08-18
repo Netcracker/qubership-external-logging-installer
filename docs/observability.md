@@ -117,7 +117,7 @@ This means:
 
 - **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
 - **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
-- **OpenSearch** → [OpenSearch Metrics Docs](https://opensearch.org/docs/latest/monitoring-plugins/monitoring/)
+- **OpenSearch** → [OpenSearch Metrics Docs](https://docs.opensearch.org/latest/monitoring-your-cluster/metrics/getting-started/)
 
 ---
 
