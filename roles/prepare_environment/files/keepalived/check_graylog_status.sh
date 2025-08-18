@@ -40,16 +40,16 @@ for key, value in json.load(sys.stdin).iteritems():\
 }
 
 if ! container_is_available "graylog_mongo_1"; then
-    echo "Container graylog_mongo_1 not available";
+    echo "Container graylog_mongo_1 not available"
     exit 1
 elif ! container_is_available "graylog_web_1"; then
-    echo "Container graylog_web_1 not available";
+    echo "Container graylog_web_1 not available"
     exit 1
 elif ! container_is_available "graylog_elasticsearch_1"; then
-    echo "Container graylog_elasticsearch_1 not available";
+    echo "Container graylog_elasticsearch_1 not available"
     exit 1
 elif ! container_is_available "graylog_graylog_1"; then
-    echo "Container graylog_graylog_1 not available";
+    echo "Container graylog_graylog_1 not available"
     exit 1
 elif ! graylog_is_available; then
     echo "Graylog Web not available"

@@ -5,3 +5,4 @@ venv
 inventory/*.yaml
 *.retry
 target/
+.vscode/*

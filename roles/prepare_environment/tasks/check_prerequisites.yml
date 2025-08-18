@@ -179,7 +179,7 @@
               register: raw_docker_ports
               ignore_errors: true
 
-            # In ansible 2.5 after the map on regex_search can be added 'flatten' filter, 
+            # In ansible 2.5 after the map on regex_search can be added 'flatten' filter,
             # then the Flat Collected Ports will not necessary
             - name: Parse collected active ports
               set_fact:

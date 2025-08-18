@@ -51,7 +51,7 @@
       until: _download_tarball is succeeded
       retries: 5
       delay: 2
-      when: 
+      when:
         - raw_artifacts_registry_validate_certs | bool
         - raw_artifacts_registry_ca_cert_file is defined
 
@@ -65,7 +65,7 @@
       until: _download_tarball is succeeded
       retries: 5
       delay: 2
-      when: 
+      when:
         - raw_artifacts_registry_validate_certs | bool
         - raw_artifacts_registry_ca_cert_file is not defined
 

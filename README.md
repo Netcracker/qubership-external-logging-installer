@@ -1,62 +1,89 @@
 # Qubership External Logging Installer
 
-An Ansible-based automation tool for deploying a complete enterprise logging infrastructure stack powered by Graylog. This installer provides a comprehensive solution for centralized log collection, processing, storage, and visualization on virtual machines.
+* [Qubership External Logging Installer](#qubership-external-logging-installer)
+  * [Features](#features)
+  * [Requirements](#requirements)
+    * [Supported Operating Systems](#supported-operating-systems)
+    * [Hardware Requirements](#hardware-requirements)
+    * [Software Requirements](#software-requirements)
+  * [Installation](#installation)
+    * [Quick Start](#quick-start)
+    * [Advanced Installation](#advanced-installation)
+  * [Usage](#usage)
+    * [Basic Operations](#basic-operations)
+  * [Configuration](#configuration)
+    * [Key Configuration Parameters](#key-configuration-parameters)
+    * [Environment-Specific Settings](#environment-specific-settings)
+  * [Documentation](#documentation)
+  * [Architecture](#architecture)
+    * [System Overview](#system-overview)
+  * [Testing](#testing)
+    * [Automated Testing](#automated-testing)
+    * [Manual Testing](#manual-testing)
+  * [Contributing](#contributing)
+  * [License](#license)
+
+An Ansible-based automation tool for deploying a complete enterprise logging infrastructure stack powered by Graylog.
+This installer provides a comprehensive solution for centralized log collection, processing, storage, and visualization
+on virtual machines.
 
 [![Super Linter](https://github.com/Netcracker/qubership-external-logging-installer/actions/workflows/super-linter.yaml/badge.svg)](https://github.com/Netcracker/qubership-external-logging-installer/actions/workflows/super-linter.yaml)
 [![Release](https://img.shields.io/github/v/release/Netcracker/qubership-external-logging-installer?style=flat-square)](https://github.com/Netcracker/qubership-external-logging-installer/releases)
 
-## Table of Contents
-
-<!-- toc -->
-
 ## Features
 
-- **Complete logging stack deployment** with Graylog, OpenSearch, and MongoDB
-- **Automated SSL/TLS certificate management** for secure communications
-- **Multi-protocol log ingestion** supporting Syslog, GELF, and container logs
-- **Built-in monitoring** with Prometheus exporters for all components
-- **Load balancing and high availability** with Nginx and Keepalived support
-- **Log processing pipelines** with FluentBit and Fluentd integration
-- **Authentication proxy** for enterprise LDAP/OAuth integration
-- **Pre-configured dashboards** and extractors for common log formats
-- **Scalable architecture** supporting 1K-25K+ messages per second
-- **Cross-platform support** for Ubuntu, CentOS, RHEL, and Rocky Linux
+* **Complete logging stack deployment** with Graylog, OpenSearch, and MongoDB
+* **Automated SSL/TLS certificate management** for secure communications
+* **Multi-protocol log ingestion** supporting Syslog, GELF, and container logs
+* **Built-in monitoring** with Prometheus exporters for all components
+* **Load balancing and high availability** with Nginx and Keepalived support
+* **Log processing pipelines** with FluentBit and Fluentd integration
+* **Authentication proxy** for enterprise LDAP/OAuth integration
+* **Pre-configured dashboards** and extractors for common log formats
+* **Scalable architecture** supporting 1K-25K+ messages per second
+* **Cross-platform support** for Ubuntu, CentOS, RHEL, and Rocky Linux
 
 ## Requirements
 
 ### Supported Operating Systems
-- **Ubuntu:** 22.04 LTS (recommended), 20.04 LTS
-- **RHEL-based:** CentOS 8.x, RHEL 8.x, Oracle Linux 8.x, Rocky Linux 8.6+, 9.2+
-- **Cloud:** Amazon Linux 2
+
+* **Ubuntu:** 22.04 LTS (recommended), 20.04 LTS
+* **RHEL-based:** CentOS 8.x, RHEL 8.x, Oracle Linux 8.x, Rocky Linux 8.6+, 9.2+
+* **Cloud:** Amazon Linux 2
 
 ### Hardware Requirements
-- **CPU:** 4+ vCPU (12+ for high throughput)
-- **RAM:** 8+ GB (24+ GB for high throughput)
-- **Storage:** 1000+ IOPS, SSD recommended
-- **Network:** Opened ports 22, 80, 443, 514, 12201, 12202
+
+* **CPU:** 4+ vCPU (12+ for high throughput)
+* **RAM:** 8+ GB (24+ GB for high throughput)
+* **Storage:** 1000+ IOPS, SSD recommended
+* **Network:** Opened ports 22, 80, 443, 514, 12201, 12202
 
 ### Software Requirements
-- Docker >= 20.x
-- Python 3.x with pip
-- Ansible (installed via requirements)
-- Additional packages: `acl`, `zip`, `unzip`, `net-tools`
+
+* Docker >= 20.x
+* Python 3.x with pip
+* Ansible (installed via requirements)
+* Additional packages: `acl`, `zip`, `unzip`, `net-tools`
 
 ## Installation
 
 ### Quick Start
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/Netcracker/qubership-external-logging-installer.git
    cd qubership-external-logging-installer
    ```
 
 2. **Install Ansible dependencies:**
+
    ```bash
    pip3 install ansible
    ```
 
 3. **Configure your inventory:**
+
    ```bash
    # Create inventory file with your target hosts and parameters
    cat > inventory.yml << 'EOF'
@@ -69,9 +96,11 @@ An Ansible-based automation tool for deploying a complete enterprise logging inf
    EOF
    ```
 
-   **Important:** Edit `inventory.yml` with your actual server IP and required configuration parameters. See the [Installation Guide](docs/installation.md) for detailed configuration options and examples.
+   **Important:** Edit `inventory.yml` with your actual server IP and required configuration parameters.
+   See the [Installation Guide](docs/installation.md) for detailed configuration options and examples.
 
 4. **Run the playbook:**
+
    ```bash
    ansible-playbook -i inventory.yml playbooks/playbook.yaml
    ```
@@ -87,6 +116,7 @@ For detailed installation instructions, hardware sizing, and configuration optio
 After installation, access the Graylog web interface at `https://your-server/` using the configured credentials.
 
 **Send test logs:**
+
 ```bash
 # Syslog UDP
 logger -n your-server -P 514 "Test log message"
@@ -96,6 +126,7 @@ echo '{"version":"1.1","host":"test","short_message":"Hello Graylog"}' | nc your
 ```
 
 **Monitor system health:**
+
 ```bash
 # Check service status
 ansible-playbook -i inventory.yml playbooks/playbook.yaml --tags health_check
@@ -118,6 +149,7 @@ docker logs graylog
 ### Environment-Specific Settings
 
 **Development:**
+
 ```yaml
 all:
   vars:
@@ -126,6 +158,7 @@ all:
 ```
 
 **Production:**
+
 ```yaml
 all:
   vars:
@@ -138,10 +171,10 @@ For complete configuration reference, see [docs/installation.md](docs/installati
 
 ## Documentation
 
-- [📖 Installation Guide](docs/installation.md) - Complete installation and configuration reference
-- [🔐 MongoDB Authentication](docs/mongodb_authentication.md) - Database security setup
-- [🔍 Observability](docs/observability.md) - Monitoring and metrics configuration
-- [🔑 Password Change Guide](docs/password-change-guide.md) - Security management
+* [📖 Installation Guide](docs/installation.md) - Complete installation and configuration reference
+* [🔐 MongoDB Authentication](docs/mongodb_authentication.md) - Database security setup
+* [🔍 Observability](docs/observability.md) - Monitoring and metrics configuration
+* [🔑 Password Change Guide](docs/password-change-guide.md) - Security management
 
 ## Architecture
 
@@ -166,9 +199,10 @@ flowchart TD
 ```
 
 The architecture consists of:
-- **Data Plane:** FluentBit/FluentD collectors → Nginx proxy → Graylog processing → OpenSearch storage
-- **Control Plane:** MongoDB for configuration, Auth Proxy for authentication
-- **Monitoring:** Prometheus exporters feeding into Grafana dashboards
+
+* **Data Plane:** FluentBit/FluentD collectors → Nginx proxy → Graylog processing → OpenSearch storage
+* **Control Plane:** MongoDB for configuration, Auth Proxy for authentication
+* **Monitoring:** Prometheus exporters feeding into Grafana dashboards
 
 ## Testing
 

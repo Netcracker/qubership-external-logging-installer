@@ -30,9 +30,9 @@ waitForGraylog() {
             --silent \
             --location \
             --output /dev/null \
-            --write-out '%{http_code}\\n' \
+            --write-out '%{http_code}' \
             --request GET \
-            --write-out %{http_code} "https://localhost/")"
+            "https://localhost/")"
         if [ "$responseCode" -eq "200" ]; then
             echo "[INFO] Graylog had been started"
             return
@@ -61,7 +61,7 @@ restartGraylog() {
 ###
 changeTelegrafGraylogPassword() {
     passwordLineNumber=$(sudo grep -n -B2 'name_prefix = \"t_graylog_\"' /etc/telegraf/telegraf.conf | sed -n '/password = /p' | sed 's/-.*//')
-    sudo sed -i ${passwordLineNumber}'s/.*/  password = \"'${1}'\"/' /etc/telegraf/telegraf.conf
+    sudo sed -i "${passwordLineNumber}"'s/.*/  password = \"'"${1}"'\"/' /etc/telegraf/telegraf.conf
     echo "[INFO] Restarting Telegraf service..."
     sudo systemctl restart telegraf
 }
@@ -74,20 +74,20 @@ changeTelegrafGraylogPassword() {
 # @param  newPassword     the new password, to the value of which we need to change the password
 ###
 changeAdminPassword() {
-    rootPasswordHash=$(sudo sed -n '/root_password_sha2/p' $1 | sed 's/root_password_sha2 = //')
-    oldPasswordHash=$(echo -n $2 | sha256sum | awk '{print $1}')
-    if [[ $rootPasswordHash != $oldPasswordHash ]]; then
+    rootPasswordHash=$(sudo sed -n '/root_password_sha2/p' "$1" | sed 's/root_password_sha2 = //')
+    oldPasswordHash=$(echo -n "$2" | sha256sum | awk '{print $1}')
+    if [[ "$rootPasswordHash" != "$oldPasswordHash" ]]; then
         echo "[ERROR] The old password is incorrect."
         exit 1
     fi
-    newPasswordHash=$(echo -n $3 | sha256sum | awk '{print $1}')
-    sudo sed -i 's/.*root_password_sha2.*/root_password_sha2 = '${newPasswordHash}'/' $1
+    newPasswordHash=$(echo -n "$3" | sha256sum | awk '{print $1}')
+    sudo sed -i 's/.*root_password_sha2.*/root_password_sha2 = '"${newPasswordHash}"'/' "$1"
     restartGraylog
     telegrafStatus=$(sudo systemctl is-active telegraf)
     echo "[INFO] Telegraf status = ${telegrafStatus}"
     if [[ "${telegrafStatus}" != "unknown" ]]; then
         echo "[INFO] Change admin's password of the Graylog of the Telegraf"
-        changeTelegrafGraylogPassword $3
+        changeTelegrafGraylogPassword "$3"
     fi
 }
 
@@ -105,14 +105,14 @@ changeAdminPassword() {
 ###
 changeUserPassword() {
     command="curl --user ${1}:${2} \
-                         --header 'X-Requested-By: Graylog API Browser' \
-                         --insecure \
-                         --silent \
-                         --location \
-                         --request GET \
-                         --write-out %{http_code} "https://localhost/api/users/${1}""
-    response="$(eval $command)"
-    responseCode=$(echo $response | grep "[0-9]\{3\}$" -o)
+                        --header 'X-Requested-By: Graylog API Browser' \
+                        --insecure \
+                        --silent \
+                        --location \
+                        --request GET \
+                        --write-out %{http_code} "https://localhost/api/users/${1}""
+    response="$(eval "$command")"
+    responseCode=$(echo "$response" | grep "[0-9]\{3\}$" -o)
     case ${responseCode} in
     200) ;;
     401)
@@ -131,7 +131,7 @@ changeUserPassword() {
         echo "[ERROR] Unsupported error, status code - ${responseCode}"
         ;;
     esac
-    userId=$(echo $response | grep "\"id\":\"[0-9a-z]\+" -o | cut -c 7-)
+    userId=$(echo "$response" | grep "\"id\":\"[0-9a-z]\+" -o | cut -c 7-)
     if [ -z "$userId" ]; then
         echo "[ERROR] Can not get ID for the user '${1}'."
         exit 1
@@ -147,7 +147,7 @@ changeUserPassword() {
             --request PUT \
             --data '${data}' \
             --write-out %{http_code} "https://localhost/api/users/${userId}/password""
-    responseCode="$(eval $command)"
+    responseCode="$(eval "$command")"
     case ${responseCode} in
     204) ;;
     400)
@@ -175,19 +175,20 @@ changeUserPassword() {
 ###
 # Entrypoint
 ###
-if [ $? -eq 0 ]; then
+# shellcheck disable=SC2181
+if [ "$?" -eq 0 ]; then
     echo "[INFO] SSH connection successfully established"
 else
     echo "[ERROR] Connection failure. Check that you have defined the correct host/ssh key/ssh_user for the connection."
     exit 1
 fi
-checkPassword ${3} ${4}
+checkPassword "${3}" "${4}"
 graylogConfigFilePath=$(sudo find / -path "*/graylog/config/graylog.conf")
-rootUsername=$(sudo sed -n '/root_username/p' $graylogConfigFilePath | sed 's/root_username = //')
-if [[ $rootUsername = ${1} ]]; then
-    changeAdminPassword ${graylogConfigFilePath} ${2} ${3}
+rootUsername=$(sudo sed -n '/root_username/p' "$graylogConfigFilePath" | sed 's/root_username = //')
+if [[ "$rootUsername" = "${1}" ]]; then
+    changeAdminPassword "${graylogConfigFilePath}" "${2}" "${3}"
 else
-    changeUserPassword ${1} ${2} ${3}
+    changeUserPassword "${1}" "${2}" "${3}"
 fi
 if [ -z "${5}" ]; then
     echo "[INFO] Password for user '${1}' was successfully changed"
