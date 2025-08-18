@@ -30,9 +30,9 @@ waitForGraylog() {
             --silent \
             --location \
             --output /dev/null \
-            --write-out '%{http_code}\\n' \
+            --write-out '%{http_code}' \
             --request GET \
-            --write-out %{http_code} "https://localhost/")"
+            "https://localhost/")"
         if [ "$responseCode" -eq "200" ]; then
             echo "[INFO] Graylog had been started"
             return
@@ -61,7 +61,7 @@ restartGraylog() {
 ###
 changeTelegrafGraylogPassword() {
     passwordLineNumber=$(sudo grep -n -B2 'name_prefix = \"t_graylog_\"' /etc/telegraf/telegraf.conf | sed -n '/password = /p' | sed 's/-.*//')
-    sudo sed -i "${passwordLineNumber}"'s/.*/  password = \"'${1}'\"/' /etc/telegraf/telegraf.conf
+    sudo sed -i "${passwordLineNumber}"'s/.*/  password = \"'"${1}"'\"/' /etc/telegraf/telegraf.conf
     echo "[INFO] Restarting Telegraf service..."
     sudo systemctl restart telegraf
 }
@@ -81,7 +81,7 @@ changeAdminPassword() {
         exit 1
     fi
     newPasswordHash=$(echo -n "$3" | sha256sum | awk '{print $1}')
-    sudo sed -i 's/.*root_password_sha2.*/root_password_sha2 = '${newPasswordHash}'/' "$1"
+    sudo sed -i 's/.*root_password_sha2.*/root_password_sha2 = '"${newPasswordHash}"'/' "$1"
     restartGraylog
     telegrafStatus=$(sudo systemctl is-active telegraf)
     echo "[INFO] Telegraf status = ${telegrafStatus}"
@@ -175,7 +175,9 @@ changeUserPassword() {
 ###
 # Entrypoint
 ###
+# shellcheck disable=SC2181
 if [ "$?" -eq 0 ]; then
+# shellcheck enable=SC2181
     echo "[INFO] SSH connection successfully established"
 else
     echo "[ERROR] Connection failure. Check that you have defined the correct host/ssh key/ssh_user for the connection."

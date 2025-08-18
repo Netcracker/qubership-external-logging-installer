@@ -1,15 +1,16 @@
-The document provides information about changing users\` passwords process in Graylog:
+# Changing users\` passwords process in Graylog
 
-* [Root user](#root-user)
-  * [Change root user password](#change-root-user-password)
-* [User](#user)
-  * [Change user password using bash command](#change-user-password-using-bash-command)
-  * [Change user password via Graylog REST API](#change-user-password-via-graylog-rest-api)
+* [Changing users\` passwords process in Graylog](#changing-users-passwords-process-in-graylog)
+  * [Root user](#root-user)
+    * [Change root user password](#change-root-user-password)
+  * [User](#user)
+    * [Change user password using Bash command](#change-user-password-using-bash-command)
+    * [Change user password via Graylog REST API](#change-user-password-via-graylog-rest-api)
 
 Graylog has default root user usually named admin. Other users can be created and configured in UI. They have special
 roles with pre-configured permissions.
 
-# Root user
+## Root user
 
 The root user is default and is created during deploy. Initial password is set in inventory configuration in field
 `root_password`.
@@ -24,7 +25,7 @@ all:
     # ...
 ```
 
-## Change root user password
+### Change root user password
 
 If you want to change root password, there is a script on host machine where Graylog is deployed on the path
 `/root/graylog/`. The script will change admin password and restart Graylog container to apply changes.
@@ -56,24 +57,24 @@ The example of command with parameters set:
 
 Note: A new password must be at least 6 characters long and can not contain spaces.
 
-# User
+## User
 
 There are two ways of changing password:
 
 * via UI interface,
-* using bash script,
+* using Bash script,
 * to send GET request via Graylog REST API.
 
-## Change user password using bash command
+### Change user password using Bash command
 
 If you have access to host machine of Graylog, you can use this way. There is a script `change-password.sh` on the host
 machine. How to use the script described [above](#change-root-user-password).
 
 Note: actually, for non-root user the script sends REST request to change password.
 
-## Change user password via Graylog REST API
+### Change user password via Graylog REST API
 
-To change user password you need to know it\`s id that consists of 24 symbols (`[a-z0-9]`). It can be found in url
+To change user password you need to know it\`s Id that consists of 24 symbols (`[a-z0-9]`). It can be found in URL
 in browser on user\`s page or if you have grants you can get it by GET request `http://<host>/api/users`.
 To send request you can be authorized as user you want to change.
 
@@ -88,7 +89,7 @@ Content-Type: application/json
 X-Requested-By: Graylog API Browser
 ```
 
-Json body:
+JSON body:
 
 ```json
 {
