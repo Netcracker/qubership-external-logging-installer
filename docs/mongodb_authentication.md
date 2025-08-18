@@ -15,7 +15,7 @@ Note that the access control is enabled by default and it's not possible to disa
 Product uses default credentials (admin/admin).
 
 `mongodb_graylog_username` and `mongodb_graylog_password` variables are used to supply graylog user credentials.
-Product uses default credentials (graylog/graylog). 
+Product uses default credentials (graylog/graylog).
 
 These parameters can be changed during deployment.
 

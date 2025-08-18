@@ -37,7 +37,7 @@
         - docker_storage_options.stdout.find('overlay2') == -1
 
     - name: Add docker config in /etc/docker
-      when: 
+      when:
         - ansible_facts['distribution'] != "Amazon"
       block:
         - name: Create docker config directory
@@ -186,7 +186,7 @@
     state: present
 
 - name: Log into registry and force re-authorization (without validation certs)
-  when: 
+  when:
     - docker_registry_username is defined
     - docker_registry_password is defined
     - not docker_registry_validate_certs|bool
@@ -197,7 +197,7 @@
     reauthorize: true
 
 - name: Log into registry and force re-authorization with local CA
-  when: 
+  when:
     - docker_registry_username is defined
     - docker_registry_password is defined
     - docker_registry_validate_certs|bool
@@ -211,7 +211,7 @@
     reauthorize: true
 
 - name: Log into registry and force re-authorization without local CA
-  when: 
+  when:
     - docker_registry_username is defined
     - docker_registry_password is defined
     - docker_registry_validate_certs|bool

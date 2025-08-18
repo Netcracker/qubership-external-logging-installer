@@ -51,7 +51,7 @@ All parameters of script are described below:
 The example of command with parameters set:
 
 ```bash
-./change-password.sh --hosts x.x.x.x --user admin --oldpass admin1 --newpass PaSSw0rd --confirmpass PaSSw0rd --sshuser centos --sshkey ./key
+./change-password.sh --hosts x.x.x.x --user admin --oldpass admin1 --newpass <newpassword> --confirmpass <newpassword> --sshuser centos --sshkey ./key
 ```
 
 Note: A new password must be at least 6 characters long and can not contain spaces.
