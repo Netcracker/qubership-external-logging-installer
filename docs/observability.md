@@ -141,9 +141,9 @@ This means:
 
 ### Available Dashboards
 
-* [Graylog Metrics Dashboard](/grafana/dashboards/monitoring/Graylog_(VM).json)
-* [MongoDB Metrics Dashboard](/grafana/dashboards/monitoring/Graylog_(VM).json)
-* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)
+- [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+- [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+- [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
 
 ---
 
