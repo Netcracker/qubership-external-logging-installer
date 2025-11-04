@@ -1,8 +1,8 @@
+# Enable Authentication to MongoDB
+
 * [Enable Authentication to MongoDB](#enable-authentication-to-mongodb)
   * [Supply credentials](#supply-credentials)
   * [User details](#user-details)
-
-# Enable Authentication to MongoDB
 
 Graylog uses MongoDB to store configurations. In earlier versions of `external-logging-installer`, MongoDB was
 installed without any access control enabled so that Graylog could connect to MongoDB without supplying credentials.
@@ -15,7 +15,7 @@ Note that the access control is enabled by default and it's not possible to disa
 Product uses default credentials (admin/admin).
 
 `mongodb_graylog_username` and `mongodb_graylog_password` variables are used to supply graylog user credentials.
-Product uses default credentials (graylog/graylog). 
+Product uses default credentials (graylog/graylog).
 
 These parameters can be changed during deployment.
 

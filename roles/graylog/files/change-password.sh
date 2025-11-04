@@ -2,7 +2,7 @@
 
 # Check parameters
 env_check() {
-    for variable in $@; do
+    for variable in "$@"; do
         if [ -z "${!variable}" ]; then
             echo "[ERROR] Value for parameter ${variable} not found"
             exit 1
@@ -53,7 +53,7 @@ done
 
 if [ -z "${hosts}" ]; then
     env_check username oldPassword newPassword confirmPassword
-    ./processing-change-password.sh ${username} ${oldPassword} ${newPassword} ${confirmPassword}
+    ./processing-change-password.sh "${username}" "${oldPassword}" "${newPassword}" "${confirmPassword}"
 else
     env_check username oldPassword newPassword confirmPassword sshUser sshKey
     IFS=',' read -r -a array_hosts <<<"$hosts"
@@ -62,6 +62,6 @@ else
             -o UserKnownHostsFile=/dev/null \
             -i ${sshKey} \
             ${sshUser}@${host} 'sudo bash -s' < processing-change-password.sh ${username} ${oldPassword} ${newPassword} ${confirmPassword} ${host}"
-        eval ${run}
+        eval "${run}"
     done
 fi

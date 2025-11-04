@@ -9,7 +9,7 @@
             <!-- Try to catch only login, logout and change password events -->
             <RegexFilter
                     regex="^.*?&quot;((POST|DELETE) api/system/sessions(/.*?)?|PUT api/users/.*?/password|GET api/users/.*?)&quot;.*$"
-                    onMatch="ACCEPT" 
+                    onMatch="ACCEPT"
                     onMismatch="DENY"/>
         </Console>
         <!-- Internal Graylog log appender. Please do not disable. This makes internal log messages available via REST calls. -->
