@@ -62,7 +62,6 @@ Ensure that these exporters are deployed and running before proceeding with Graf
 This **stores the credentials** required for Prometheus to scrape Graylog metrics.
 
 ```yaml
----
 kind: Secret
 apiVersion: v1
 metadata:
@@ -77,7 +76,6 @@ stringData:
 This **configures Prometheus** to scrape metrics from Graylog.
 
 ```yaml
----
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: ScrapeConfig
 metadata:
@@ -85,9 +83,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - xx.xx.xx.xx:9999 #This is just an example of VM's IP addresses format
-        - yy.yy.yy.yy:9999
-        - zz.zz.zz.zz:9999
+        - xx.xx.xx.xx:9999  # This is just an example of VM's IP addresses format
   scrapeInterval: 30s
   metricsPath: /metrics
   basicAuth:
@@ -98,8 +94,6 @@ spec:
       name: graylog-admin-creds
       key: password
 ```
-
----
 
 ## Monitoring
 
@@ -121,7 +115,11 @@ This means:
 * **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
 * **OpenSearch** → [OpenSearch Metrics Docs](https://docs.opensearch.org/latest/monitoring-your-cluster/metrics/getting-started/)
 
----
+You can refer to the following official documentation links for metrics:
+
+* **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
+* **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
+* **OpenSearch** → [OpenSearch Metrics Docs](https://opensearch.org/docs/latest/monitoring-plugins/monitoring/)
 
 ## Dashboards
 
@@ -141,11 +139,9 @@ This means:
 
 ### Available Dashboards
 
-- [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-- [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-- [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
-
----
+* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+* [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
 
 ## Logging
 
@@ -158,8 +154,8 @@ This means:
 
 ```bash
 [2024-01-01T00:00:00,329][INFO] Successfully ensured index template gray_audit-template
-[2024-01-01T00:00:01,292][INFO] Waiting for allocation of index <gray_audit_1>.
-[2024-01-01T00:00:03,745][INFO] Index <gray_audit_1> has been successfully allocated.
+[2024-01-01T00:00:01,292][INFO] Waiting for allocation of index <gray_audit_1>
+[2024-01-01T00:00:03,745][INFO] Index <gray_audit_1> has been successfully allocated
 ```
 
 #### MongoDB (JSON Format)
@@ -182,7 +178,8 @@ This means:
 * **Graylog does not support Tracing.**
 * No integration with **Jaeger** or **OpenTelemetry** is available.
 
----
+* Graylog does not support Tracing.
+* No integration with `Jaeger` or `OpenTelemetry` is available.
 
 ## Profiler
 
