@@ -98,10 +98,6 @@ spec:
 ## Monitoring
 
 All **Logging VM** components that expose metrics are integrated with the monitoring system.
-
-## Monitoring
-
-All **Logging VM** components that expose metrics are integrated with the monitoring system.
 This means:
 
 * Metrics are enabled and exposed in **Prometheus** format.
@@ -120,6 +116,7 @@ This means:
 * **OpenSearch** → [OpenSearch Metrics Docs](https://docs.opensearch.org/latest/monitoring-your-cluster/metrics/getting-started/)
 
 You can refer to the following official documentation links for metrics:
+
 * **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
 * **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
 * **OpenSearch** → [OpenSearch Metrics Docs](https://opensearch.org/docs/latest/monitoring-plugins/monitoring/)
@@ -142,11 +139,9 @@ You can refer to the following official documentation links for metrics:
 
 ### Available Dashboards
 
-- [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-- [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-- [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
-
-## Logging
+* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+* [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
 
 ## Logging
 

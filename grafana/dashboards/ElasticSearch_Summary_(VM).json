@@ -44,7 +44,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Shows status of cluster. Possible values: green, yellow, red",
       "fieldConfig": {
@@ -128,7 +128,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_cluster_health_status{color=~\"red\", instance=\"$instance\"} == 1\r\nor (elasticsearch_cluster_health_status{color=\"green\", instance=\"$instance\"} == 1) + 4\r\nor (elasticsearch_cluster_health_status{color=\"yellow\", instance=\"$instance\"} == 1) + 22",
@@ -145,7 +145,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This indicates the number of times an Elasticsearch circuit breaker has been triggered.",
       "fieldConfig": {
@@ -229,7 +229,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "count(elasticsearch_breakers_tripped{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}>0)",
@@ -246,7 +246,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The average CPU usage across Elasticsearch nodes in a cluster.",
       "fieldConfig": {
@@ -316,7 +316,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum (elasticsearch_process_cpu_percent{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"} ) / count (elasticsearch_process_cpu_percent{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"} )",
@@ -336,7 +336,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The percentage of used JVM memory in Elasticsearch.",
       "fieldConfig": {
@@ -406,7 +406,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum (elasticsearch_jvm_memory_used_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}) / sum (elasticsearch_jvm_memory_max_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}) * 100",
@@ -426,7 +426,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Number of nodes in the cluster",
       "fieldConfig": {
@@ -492,7 +492,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_number_of_nodes{instance=\"$instance\",cluster=\"$cluster\"}",
           "format": "time_series",
@@ -511,7 +511,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Number of data nodes in the cluster",
       "fieldConfig": {
@@ -577,7 +577,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_number_of_data_nodes{instance=\"$instance\",cluster=\"$cluster\"}",
           "format": "time_series",
@@ -596,7 +596,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Cluster level changes which have not yet been executed",
       "fieldConfig": {
@@ -666,7 +666,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_number_of_pending_tasks{instance=\"$instance\",cluster=\"$cluster\"}",
           "format": "time_series",
@@ -685,7 +685,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Shows open file descriptors in instance",
       "fieldConfig": {
@@ -741,7 +741,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "sum (elasticsearch_process_open_files_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"})",
           "format": "time_series",
@@ -773,7 +773,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The number of primary shards in your cluster. This is an aggregate total across all indices.",
       "fieldConfig": {
@@ -841,7 +841,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_active_primary_shards{instance=\"$instance\",cluster=\"$cluster\"}",
           "format": "time_series",
@@ -858,7 +858,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Aggregate total of all shards across all indices, which includes replica shards",
       "fieldConfig": {
@@ -925,7 +925,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_active_shards{instance=\"$instance\",cluster=\"$cluster\"}",
           "format": "time_series",
@@ -942,7 +942,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Count of shards that are being freshly created",
       "fieldConfig": {
@@ -1009,7 +1009,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_cluster_health_initializing_shards{instance=\"$instance\",cluster=\"$cluster\"}",
@@ -1027,7 +1027,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The number of shards that are currently moving from one node to another node.",
       "fieldConfig": {
@@ -1094,7 +1094,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_relocating_shards{instance=\"$instance\",cluster=\"$cluster\"}",
           "format": "time_series",
@@ -1111,7 +1111,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Shards delayed to reduce reallocation overhead",
       "fieldConfig": {
@@ -1178,7 +1178,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_delayed_unassigned_shards{instance=\"$instance\",cluster=\"$cluster\"} ",
           "format": "time_series",
@@ -1195,7 +1195,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The number of shards that exist in the cluster state, but cannot be found in the cluster itself",
       "fieldConfig": {
@@ -1262,7 +1262,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_cluster_health_unassigned_shards{instance=\"$instance\",cluster=\"$cluster\"} ",
           "format": "time_series",
@@ -1292,7 +1292,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The rate of JVM garbage collection (GC) events per second over a short time window.",
       "fieldConfig": {
@@ -1381,7 +1381,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_jvm_gc_collection_seconds_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -1401,7 +1401,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Time spent on JVM garbage collection (GC) per second over a short time window:",
       "fieldConfig": {
@@ -1490,7 +1490,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_jvm_gc_collection_seconds_sum{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -1523,7 +1523,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The rate of transaction log (translog) operations per second over a short time window",
       "fieldConfig": {
@@ -1606,7 +1606,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_translog_operations{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -1623,7 +1623,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total translog size in bytes",
       "fieldConfig": {
@@ -1706,7 +1706,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_translog_size_in_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -1736,7 +1736,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric shows whether any circuit breakers have been triggered to prevent memory overload in Elasticsearch.",
       "fieldConfig": {
@@ -1819,7 +1819,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_breakers_tripped{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -1836,7 +1836,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric shows the estimated memory usage (in bytes) for circuit breakers in Elasticsearch.",
       "fieldConfig": {
@@ -1919,7 +1919,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_breakers_estimated_size_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -1932,7 +1932,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_breakers_limit_size_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
           "format": "time_series",
@@ -1960,7 +1960,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "It represents the 1-minute load average of the operating system running Elasticsearch.",
       "fieldConfig": {
@@ -2043,7 +2043,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_os_load1{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -2059,7 +2059,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_os_load5{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
           "format": "time_series",
@@ -2074,7 +2074,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_os_load15{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
           "format": "time_series",
@@ -2093,7 +2093,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "The CPU usage of the Elasticsearch process as a percentage of total CPU capacity.",
       "fieldConfig": {
@@ -2176,7 +2176,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_process_cpu_percent{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -2196,7 +2196,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric represents the amount of JVM heap memory currently in use by Elasticsearch.",
       "fieldConfig": {
@@ -2279,7 +2279,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_jvm_memory_used_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -2295,7 +2295,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_jvm_memory_max_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
           "format": "time_series",
@@ -2307,7 +2307,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_jvm_memory_pool_peak_used_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
           "format": "time_series",
@@ -2323,7 +2323,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric shows the amount of heap memory that the JVM has committed for use.",
       "fieldConfig": {
@@ -2406,7 +2406,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_jvm_memory_committed_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -2420,7 +2420,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_jvm_memory_max_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
           "format": "time_series",
@@ -2449,7 +2449,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric calculates the percentage of used disk space in Elasticsearch data storage.",
       "fieldConfig": {
@@ -2532,7 +2532,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "1-(elasticsearch_filesystem_data_available_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}/elasticsearch_filesystem_data_size_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"})",
@@ -2552,7 +2552,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric measures the rate of data transmitted (in bytes) over the transport layer in Elasticsearch.\n",
       "fieldConfig": {
@@ -2635,7 +2635,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_transport_tx_size_bytes_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -2649,7 +2649,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "-irate(elasticsearch_transport_rx_size_bytes_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -2678,7 +2678,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "his metric represents the total number of documents stored in the Elasticsearch indices for a given instance and cluster.",
       "fieldConfig": {
@@ -2761,7 +2761,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_docs{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -2781,7 +2781,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric calculates the rate of documents being indexed per second over the specified interval.\n\n",
       "fieldConfig": {
@@ -2864,7 +2864,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_indexing_index_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -2884,7 +2884,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Count of deleted documents on this node",
       "fieldConfig": {
@@ -2967,7 +2967,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_docs_deleted{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -2987,7 +2987,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This calculates the rate of documents merged per second over the specified interval.",
       "fieldConfig": {
@@ -3070,7 +3070,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "rate(elasticsearch_indices_merges_docs_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval])",
@@ -3090,7 +3090,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "This metric calculates the rate of merged segment size (in bytes) per second over the specified interval.",
       "fieldConfig": {
@@ -3173,7 +3173,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_merges_total_size_bytes_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -3206,7 +3206,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of time spent on search queries per second.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -3289,7 +3289,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_search_query_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$__rate_interval]) ",
@@ -3309,7 +3309,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of time spent indexing documents per second.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -3392,7 +3392,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_indexing_index_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -3412,7 +3412,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of total time spent merging index segments per second.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -3495,7 +3495,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_merges_total_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -3515,7 +3515,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of time Elasticsearch spent throttling store operations per second.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -3598,7 +3598,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_store_throttle_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -3631,7 +3631,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of documents indexed per second in Elasticsearch.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -3714,7 +3714,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "rate(elasticsearch_indices_indexing_index_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -3730,7 +3730,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_search_query_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3742,7 +3742,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_search_fetch_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3754,7 +3754,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_merges_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3766,7 +3766,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_refresh_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3778,7 +3778,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_flush_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3790,7 +3790,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_get_exists_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3802,7 +3802,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_get_missing_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3814,7 +3814,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_get_tota{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3826,7 +3826,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "rate(elasticsearch_indices_indexing_delete_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3842,7 +3842,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Instantaneous rate of time spent indexing documents in Elasticsearch, measured in seconds.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -3925,7 +3925,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_indices_indexing_index_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -3941,7 +3941,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_search_query_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3953,7 +3953,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_search_fetch_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3965,7 +3965,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_merges_total_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3977,7 +3977,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_refresh_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -3989,7 +3989,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_flush_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -4001,7 +4001,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_get_exists_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -4013,7 +4013,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_get_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -4025,7 +4025,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_get_missing_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -4037,7 +4037,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_indexing_delete_time_seconds_total{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -4049,7 +4049,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "irate(elasticsearch_indices_get_time_seconds{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
           "format": "time_series",
@@ -4078,7 +4078,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Instantaneous rate of rejected thread pool tasks in Elasticsearch.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4161,7 +4161,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_thread_pool_rejected_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -4179,7 +4179,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Current number of active threads in the Elasticsearch thread pool.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4262,7 +4262,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_thread_pool_active_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -4280,7 +4280,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Displays the number of active threads currently in use by the Elasticsearch thread pool.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4363,7 +4363,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_thread_pool_active_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -4381,7 +4381,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Measures the rate of completed tasks in the Elasticsearch thread pool over the specified interval.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4464,7 +4464,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "irate(elasticsearch_thread_pool_completed_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -4495,7 +4495,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Represents the memory used by field data in Elasticsearch, measured in bytes.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4578,7 +4578,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_fielddata_memory_size_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -4598,7 +4598,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Represents the rate of field data evictions from memory in Elasticsearch over the specified interval.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4681,7 +4681,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "rate(elasticsearch_indices_fielddata_evictions{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -4701,7 +4701,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Shows the amount of memory used by the Elasticsearch query cache in bytes.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4784,7 +4784,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_query_cache_memory_size_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -4804,7 +4804,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of query cache evictions in Elasticsearch, indicating how often cached queries are being removed.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4887,7 +4887,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "rate(elasticsearch_indices_query_cache_evictions{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -4907,7 +4907,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Rate of filter cache evictions in Elasticsearch, showing how frequently filter cache entries are being removed.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -4990,7 +4990,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "rate(elasticsearch_indices_filter_cache_evictions{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}[$interval])",
@@ -5023,7 +5023,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total number of segments in Elasticsearch indices, indicating index fragmentation and merge activity.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -5106,7 +5106,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segments_count{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -5123,7 +5123,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total memory used by Elasticsearch index segments, including stored fields, terms, and norms.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -5206,7 +5206,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segments_memory_bytes{instance=\"$instance\",cluster=\"$cluster\",name=~\"$name\"}",
@@ -5236,7 +5236,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Number of primary documents stored in the Elasticsearch index.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -5319,7 +5319,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_docs_primary{instance=~\"$instance\"}",
@@ -5336,7 +5336,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total size of stored index data in bytes with only primary shards on all nodes",
       "fieldConfig": {
@@ -5419,7 +5419,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_store_size_bytes_primary{instance=~\"$instance\"}",
@@ -5436,7 +5436,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total size of stored index data in bytes with all shards on all nodes",
       "fieldConfig": {
@@ -5519,7 +5519,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_store_size_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -5547,7 +5547,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Index writer with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -5630,7 +5630,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_index_writer_memory_bytes_primary{instance=~\"$instance\"}",
           "format": "time_series",
@@ -5645,7 +5645,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Index writer with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -5728,7 +5728,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_index_writer_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -5756,7 +5756,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Number of primary segments in the Elasticsearch index.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -5839,7 +5839,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segment_count_primary{instance=~\"$instance\"}",
@@ -5856,7 +5856,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total number of segments across all shards in the Elasticsearch index.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -5939,7 +5939,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segment_count_total{instance=~\"$instance\"}",
@@ -5956,7 +5956,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of segments with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -6039,7 +6039,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segment_memory_bytes_primary{instance=~\"$instance\"}",
@@ -6056,7 +6056,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of segments with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -6139,7 +6139,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -6167,7 +6167,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Memory used by primary shard segments for doc values in Elasticsearch.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -6250,7 +6250,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segment_doc_values_memory_bytes_primary{instance=~\"$instance\"}",
@@ -6267,7 +6267,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Doc values with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -6350,7 +6350,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_doc_values_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -6378,7 +6378,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of fields with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -6461,7 +6461,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_fields_memory_bytes_primary{instance=~\"$instance\"}",
           "format": "time_series",
@@ -6476,7 +6476,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of fields with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -6559,7 +6559,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_fields_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -6587,7 +6587,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Memory used by primary shard segments for fixed bit sets in Elasticsearch.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -6670,7 +6670,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segment_fixed_bit_set_memory_bytes_primary{instance=~\"$instance\"}",
@@ -6687,7 +6687,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Total memory used by shard segments for fixed bit sets in Elasticsearch.\n\n\n\n\n\n\n\n",
       "fieldConfig": {
@@ -6770,7 +6770,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "elasticsearch_indices_segment_fixed_bit_set_memory_bytes_total{instance=~\"$instance\"}",
@@ -6800,7 +6800,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of norms with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -6883,7 +6883,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_norms_memory_bytes_primary{instance=~\"$instance\"}",
           "format": "time_series",
@@ -6898,7 +6898,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of norms with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -6981,7 +6981,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_norms_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7009,7 +7009,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of points with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -7092,7 +7092,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_points_memory_bytes_primary{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7107,7 +7107,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of points with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -7190,7 +7190,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_points_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7218,7 +7218,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of terms with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -7301,7 +7301,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_terms_memory_primary{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7316,7 +7316,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Number of terms with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -7399,7 +7399,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_terms_memory_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7427,7 +7427,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of version map with only primary shards on all nodes in bytes",
       "fieldConfig": {
@@ -7510,7 +7510,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_version_map_memory_bytes_primary{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7525,7 +7525,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
+        "uid": "$datasource"
       },
       "description": "Size of version map with all shards on all nodes in bytes",
       "fieldConfig": {
@@ -7608,7 +7608,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PC3E95692D54ABCC0"
+            "uid": "$datasource"
           },
           "expr": "elasticsearch_indices_segment_version_map_memory_bytes_total{instance=~\"$instance\"}",
           "format": "time_series",
@@ -7633,11 +7633,12 @@
     "list": [
       {
         "current": {
-          "text": "Platform Monitoring Prometheus",
-          "value": "PC3E95692D54ABCC0"
+          "selected": false,
+          "text": "default",
+          "value": "default"
         },
         "includeAll": false,
-        "name": "Datasource",
+        "name": "datasource",
         "options": [],
         "query": "prometheus",
         "refresh": 1,
@@ -7712,12 +7713,12 @@
       },
       {
         "current": {
-          "text": "docker-cluster",
-          "value": "docker-cluster"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "PC3E95692D54ABCC0"
+          "uid": "$datasource"
         },
         "definition": "",
         "includeAll": false,
@@ -7740,7 +7741,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "PC3E95692D54ABCC0"
+          "uid": "$datasource"
         },
         "definition": "",
         "includeAll": true,
@@ -7759,12 +7760,12 @@
       },
       {
         "current": {
-          "text": "10.101.182.166:9999",
-          "value": "10.101.182.166:9999"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "PC3E95692D54ABCC0"
+          "uid": "$datasource"
         },
         "definition": "",
         "includeAll": false,
