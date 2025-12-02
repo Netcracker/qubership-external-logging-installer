@@ -1,4 +1,3 @@
-This section provides the Observability information for Logging VM.
 # Observability Documentation for Logging VM
 
 ## Table of Contents
@@ -7,16 +6,16 @@ This section provides the Observability information for Logging VM.
   * [Table of Contents](#table-of-contents)
   * [Overview](#overview)
   * [Requirements](#requirements)
-    * [Deploy Required Exporters](#deploy-required-exporters)
-    * [Secret for Authentication](#secret-for-authentication)
-    * [Prometheus Scrape Config](#prometheus-scrape-config)
+    * [1. Deploy Required Exporters](#1-deploy-required-exporters)
+    * [2. Secret for Authentication](#2-secret-for-authentication)
+    * [3. Prometheus Scrape Config](#3-prometheus-scrape-config)
   * [Monitoring](#monitoring)
     * [Components with Metrics](#components-with-metrics)
     * [Metrics](#metrics)
-    * [Dashboards](#dashboards)
-      * [Dashboard Management](#dashboard-management)
-      * [How to Use Dashboards in Grafana](#how-to-use-dashboards-in-grafana)
-      * [Available Dashboards](#available-dashboards)
+  * [Dashboards](#dashboards)
+    * [Dashboard Management](#dashboard-management)
+    * [How to Use Dashboards in Grafana](#how-to-use-dashboards-in-grafana)
+    * [Available Dashboards](#available-dashboards)
   * [Logging](#logging)
     * [Example Log Formats](#example-log-formats)
       * [Graylog (Text Format)](#graylog-text-format)
@@ -25,20 +24,24 @@ This section provides the Observability information for Logging VM.
   * [Tracing](#tracing)
   * [Profiler](#profiler)
 
+---
+
 ## Overview
 
-| Observability Part        | Integration Status                    |
-| ------------------------- | ------------------------------------- |
-| [Monitoring](#monitoring) | ✅ Supported                           |
-| [Logging](#logging)       | ✅ Supported                           |
-| [Tracing](#tracing)       | ⛔️ Not Supported in Graylog            |
+| Observability Part        | Integration Status                |
+| ------------------------- | --------------------------------- |
+| [Monitoring](#monitoring) | ✅ Supported                      |
+| [Logging](#logging)       | ✅ Supported                      |
+| [Tracing](#tracing)       | ⛔️ Not Supported in Graylog       |
 | [Profiler](#profiler)     | ⛔️ Not Supported (License Restriction) |
+
+---
 
 ## Requirements
 
 To enable metrics collection from Graylog, the following resources need to be created:
 
-### Deploy Required Exporters
+### 1. Deploy Required Exporters
 
 To collect and display metrics in Grafana, we must deploy the necessary exporters for the services we want to monitor.
 By default, these exporters are disabled and must be explicitly enabled in the configuration.
@@ -54,7 +57,7 @@ proxy_exporter_install: true
 
 Ensure that these exporters are deployed and running before proceeding with Grafana dashboards.
 
-### Secret for Authentication
+### 2. Secret for Authentication
 
 This **stores the credentials** required for Prometheus to scrape Graylog metrics.
 
@@ -68,7 +71,7 @@ stringData:
   password: prometheus
 ```
 
-### Prometheus Scrape Config
+### 3. Prometheus Scrape Config
 
 This **configures Prometheus** to scrape metrics from Graylog.
 
@@ -96,6 +99,9 @@ spec:
 
 All **Logging VM** components that expose metrics are integrated with the monitoring system.
 
+## Monitoring
+
+All **Logging VM** components that expose metrics are integrated with the monitoring system.
 This means:
 
 * Metrics are enabled and exposed in **Prometheus** format.
@@ -103,38 +109,44 @@ This means:
 
 ### Components with Metrics
 
-* **Graylog**
-* **MongoDB**
-* **OpenSearch**
+* Graylog
+* MongoDB
+* OpenSearch
 
 ### Metrics
+
+* **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
+* **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
+* **OpenSearch** → [OpenSearch Metrics Docs](https://docs.opensearch.org/latest/monitoring-your-cluster/metrics/getting-started/)
 
 You can refer to the following official documentation links for metrics:
 * **Graylog** → [Graylog Metrics Documentation](https://go2docs.graylog.org/5-0/interacting_with_your_log_data/metrics.html#PrometheusMetricExporting)
 * **MongoDB** → [MongoDB Monitoring Docs](https://www.mongodb.com/docs/manual/administration/monitoring/)
 * **OpenSearch** → [OpenSearch Metrics Docs](https://opensearch.org/docs/latest/monitoring-plugins/monitoring/)
 
-### Dashboards
+## Dashboards
 
-#### Dashboard Management
+### Dashboard Management
 
-Dashboards are now included as part of the **external-logging-installer** because:
+* Dashboards are now included as part of the **external-logging-installer** because:
   * It **decouples dashboard lifecycle** from logging stack updates.
   * It **allows independent management** of dashboards without affecting the logging stack.
   * It is **easier to maintain and deploy** across multiple clusters.
 
-#### How to Use Dashboards in Grafana
+### How to Use Dashboards in Grafana
 
 1. Open **Grafana**.
 2. Navigate to **Dashboards → Import**.
 3. Paste the **JSON content** of the required dashboard.
 4. Click **Import** to start using it.
 
-#### Available Dashboards
+### Available Dashboards
 
-* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)
-* [MongoDB Metrics Dashboard](/grafana/dashboards/MongoDB_Summary_(VM).json)
-* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)
+- [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+- [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
+- [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
+
+## Logging
 
 ## Logging
 
@@ -142,7 +154,6 @@ Dashboards are now included as part of the **external-logging-installer** becaus
 * The logs can be viewed via **Graylog** UI or **centralized logging storage**.
 
 ### Example Log Formats
-The example log formats are provided below:
 
 #### Graylog (Text Format)
 
@@ -161,15 +172,22 @@ The example log formats are provided below:
 #### OpenSearch (Text Format)
 
 ```bash
-[2024-01-04T17:50:58,716][INFO ][o.o.j.s.JobSweeper] [opensearch-0] Running full sweep  
-[2024-01-04T17:51:09,665][INFO ][sgaudit] [opensearch-0] {"audit_request_effective_user":"netcrk","audit_trace_indices":["graylog_0"],"audit_request_origin":"REST"}
+[2024-01-04T17:50:58,716][INFO ][o.o.j.s.JobSweeper] [opensearch-0] Running full sweep
+[2024-01-04T17:51:09,665][INFO ][sgaudit] [opensearch-0] {"audit_request_effective_user":"user","audit_trace_indices":["graylog_0"],"audit_request_origin":"REST"}
 ```
 
+---
+
 ## Tracing
+
+* **Graylog does not support Tracing.**
+* No integration with **Jaeger** or **OpenTelemetry** is available.
 
 * Graylog does not support Tracing.
 * No integration with `Jaeger` or `OpenTelemetry` is available.
 
 ## Profiler
 
-* `Profiler is not supported` due to Graylog's `SSPL license` restrictions.
+* **Profiler is not supported** due to Graylog's **SSPL license** restrictions.
+
+---

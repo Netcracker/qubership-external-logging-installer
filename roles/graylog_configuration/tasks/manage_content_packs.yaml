@@ -46,7 +46,7 @@
           delay: 2
 
         - name: Download archive with content packs with SSL-certificate
-          when: 
+          when:
             - raw_artifacts_registry_validate_certs | bool
             - raw_artifacts_registry_ca_cert_file is defined
           get_url:
@@ -62,7 +62,7 @@
           delay: 2
 
         - name: Download archive with content packs without SSL-certificate
-          when: 
+          when:
             - raw_artifacts_registry_validate_certs | bool
             - raw_artifacts_registry_ca_cert_file is not defined
           get_url:
@@ -90,7 +90,7 @@
           delay: 2
 
         - name: Download archive with content packs with SSL-certificate
-          when: 
+          when:
             - raw_artifacts_registry_validate_certs | bool
             - raw_artifacts_registry_ca_cert_file is defined
           get_url:
@@ -104,7 +104,7 @@
           delay: 2
 
         - name: Download archive with content packs without SSL-certificate
-          when: 
+          when:
             - raw_artifacts_registry_validate_certs | bool
             - raw_artifacts_registry_ca_cert_file is not defined
           get_url:
