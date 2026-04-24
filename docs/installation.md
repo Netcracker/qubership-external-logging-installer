@@ -185,8 +185,6 @@ You can specify extended variables which provided path for ansible variables:
 * [More information about inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html)
 * [More information about standard flags of `ansible-playbook` command](https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html)
 
-[Details](/templates/README.md)
-
 [Back to TOC](#table-of-content)
 
 # Parameters

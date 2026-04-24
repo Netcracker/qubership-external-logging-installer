@@ -139,9 +139,9 @@ You can refer to the following official documentation links for metrics:
 
 ### Available Dashboards
 
-* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-* [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
+* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)
+* [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)
+* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)
 
 ## Logging
 

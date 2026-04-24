@@ -22,7 +22,7 @@ jobs:
         id: restore-cache
         with:
           path: .lycheecache
-          key: cache-lychee-${{ github.sha }}
+          key: cache-lychee-${{ github.run_id }}
           restore-keys: cache-lychee-
 
       - name: Link Checker
@@ -36,12 +36,13 @@ jobs:
             --user-agent 'Mozilla/5.0 (X11; Linux x86_64) Chrome/134.0.0.0'
             --retry-wait-time 60
             --max-retries 8
-            --accept 100..=103,200..=299,429
+            --accept 100..=103,200..=299,302,429
             --cookie-jar cookies.json
             --exclude-all-private
             --max-concurrency 4
             --cache
             --cache-exclude-status '429, 500..502'
             --max-cache-age 1d
+            --root-dir "${{ github.workspace }}"
           format: markdown
           fail: true
