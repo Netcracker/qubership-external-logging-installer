@@ -28,11 +28,11 @@
 
 ## Overview
 
-| Observability Part        | Integration Status                |
-| ------------------------- | --------------------------------- |
-| [Monitoring](#monitoring) | ✅ Supported                      |
-| [Logging](#logging)       | ✅ Supported                      |
-| [Tracing](#tracing)       | ⛔️ Not Supported in Graylog       |
+| Observability Part        | Integration Status                     |
+| ------------------------- | -------------------------------------- |
+| [Monitoring](#monitoring) | ✅ Supported                           |
+| [Logging](#logging)       | ✅ Supported                           |
+| [Tracing](#tracing)       | ⛔️ Not Supported in Graylog            |
 | [Profiler](#profiler)     | ⛔️ Not Supported (License Restriction) |
 
 ---
@@ -139,9 +139,9 @@ You can refer to the following official documentation links for metrics:
 
 ### Available Dashboards
 
-* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-* [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)  
-* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)  
+* [Graylog Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)
+* [MongoDB Metrics Dashboard](/grafana/dashboards/Graylog_(VM).json)
+* [OpenSearch Metrics Dashboard](/grafana/dashboards/ElasticSearch_Summary_(VM).json)
 
 ## Logging
 
