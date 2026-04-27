@@ -1,42 +1,45 @@
+# Installation Notes
+
 This document provides information about the requirements, configuration, and steps to install Logging on the VM.
 
-# Table of Content
+## Table of Content
 
-* [Table of Content](#table-of-content)
-* [Prerequisites](#prerequisites)
-  * [Supported OS](#supported-os)
-  * [Hardware Requirements](#hardware-requirements)
-  * [Storage Requirements](#storage-requirements)
-  * [Software Requirements](#software-requirements)
-  * [Security Requirements](#security-requirements)
-* [Best practices and recommendations](#best-practices-and-recommendations)
-  * [HWE](#hwe)
-  * [Usage of extended variables](#usage-of-extended-variables)
-* [Parameters](#parameters)
-  * [Common](#common)
-  * [System](#system)
-  * [Docker](#docker)
-  * [Graylog](#graylog)
-  * [Graylog Migration](#graylog-migration)
-  * [Graylog Stream Settings](#graylog-stream-settings)
-  * [Graylog Auth Proxy](#graylog-auth-proxy)
-  * [TLS](#tls)
-  * [Common exporters](#common-exporters)
-  * [Graylog metrics](#graylog-metrics)
-  * [MongoDB Exporter](#mongodb-exporter)
-  * [OpenSearch Exporter](#opensearch-exporter)
-  * [Node Exporter](#node-exporter)
-  * [cAdvisor Exporter](#cadvisor-exporter)
-  * [FluentD](#fluentd)
-  * [FluentBit](#fluentbit)
-* [Post Installation Steps](#post-installation-steps)
-  * [Configuring URL whitelist](#configuring-url-whitelist)
+* [Installation Notes](#installation-notes)
+  * [Table of Content](#table-of-content)
+  * [Prerequisites](#prerequisites)
+    * [Supported OS](#supported-os)
+    * [Hardware Requirements](#hardware-requirements)
+    * [Storage Requirements](#storage-requirements)
+    * [Software Requirements](#software-requirements)
+    * [Security Requirements](#security-requirements)
+  * [Best practices and recommendations](#best-practices-and-recommendations)
+    * [HWE](#hwe)
+    * [Usage of extended variables](#usage-of-extended-variables)
+  * [Parameters](#parameters)
+    * [Common](#common)
+    * [System](#system)
+    * [Docker](#docker)
+    * [Graylog](#graylog)
+    * [Graylog Migration](#graylog-migration)
+    * [Graylog Stream Settings](#graylog-stream-settings)
+    * [Graylog Auth Proxy](#graylog-auth-proxy)
+    * [TLS](#tls)
+    * [Common exporters](#common-exporters)
+    * [Graylog metrics](#graylog-metrics)
+    * [MongoDB Exporter](#mongodb-exporter)
+    * [OpenSearch Exporter](#opensearch-exporter)
+    * [Node Exporter](#node-exporter)
+    * [cAdvisor Exporter](#cadvisor-exporter)
+    * [FluentD](#fluentd)
+    * [FluentBit](#fluentbit)
+  * [Post Installation Steps](#post-installation-steps)
+    * [Configuring URL whitelist](#configuring-url-whitelist)
 
-# Prerequisites
+## Prerequisites
 
 This section provides prerequisites to install Logging on the VM.
 
-## Supported OS
+### Supported OS
 
 * apt based:
   * Ubuntu 22.04 LTS (**recommended**)
@@ -64,7 +67,7 @@ If you use the installer `>= 0.11.x` if can ignore it note.
 
 [Back to TOC](#table-of-content)
 
-## Hardware Requirements
+### Hardware Requirements
 
 * CPU - 4+ vCPU
 * RAM - 8+ GB
@@ -80,12 +83,12 @@ If you use the installer `>= 0.11.x` if can ignore it note.
 
 [Back to TOC](#table-of-content)
 
-## Storage Requirements
+### Storage Requirements
 
-Graylog using OpenSearch/ElasticSearch to store and search by logs. OpenSearch/ElasticSearch provides increased
+Graylog using OpenSearch/Elasticsearch to store and search by logs. OpenSearch/Elasticsearch provides increased
 requirements for storage type, throughput and speed.
 
-You **never** should select NFS or NFS-based (AWS EFS and so on) storages for OpenSearch/ElasticSearch.
+You **never** should select NFS or NFS-based (AWS EFS and so on) storages for OpenSearch/Elasticsearch.
 
 General recommendation:
 
@@ -100,7 +103,7 @@ Also, we recommend planning your deployment with two separate devices for:
 
 [Back to TOC](#table-of-content)
 
-## Software Requirements
+### Software Requirements
 
 The next tools must be installed before running the Logging installation:
 
@@ -127,16 +130,16 @@ And this image can be run using a Docker strictly version **>= 20.x**! Some link
 
 [Back to TOC](#table-of-content)
 
-## Security Requirements
+### Security Requirements
 
 Ensure that the `ansible_user` used for deployment has the root privilege and is included in the **sudoers**
 list on the target VM (this permission is necessary only for the installation procedure).
 
 [Back to TOC](#table-of-content)
 
-# Best practices and recommendations
+## Best practices and recommendations
 
-## HWE
+### HWE
 
 The following major parameters are subject to adjustment according to the desired throughput:
 
@@ -169,13 +172,13 @@ The following table shows the typical throughput/HWE ratio:
   but not for a long time. Thus, unexpected payload peaks are not a problem.
 * The concrete payload is dependent on applications in the cloud and their log-level configurations.
 
-## Usage of extended variables
+### Usage of extended variables
 
-You can specify extended variables which provided path for ansible variables:
+You can specify extended variables which provided path for Ansible variables:
 
-* `GROUP_VARS` - allow to specify path to file with ansible group vars, which be copied to the `/ci/ansible/group_vars;
-* `HOSTS_FILE` - allow to specify standard `hosts` file for ansible, which be copied to `/ci/ansible/hosts`;
-* `HOSTS_VARS` - allow to specify path to file with ansible hosts vars, which be copied to the `/ci/ansible/hosts_vars`;
+* `GROUP_VARS` - allow to specify path to file with Ansible group vars, which be copied to the `/ci/ansible/group_vars;
+* `HOSTS_FILE` - allow to specify standard `hosts` file for Ansible, which be copied to `/ci/ansible/hosts`;
+* `HOSTS_VARS` - allow to specify path to file with Ansible hosts vars, which be copied to the `/ci/ansible/hosts_vars`;
 * `KEY_VAR` - allow to specify private `.pem` key;
 * `EXTRA_VARS` - allow to set extra vars for current playbook;
 * `ansible_limit` - allow to specify further limit selected hosts to an additional pattern.
@@ -187,7 +190,7 @@ You can specify extended variables which provided path for ansible variables:
 
 [Back to TOC](#table-of-content)
 
-# Parameters
+## Parameters
 
 Currently, Ansible scripts to install Logging on the VM using Ansible inventory in YAML format.
 Official Ansible documentation on how to build and work with inventory:
@@ -223,7 +226,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Common
+### Common
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -241,10 +244,10 @@ all:
 | `raw_artifacts_registry_ca_cert_file`   | string  | no        | `-`           | Name of CA certificate                                |
 | `raw_artifacts_registry_username`       | string  | no        | `-`           | The username for authorization on the raw registry    |
 | `raw_artifacts_registry_password`       | string  | no        | `-`           | The password for authorization on the raw registry    |
-| `docker_registry`                       | string  | no        | `-`           | Default docker registry                               |
+| `docker_registry`                       | string  | no        | `-`           | Default Docker registry                               |
 | `docker_registry_username`              | string  | no        | `-`           | The username for authorization on the docker registry |
 | `docker_registry_password`              | string  | no        | `-`           | The password for authorization on the docker registry |
-| `docker_registry_validate_certs`        | boolean | no        | `false`       | Enable docker registry certificate validation         |
+| `docker_registry_validate_certs`        | boolean | no        | `false`       | Enable Docker registry certificate validation         |
 | `docker_registry_ca_cert_file`          | string  | no        | `-`           | Name of CA certificate                                |
 | `docker_container_timeout`              | integer | no        | `300`         | Set image pulling and container starting timeouts     |
 <!-- markdownlint-enable line-length -->
@@ -262,7 +265,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## System
+### System
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -278,7 +281,7 @@ all:
 | ----------------------------- | ------- | --------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `check_prerequisites_enabled` | string  | no        | `true`        | Enable checking of target VM on HW requirements compliance (such as enough CPU, RAM, HDD or opened ports)                                                  |
 | `graylog_heap_size_mb`        | integer | no        | `2048`        | Set minimal RAM size for Graylog heap. Sum of `graylog_heap_size_mb` and `elasticsearch_heap_size_mb` should be less or equal VM RAM size                  |
-| `elasticsearch_heap_size_mb`  | integer | no        | `2048`        | Set minimal RAM size for OpenSearch/ElasticSearch heap. Sum of `graylog_heap_size_mb` and `elasticsearch_heap_size_mb` should be less or equal VM RAM size |
+| `elasticsearch_heap_size_mb`  | integer | no        | `2048`        | Set minimal RAM size for OpenSearch/Elasticsearch heap. Sum of `graylog_heap_size_mb` and `elasticsearch_heap_size_mb` should be less or equal VM RAM size |
 | `ntp_server`                  | string  | no        | `-`           | The NTP server address or comma separated addresses                                                                                                        |
 | `filesystem_mount_enabled`    | string  | no        | `false`       | **DEPRECATED** Enable file system creation on block device and mount disk to Graylog data directory                                                        |
 | `install_thirdparty`          | string  | no        | `false`       | **DEPRECATED** Enable install third-party packages required for Graylog                                                                                    |
@@ -305,7 +308,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Docker
+### Docker
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -328,7 +331,7 @@ all:
 <!-- markdownlint-enable line-length -->
 
 **Warning!** The `change_docker_network_allowed`, `docker_bridge0_ipaddr`, and `docker_bridge0_netmask`
-parameters can be applied only in the first installation or in case of an update from docker0 to bridge0.
+parameters can be applied only in the first installation or in case of an update from `docker0` to `bridge0`.
 In other cases, these parameters do not change.
 
 Examples:
@@ -348,7 +351,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Graylog
+### Graylog
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -373,13 +376,13 @@ all:
 | `telegraf_operator_password` | string  | no        | `telegraf_operator`                   | The initial password of `telegraf_operator` user                                                                                                                                                           |
 | `graylog_volume`             | string  | no        | `/var/lib`                            | The folder on the target VM that is used for deployment and data storage                                                                                                                                   |
 | `graylog_heap_size_mb`       | string  | no        | `2048`                                | The heap size for Graylog in Mb, for example: `2048` or `4096`                                                                                                                                             |
-| `additional_graylog_volumes` | string  | no        | `-`                                   | The list of additional volumes for the Graylog docker container. The values equivalent to the usual docker volume record `/var/lib/graylog/certs:/usr/share/graylog/data/certs:z` and separated by a comma |
-| `additional_graylog_ports`   | string  | no        | `-`                                   | The list of additional thrown ports for the Graylog docker container. The values equivalent to the usual docker thrown ports record `570`, `590:590`, `600:600/tcp` and separated by a comma               |
+| `additional_graylog_volumes` | string  | no        | `-`                                   | The list of additional volumes for the Graylog Docker container. The values equivalent to the usual Docker volume record `/var/lib/graylog/certs:/usr/share/graylog/data/certs:z` and separated by a comma |
+| `additional_graylog_ports`   | string  | no        | `-`                                   | The list of additional thrown ports for the Graylog Docker container. The values equivalent to the usual Docker thrown ports record `570`, `590:590`, `600:600/tcp` and separated by a comma               |
 | `content_deploy_policy`      | string  | no        | `only-create`                         | The Graylog content deploy policy (such as streams, inputs, grok patterns). Possible values: `only-create`, `force-update`, `skip`                                                                         |
 | `dns_name`                   | string  | no        | `-`                                   | The address by which Graylog is accessible to users (DNS name). If this value is set, then Graylog is not accessible by its IP address                                                                     |
-| `index_replicas`             | integer | no        | `0`                                   | The number of OpenSearch/ElasticSearch replicas used per index                                                                                                                                             |
-| `index_shards`               | integer | no        | `1`                                   | The number of OpenSearch/ElasticSearch shards used per index                                                                                                                                               |
-| `path_repo`                  | string  | no        | `archives`                            | The name of directory in OpenSearch/ElasticSearch for saving snapshots                                                                                                                                     |
+| `index_replicas`             | integer | no        | `0`                                   | The number of OpenSearch/Elasticsearch replicas used per index                                                                                                                                             |
+| `index_shards`               | integer | no        | `1`                                   | The number of OpenSearch/Elasticsearch shards used per index                                                                                                                                               |
+| `path_repo`                  | string  | no        | `archives`                            | The name of directory in OpenSearch/Elasticsearch for saving snapshots                                                                                                                                     |
 <!-- markdownlint-enable line-length -->
 
 The parameter `content_deploy_policy` has the following possible values and these policies mean:
@@ -418,9 +421,9 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Graylog Migration
+### Graylog Migration
 
-The parameter that can be used for migration from `Graylog 4.x` (with `MongoDB 3.6.x` and `ElasticSearch 6.8.x`)
+The parameter that can be used for migration from `Graylog 4.x` (with `MongoDB 3.6.x` and `Elasticsearch 6.8.x`)
 to `Graylog 5.x` (with `MongoDB 5.x` and `OpenSearch 1.x`).
 
 All parameters described below should be specified under a section `vars` as the following:
@@ -432,14 +435,14 @@ all:
     ...
 ```
 
-**Warning!** Parameters for migration for MongoDB and from ElasticSearch to OpenSearch must be set
+**Warning!** Parameters for migration for MongoDB and from Elasticsearch to OpenSearch must be set
 **only for migration**. After migration will complete successfully you **must remove** these parameters.
 
 <!-- markdownlint-disable line-length -->
 | Parameter               | Type    | Mandatory | Default value | Description                                                      |
 | ----------------------- | ------- | --------- | ------------- | ---------------------------------------------------------------- |
 | `mongo_upgrade`         | boolean | no        | `false`       | Activates automatic step-by-step upgrade of the MongoDB database |
-| `migrate_to_opensearch` | boolean | no        | `false`       | Moves all stored data from ElasticSearch to OpenSearch           |
+| `migrate_to_opensearch` | boolean | no        | `false`       | Moves all stored data from Elasticsearch to OpenSearch           |
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -455,7 +458,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Graylog Stream Settings
+### Graylog Stream Settings
 
 Parameter to configure rotation strategies for all in-built Streams.
 
@@ -530,7 +533,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Graylog Auth Proxy
+### Graylog Auth Proxy
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -656,7 +659,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## TLS
+### TLS
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -677,13 +680,13 @@ all:
 | `tls_key_password`      | string | no        | `-`                | Graylog password for the TLS certificate key file for Graylog input                                                                                                                                                                                     |
 | `ssl_certificate`       | string | yes       | `-`                | Nginx TLS certificate file (`.crt`) which is presented on the Deploy VM (relative to the directory `/tmp/`) or the certificate filename (`.crt`) from the `certificates.zip` ZIP archive or stored in repository by `ssl_module_files_path` path        |
 | `ssl_certificate_key`   | string | yes       | `-`                | Nginx TLS certificate key file (`.pem`) that is presented on the Deploy VM (relative to the directory `/tmp/`) or the certificate key filename (`.pem`) from the `certificates.zip` ZIP archive or stored in repository by `ssl_module_files_path` path |
-| `ssl_data_host_path`    | string | no        | `/etc/logging/ssl` | Path to store ssl certificates for registries                                                                                                                                                                                                           |
+| `ssl_data_host_path`    | string | no        | `/etc/logging/ssl` | Path to store SSL certificates for registries                                                                                                                                                                                                           |
 | `ssl_module_files_path` | string | no        | `-`                | Path in operations portal repository(configuration or pipeline), were are stored certificates. All files and folders which are stored in pipeline or configuration repository will be automatically mounted to module container filesystem.             |
 <!-- markdownlint-enable line-length -->
 
 [Back to TOC](#table-of-content)
 
-## Common exporters
+### Common exporters
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -714,7 +717,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Graylog metrics
+### Graylog metrics
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -747,7 +750,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## MongoDB Exporter
+### MongoDB Exporter
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -788,7 +791,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## OpenSearch Exporter
+### OpenSearch Exporter
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -802,13 +805,13 @@ all:
 <!-- markdownlint-disable line-length -->
 | Parameter                               | Type    | Mandatory | Default value                                                                                        | Description                                                 |
 | --------------------------------------- | ------- | --------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `elasticsearch_exporter_install`        | boolean | no        | `false`                                                                                              | Enable/disable ElasticSearch exporter installation          |
-| `elasticsearch_exporter_tarball`        | string  | no        | `prometheus-community/elasticsearch_exporter/v1.3.0/elasticsearch_exporter-1.3.0.linux-amd64.tar.gz` | Archive name with ElasticSearch exporter bin file           |
-| `elasticsearch_exporter_custom_tarball` | string  | no        | `-`                                                                                                  | Custom path to `tar.gz` archive with ElasticSearch exporter |
+| `elasticsearch_exporter_install`        | boolean | no        | `false`                                                                                              | Enable/disable Elasticsearch exporter installation          |
+| `elasticsearch_exporter_tarball`        | string  | no        | `prometheus-community/elasticsearch_exporter/v1.3.0/elasticsearch_exporter-1.3.0.linux-amd64.tar.gz` | Archive name with Elasticsearch exporter bin file           |
+| `elasticsearch_exporter_custom_tarball` | string  | no        | `-`                                                                                                  | Custom path to `tar.gz` archive with Elasticsearch exporter |
 | `elasticsearch_exporter_host_bin_dir`   | string  | no        | `/usr/local/bin`                                                                                     | Directory for store bin file and starting service           |
 | `elasticsearch_exporter_listen_port`    | integer | no        | `9114`                                                                                               | Port to listen calls of metrics scraping                    |
 | `elasticsearch_exporter_metrics_path`   | string  | no        | `/metrics`                                                                                           | Path under which to expose metrics                          |
-| `elasticsearch_exporter_flags`          | list    | no        | `[]`                                                                                                 | List of command line parameters for ElasticSearch exporter  |
+| `elasticsearch_exporter_flags`          | list    | no        | `[]`                                                                                                 | List of command line parameters for Elasticsearch exporter  |
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -829,7 +832,7 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## Node Exporter
+### Node Exporter
 
 All parameters described below should be specified under a section `vars` as the following:
 
@@ -872,15 +875,15 @@ all:
 
 [Back to TOC](#table-of-content)
 
-## cAdvisor Exporter
+### cAdvisor Exporter
 
-## FluentD
+### FluentD
 
-## FluentBit
+### FluentBit
 
-# Post Installation Steps
+## Post Installation Steps
 
-## Configuring URL whitelist
+### Configuring URL whitelist
 
 After successful deploy you can configure URL whitelist.
 There are certain components in Graylog which will perform outgoing HTTP requests. Among those, are event notifications

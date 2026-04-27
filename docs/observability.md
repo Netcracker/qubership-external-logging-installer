@@ -28,11 +28,11 @@
 
 ## Overview
 
-| Observability Part        | Integration Status                |
-| ------------------------- | --------------------------------- |
-| [Monitoring](#monitoring) | ✅ Supported                      |
-| [Logging](#logging)       | ✅ Supported                      |
-| [Tracing](#tracing)       | ⛔️ Not Supported in Graylog       |
+| Observability Part        | Integration Status                     |
+| ------------------------- | -------------------------------------- |
+| [Monitoring](#monitoring) | ✅ Supported                           |
+| [Logging](#logging)       | ✅ Supported                           |
+| [Tracing](#tracing)       | ⛔️ Not Supported in Graylog            |
 | [Profiler](#profiler)     | ⛔️ Not Supported (License Restriction) |
 
 ---
