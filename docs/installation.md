@@ -245,8 +245,8 @@ all:
 | `raw_artifacts_registry_username`       | string  | no        | `-`           | The username for authorization on the raw registry    |
 | `raw_artifacts_registry_password`       | string  | no        | `-`           | The password for authorization on the raw registry    |
 | `docker_registry`                       | string  | no        | `-`           | Default Docker registry                               |
-| `docker_registry_username`              | string  | no        | `-`           | The username for authorization on the docker registry |
-| `docker_registry_password`              | string  | no        | `-`           | The password for authorization on the docker registry |
+| `docker_registry_username`              | string  | no        | `-`           | The username for authorization on the Docker registry |
+| `docker_registry_password`              | string  | no        | `-`           | The password for authorization on the Docker registry |
 | `docker_registry_validate_certs`        | boolean | no        | `false`       | Enable Docker registry certificate validation         |
 | `docker_registry_ca_cert_file`          | string  | no        | `-`           | Name of CA certificate                                |
 | `docker_container_timeout`              | integer | no        | `300`         | Set image pulling and container starting timeouts     |
