@@ -31,10 +31,7 @@
     - name: Calculate plugins paths from user and default values
       set_fact:
         # User values from "plugins_path" should override default values from "default_plugins_path"
-        internal_plugins_paths: "{{ default_plugins_path | combine(plugins_path) }}"
-      when:
-        - plugins_path is defined
-        - plugins_path is not none
+        internal_plugins_paths: "{{ default_plugins_path | combine(plugins_path | default({})) }}"
 
     - name: Specify link for plugins with registry
       set_fact:
