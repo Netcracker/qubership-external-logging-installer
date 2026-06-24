@@ -29,6 +29,8 @@ default_plugins_path:
   graylog_archiving_plugin: org/qubership/graylog2/plugin/graylog-archiving-plugin/0.2.0/graylog-archiving-plugin-0.2.0.jar
   graylog_plugin_integrations: graylog-integrations/graylog-integrations-plugins/graylog-plugin-integrations-4.3.9.jar
 
+plugins_path: {}
+
 ########################################################################################################################
 #                                                  Docker settings
 ########################################################################################################################
