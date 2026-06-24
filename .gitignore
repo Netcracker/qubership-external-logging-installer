@@ -6,3 +6,6 @@ inventory/*.yaml
 *.retry
 target/
 .vscode/*
+
+# APM dependencies
+apm_modules/
