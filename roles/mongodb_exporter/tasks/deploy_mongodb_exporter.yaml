@@ -12,8 +12,8 @@
       set_fact:
         mongodb_exporter_tarball_url: "{{ mongodb_exporter_custom_tarball }}"
       when:
-        - node_exporter_custom_tarball is defined
-        - node_exporter_custom_tarball is not none
+        - mongodb_exporter_custom_tarball is defined
+        - mongodb_exporter_custom_tarball is not none
 
 - name: Set default mongodb-exporter flags
   set_fact:
