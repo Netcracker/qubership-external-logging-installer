@@ -44,7 +44,7 @@ This section provides prerequisites to install Logging on the VM.
 * apt based:
   * Ubuntu 22.04 LTS (**recommended**)
   * Ubuntu 20.04 LTS
-* yum/dfn based:
+* yum/dnf based:
   * CentOS 8.x
   * RHEL 8.x
   * Oracle Linux 8.x
@@ -63,7 +63,7 @@ all:
     check_prerequisites_enabled: false   # <-- set this parameter
 ```
 
-If you use the installer `>= 0.11.x` if can ignore it note.
+If you use the installer `>= 0.11.x`, you can ignore this note.
 
 [Back to TOC](#table-of-content)
 
@@ -366,10 +366,10 @@ all:
 | Parameter                    | Type    | Mandatory | Default value                         | Description                                                                                                                                                                                                |
 | ---------------------------- | ------- | --------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `graylog_install`            | boolean | no        | `True`                                | Enable/disable graylog installation: `True` to install, `False` to uninstall                                                                                                                               |
-| `graylog_image`              | string  | no        | `graylog/graylog:5.1.3`               | Docker image of Graylog                                                                                                                                                                                    |
-| `nginx_image`                | string  | no        | `nginx:1.25.2-alpine`                 | Docker image of Nginx                                                                                                                                                                                      |
-| `mongo_image`                | string  | no        | `mongo:5.0.19`                        | Docker image of MongoDB                                                                                                                                                                                    |
-| `opensearch_image`           | string  | no        | `opensearchproject/opensearch:1.3.12` | Docker image of OpenSearch                                                                                                                                                                                 |
+| `graylog_image`              | string  | no        | `graylog/graylog:5.2.9`               | Docker image of Graylog                                                                                                                                                                                    |
+| `nginx_image`                | string  | no        | `nginx:1.27.3-alpine`                 | Docker image of Nginx                                                                                                                                                                                      |
+| `mongo_image`                | string  | no        | `mongo:5.0.30`                        | Docker image of MongoDB                                                                                                                                                                                    |
+| `opensearch_image`           | string  | no        | `opensearchproject/opensearch:1.3.20` | Docker image of OpenSearch                                                                                                                                                                                 |
 | `root_password`              | string  | no        | `admin`                               | The password for the super admin user on Graylog                                                                                                                                                           |
 | `auditviewer_password`       | string  | no        | `auditViewer`                         | The initial password of `auditViewer` user                                                                                                                                                                 |
 | `operator_password`          | string  | no        | `operator`                            | The initial password of `operator` user                                                                                                                                                                    |
@@ -472,28 +472,34 @@ all:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                          | Type    | Mandatory | Default value | Description                                                    |
-| ---------------------------------- | ------- | --------- | ------------- | -------------------------------------------------------------- |
-| `system_logs_install`              | boolean | no        | `true`        | Install a logs stream                                          |
-| `system_rotation_strategy`         | string  | no        | `sizeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
-| `system_rotation_period`           | string  | no        | `-`           | Rotation period for `timeBased` strategy                       |
-| `audit_logs_install`               | boolean | no        | `true`        | Install a logs stream                                          |
-| `audit_rotation_strategy`          | string  | no        | `sizeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
-| `audit_rotation_period`            | string  | no        | `-`           | Rotation period for `timeBased` strategy                       |
-| `access_logs_install`              | boolean | no        | `false`       | Install a logs stream                                          |
-| `access_rotation_strategy`         | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
-| `access_rotation_period`           | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
-| `integration_logs_install`         | boolean | no        | `false`       | Install a logs stream                                          |
-| `integration_rotation_strategy`    | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
-| `integration_rotation_period`      | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
-| `nginx_logs_install`               | boolean | no        | `false`       | Install a logs stream                                          |
-| `nginx_rotation_strategy`          | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
-| `nginx_rotation_period`            | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
-| `k8s_events_install`               | boolean | no        | `false`       | Install a logs stream                                          |
-| `k8s_events_rotation_strategy`     | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
-| `k8s_events_rotation_period`       | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
-| `k8s_events_max_size`              | integer | no        | 1073741824    | Max index size of index for `sizeBased` strategy               |
-| `k8s_events_max_number_of_indices` | integer | no        | 5             | Number of indices in index set                                 |
+| Parameter                                | Type    | Mandatory | Default value | Description                                                    |
+| ----------------------------------       | ------- | --------- | ------------- | -------------------------------------------------------------- |
+| `system_logs_install`                    | boolean | no        | `true`        | Install a logs stream                                          |
+| `audit_logs_install`                     | boolean | no        | `true`        | Install a logs stream                                          |
+| `audit_logs_rotation_strategy`           | string  | no        | `sizeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
+| `audit_logs_rotation_period`             | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
+| `audit_logs_max_size`                    | integer | no        | 1073741824    | Max index size of index for `sizeBased` strategy               |
+| `audit_logs_max_number_of_indices`       | integer | no        | 5             | Number of indices in index set                                 |
+| `access_logs_install`                    | boolean | no        | `false`       | Install a logs stream                                          |
+| `access_logs_rotation_strategy`          | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
+| `access_logs_rotation_period`            | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
+| `access_logs_max_size`                   | integer | no        | 1073741824    | Max index size of index for `sizeBased` strategy               |
+| `access_logs_max_number_of_indices`      | integer | no        | 10            | Number of indices in index set                                 |
+| `integration_logs_install`               | boolean | no        | `false`       | Install a logs stream                                          |
+| `integration_logs_rotation_strategy`     | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
+| `integration_logs_rotation_period`       | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
+| `integration_logs_max_size`              | integer | no        | 1073741824    | Max index size of index for `sizeBased` strategy               |
+| `integration_logs_max_number_of_indices` | integer | no        | 10            | Number of indices in index set                                 |
+| `nginx_logs_install`                     | boolean | no        | `false`       | Install a logs stream                                          |
+| `nginx_logs_rotation_strategy`           | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
+| `nginx_logs_rotation_period`             | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
+| `nginx_logs_max_size`                    | integer | no        | 1073741824    | Max index size of index for `sizeBased` strategy               |
+| `nginx_logs_max_number_of_indices`       | integer | no        | 10            | Number of indices in index set                                 |
+| `k8s_events_install`                     | boolean | no        | `true`        | Install a logs stream                                          |
+| `k8s_events_rotation_strategy`           | string  | no        | `timeBased`   | Rotation strategy, possible values: `sizeBased` or `timeBased` |
+| `k8s_events_rotation_period`             | string  | no        | `P1M`         | Rotation period for `timeBased` strategy                       |
+| `k8s_events_max_size`                    | integer | no        | 1073741824    | Max index size of index for `sizeBased` strategy               |
+| `k8s_events_max_number_of_indices`       | integer | no        | 5             | Number of indices in index set                                 |
 <!-- markdownlint-enable line-length -->
 
 **Note:** Rotation periods are presented as
@@ -507,28 +513,35 @@ Examples:
 all:
   vars:
     system_logs_install: true
-    system_logs_rotation_strategy: "sizeBased"
-    system_logs_rotation_period: "P1M"
-
     audit_logs_install: true
     audit_logs_rotation_strategy: "sizeBased"
     audit_logs_rotation_period: "P1M"
+    audit_logs_max_size: 1073741824
+    audit_logs_max_number_of_indices: 5
 
     integration_logs_install: false
     integration_logs_rotation_strategy: "timeBased"
     integration_logs_rotation_period: "P1M"
+    integration_logs_max_size: 1073741824
+    integration_logs_max_number_of_indices: 10
 
     access_logs_install: false
     access_logs_rotation_strategy: "timeBased"
     access_logs_rotation_period: "P1M"
+    access_logs_max_size: 1073741824
+    access_logs_max_number_of_indices: 10
 
     nginx_logs_install: false
     nginx_logs_rotation_strategy: "timeBased"
     nginx_logs_rotation_period: "P1M"
+    nginx_logs_max_size: 1073741824
+    nginx_logs_max_number_of_indices: 10
 
     k8s_events_install: true
     k8s_events_rotation_strategy: "timeBased"
     k8s_events_rotation_period: "P1M"
+    k8s_events_max_size: 1073741824
+    k8s_events_max_number_of_indices: 5
 ```
 
 [Back to TOC](#table-of-content)
@@ -762,15 +775,15 @@ all:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                         | Type    | Mandatory | Default value                                                         | Description                                           |
-| --------------------------------- | ------- | --------- | --------------------------------------------------------------------- | ----------------------------------------------------- |
-| `mongodb_exporter_install`        | boolean | no        | `false`                                                               | Enable/disable MongoDB exporter installation          |
-| `mongodb_exporter_tarball`        | string  | no        | `percona/mongodb_exporter/mongodb_exporter-0.30.0.linux-amd64.tar.gz` | Archive name with MongoDB exporter bin file           |
-| `mongodb_exporter_custom_tarball` | string  | no        | `-`                                                                   | Custom path to `tar.gz` archive with MongoDB exporter |
-| `mongodb_exporter_host_bin_dir`   | string  | no        | `/usr/local/bin`                                                      | Directory for store bin file and starting service     |
-| `mongodb_exporter_listen_port`    | integer | no        | `9216`                                                                | Port to listen calls of metrics scraping              |
-| `mongodb_exporter_metrics_path`   | string  | no        | `/metrics`                                                            | Path under which to expose metrics                    |
-| `mongodb_exporter_flags`          | list    | no        | `[]`                                                                  | List of command line parameters for MongoDB exporter  |
+| Parameter                         | Type    | Mandatory | Default value                                                                                                      | Description                                           |
+| --------------------------------- | ------- | --------- | ---------------------------------------------------------------------                                              | ----------------------------------------------------- |
+| `mongodb_exporter_install`        | boolean | no        | `false`                                                                                                            | Enable/disable MongoDB exporter installation          |
+| `mongodb_exporter_tarball`        | string  | no        | `https://github.com/percona/mongodb_exporter/releases/download/v0.43.1/mongodb_exporter-0.43.1.linux-amd64.tar.gz` | Archive name with MongoDB exporter bin file           |
+| `mongodb_exporter_custom_tarball` | string  | no        | `-`                                                                                                                | Custom path to `tar.gz` archive with MongoDB exporter |
+| `mongodb_exporter_host_bin_dir`   | string  | no        | `/usr/local/bin`                                                                                                   | Directory for store bin file and starting service     |
+| `mongodb_exporter_listen_port`    | integer | no        | `9216`                                                                                                             | Port to listen calls of metrics scraping              |
+| `mongodb_exporter_metrics_path`   | string  | no        | `/metrics`                                                                                                         | Path under which to expose metrics                    |
+| `mongodb_exporter_flags`          | list    | no        | `["--collect-all","--compatible-mode"]`                                                                            | List of command line parameters for MongoDB exporter  |
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -781,12 +794,12 @@ Examples:
 all:
   vars:
     mongodb_exporter_install: true
-    mongodb_exporter_tarball: percona/mongodb_exporter/mongodb_exporter-0.30.0.linux-amd64.tar.gz
-    mongodb_exporter_custom_tarball: nexus.test.org/raw/percona/mongodb_exporter/mongodb_exporter-0.30.0.linux-amd64.tar.gz
+    mongodb_exporter_tarball: https://github.com/percona/mongodb_exporter/releases/download/v0.43.1/mongodb_exporter-0.43.1.linux-amd64.tar.gz
+    mongodb_exporter_custom_tarball: nexus.test.org/raw/percona/mongodb_exporter/v0.43.1/mongodb_exporter-0.43.1.linux-amd64.tar.gz
     mongodb_exporter_host_bin_dir: /usr/local/bin
     mongodb_exporter_listen_port: 9216
     mongodb_exporter_metrics_path: /metrics
-    mongodb_exporter_flags: []
+    mongodb_exporter_flags: ["--collect-all","--compatible-mode"]
 ```
 
 [Back to TOC](#table-of-content)
@@ -803,15 +816,17 @@ all:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                               | Type    | Mandatory | Default value                                                                                        | Description                                                 |
-| --------------------------------------- | ------- | --------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `elasticsearch_exporter_install`        | boolean | no        | `false`                                                                                              | Enable/disable Elasticsearch exporter installation          |
-| `elasticsearch_exporter_tarball`        | string  | no        | `prometheus-community/elasticsearch_exporter/v1.3.0/elasticsearch_exporter-1.3.0.linux-amd64.tar.gz` | Archive name with Elasticsearch exporter bin file           |
-| `elasticsearch_exporter_custom_tarball` | string  | no        | `-`                                                                                                  | Custom path to `tar.gz` archive with Elasticsearch exporter |
-| `elasticsearch_exporter_host_bin_dir`   | string  | no        | `/usr/local/bin`                                                                                     | Directory for store bin file and starting service           |
-| `elasticsearch_exporter_listen_port`    | integer | no        | `9114`                                                                                               | Port to listen calls of metrics scraping                    |
-| `elasticsearch_exporter_metrics_path`   | string  | no        | `/metrics`                                                                                           | Path under which to expose metrics                          |
-| `elasticsearch_exporter_flags`          | list    | no        | `[]`                                                                                                 | List of command line parameters for Elasticsearch exporter  |
+| Parameter                               | Type    | Mandatory | Default value                                                                                                                             | Description                                                 |
+| --------------------------------------- | ------- | --------- | ----------------------------------------------------------------------------------------------------                                      | ----------------------------------------------------------- |
+| `elasticsearch_exporter_install`        | boolean | no        | `false`                                                                                                                                   | Enable/disable Elasticsearch exporter installation          |
+| `elasticsearch_exporter_tarball`        | string  | no        | `https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v1.8.0/elasticsearch_exporter-1.8.0.linux-amd64.tar.gz` | Archive name with Elasticsearch exporter bin file           |
+| `elasticsearch_exporter_custom_tarball` | string  | no        | `-`                                                                                                                                       | Custom path to `tar.gz` archive with Elasticsearch exporter |
+| `elasticsearch_exporter_host_bin_dir`   | string  | no        | `/usr/local/bin`                                                                                                                          | Directory for store bin file and starting service           |
+| `elasticsearch_exporter_listen_port`    | integer | no        | `9114`                                                                                                                                    | Port to listen calls of metrics scraping                    |
+| `elasticsearch_exporter_metrics_path`   | string  | no        | `/metrics`                                                                                                                                | Path under which to expose metrics                          |
+| `elasticsearch_exporter_schema`         | string  | no        | `http`                                                                                                                                    | URL schema for OpenSearch/Elasticsearch requests            |
+| `elasticsearch_exporter_url`            | string  | no        | `localhost:9200`                                                                                                                          | OpenSearch/Elasticsearch address                            |
+| `elasticsearch_exporter_flags`          | list    | no        | `["--es.indices"]`                                                                                                                        | List of command line parameters for Elasticsearch exporter  |
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -822,12 +837,15 @@ Examples:
 all:
   vars:
     elasticsearch_exporter_install: true
-    elasticsearch_exporter_tarball: prometheus-community/elasticsearch_exporter/v1.3.0/elasticsearch_exporter-1.3.0.linux-amd64.tar.gz
-    elasticsearch_exporter_custom_tarball: nexus.test.org/raw/prometheus-community/elasticsearch_exporter/v1.3.0/elasticsearch_exporter-1.3.0.linux-amd64.tar.gz
+    elasticsearch_exporter_tarball: https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v1.8.0/elasticsearch_exporter-1.8.0.linux-amd64.tar.gz
+    elasticsearch_exporter_custom_tarball: nexus.test.org/raw/prometheus-community/elasticsearch_exporter/v1.8.0/elasticsearch_exporter-1.8.0.linux-amd64.tar.gz
     elasticsearch_exporter_host_bin_dir: /usr/local/bin
     elasticsearch_exporter_listen_port: 9114
     elasticsearch_exporter_metrics_path: /metrics
-    elasticsearch_exporter_flags: []
+    elasticsearch_exporter_schema: http
+    elasticsearch_exporter_url: localhost:9200
+    elasticsearch_exporter_flags:
+      - "--es.indices"
 ```
 
 [Back to TOC](#table-of-content)
@@ -850,7 +868,7 @@ all:
 | `node_exporter_listen_port`          | integer | no        | `9100`                                                                                                                                                        | Port to listen on for web interface and telemetry                     |
 | `node_exporter_telemetry_path`       | string  | no        | `/metrics`                                                                                                                                                    | Path under which to expose metrics                                    |
 | `node_exporter_host_bin_dir`         | string  | no        | `/usr/local/bin`                                                                                                                                              | Default directory for store bin file and starting service             |
-| `node_exporter_tarball`              | string  | no        | `prometheus/node_exporter/node_exporter-1.1.2.linux-amd64.tar.gz`                                                                                             | Archive name with node-exporter bin file                              |
+| `node_exporter_tarball`              | string  | no        | `https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz`                                                 | Archive name with node-exporter bin file                              |
 | `node_exporter_custom_tarball`       | string  | no        | `-`                                                                                                                                                           | Custom path to `tar.gz` archive with node-exporter                    |
 | `node_exporter_ignored_mount_points` | string  | no        | `^/(sys\|proc\|dev\|host\|etc\|rootfs/var/lib/docker/containers\|rootfs/var/lib/docker/overlay2\|rootfs/run/docker/netns\|rootfs/var/lib/docker/aufs)($$\|/)` | Regular expression with path what will be skipped for collect metrics |
 | `node_exporter_flags`                | list    | no        | `[]`                                                                                                                                                          | List of command line parameters for node-exporter                     |
@@ -867,8 +885,8 @@ all:
     node_exporter_listen_port: 9100
     node_exporter_telemetry_path: /metrics
     node_exporter_host_bin_dir: /usr/local/bin
-    node_exporter_tarball: prometheus/node_exporter/node_exporter-1.1.2.linux-amd64.tar.gz
-    node_exporter_custom_tarball: nexus.test.org/raw/prometheus/node_exporter/node_exporter-1.1.2.linux-amd64.tar.gz
+    node_exporter_tarball: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+    node_exporter_custom_tarball: nexus.test.org/raw/prometheus/node_exporter/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
     node_exporter_ignored_mount_points: ^/(sys\|proc\|dev\|host\|etc\|rootfs/var/lib/docker/containers\|rootfs/var/lib/docker/overlay2\|rootfs/run/docker/netns\|rootfs/var/lib/docker/aufs)($$\|/)
     node_exporter_flags: []
 ```
@@ -877,9 +895,159 @@ all:
 
 ### cAdvisor Exporter
 
+All parameters described below should be specified under a section `vars` as the following:
+
+```yaml
+all:
+  vars:
+    cadvisor_install: true
+    ...
+```
+
+<!-- markdownlint-disable line-length -->
+| Parameter                     | Type    | Mandatory | Default value                                                                               | Description                                                   |
+| ----------------------------  | ------- | --------- | ------------------------------------------------------------------------------------        | ------------------------------------------------------------- |
+| `cadvisor_install`            | boolean | no        | `false`                                                                                     | Enable cAdvisor installation                                  |
+| `cadvisor_uninstall`          | boolean | no        | `false`                                                                                     | Remove cAdvisor when `cadvisor_install` is `false`            |
+| `cadvisor_binary`             | string  | no        | `https://github.com/google/cadvisor/releases/download/v0.49.2/cadvisor-v0.49.2-linux-amd64` | cAdvisor binary URL or path under `raw_artifacts_registry`    |
+| `cadvisor_custom_binary`      | string  | no        | `-`                                                                                         | Custom cAdvisor binary URL                                    |
+| `cadvisor_host_bin_dir`       | string  | no        | `/usr/local/bin`                                                                            | Directory for storing the cAdvisor binary                     |
+| `cadvisor_telemetry_path`     | string  | no        | `/metrics`                                                                                  | Path under which to expose metrics                            |
+| `cadvisor_keep_custom_config` | boolean | no        | `false`                                                                                     | Keep the existing systemd service configuration               |
+| `cadvisor_listen_port`        | integer | no        | `8282`                                                                                      | Port to listen on for cAdvisor metrics                        |
+| `cadvisor_runtime_optionts`   | list    | no        | `[]`                                                                                        | Additional cAdvisor runtime options                           |
+| `cadvisor_system_user`        | string  | no        | `{{ cadvisor_system_group }}`                                                               | System user for the cAdvisor service                          |
+| `cadvisor_system_group`       | string  | no        | `root`                                                                                      | System group for the cAdvisor service                         |
+<!-- markdownlint-enable line-length -->
+
+Examples:
+
+**Note:** It's just an example of a parameter's format, not a recommended parameter.
+
+```yaml
+all:
+  vars:
+    cadvisor_install: true
+    cadvisor_binary: https://github.com/google/cadvisor/releases/download/v0.49.2/cadvisor-v0.49.2-linux-amd64
+    cadvisor_custom_binary: nexus.test.org/raw/google/cadvisor/v0.49.2/cadvisor-v0.49.2-linux-amd64
+    cadvisor_host_bin_dir: /usr/local/bin
+    cadvisor_telemetry_path: /metrics
+    cadvisor_listen_port: 8282
+    cadvisor_runtime_optionts: []
+    cadvisor_system_group: root
+```
+
+[Back to TOC](#table-of-content)
+
 ### FluentD
 
+All parameters described below should be specified under a section `vars` as the following:
+
+```yaml
+all:
+  vars:
+    fluentd_install: false
+    ...
+```
+
+<!-- markdownlint-disable line-length -->
+| Parameter                       | Type    | Mandatory | Default value                                  | Description                                              |
+| ------------------------------- | ------- | --------- | ---------------------------------------------- | -----------------------------------------------------    |
+| `fluentd_install`               | boolean | no        | `false`                                        | Enable FluentD installation                              |
+| `fluentd_image`                 | string  | no        | `ghcr.io/netcracker/qubership-fluentd:main`    | Docker image of FluentD                                  |
+| `fluentd_uid`                   | integer | no        | `111`                                          | UID used for FluentD directories and files               |
+| `fluentd_gid`                   | integer | no        | `111`                                          | GID used for FluentD directories and files               |
+| `fluentd_log_level`             | string  | no        | `warn`                                         | FluentD log level                                        |
+| `fluentd_keep_custom_config`    | boolean | no        | `false`                                        | Keep the existing FluentD configuration files            |
+| `fluentd_graylog_host`          | string  | no        | `graylog_graylog_1`                            | Graylog host for FluentD output                          |
+| `fluentd_graylog_port`          | integer | no        | `12201`                                        | Graylog port for FluentD output                          |
+| `fluentd_custom_input_conf`     | string  | no        | `-`                                            | Custom FluentD input configuration                       |
+| `fluentd_custom_filter_conf`    | string  | no        | `-`                                            | Custom FluentD filter configuration                      |
+| `fluentd_custom_output_conf`    | string  | no        | `-`                                            | Custom FluentD output configuration                      |
+| `fluentd_tls_enabled`           | boolean | no        | `false`                                        | Enable TLS for FluentD output                            |
+| `fluentd_tls_no_default_ca`     | boolean | no        | `false`                                        | Do not use the default CA certificates                   |
+| `fluentd_tls_version`           | string  | no        | `:TLSv1_2`                                     | TLS version                                              |
+| `fluentd_tls_ca_file`           | string  | no        | `-`                                            | CA certificate file from the FluentD certs directory     |
+| `fluentd_tls_cert_file`         | string  | no        | `-`                                            | Client certificate file from the FluentD certs directory |
+| `fluentd_tls_key_file`          | string  | no        | `-`                                            | Client key file from the FluentD certs directory         |
+| `fluentd_tls_no_verify`         | boolean | no        | `false`                                        | Disable TLS certificate verification                     |
+| `fluentd_tls_all_ciphers`       | boolean | no        | `true`                                         | Allow all TLS ciphers                                    |
+| `fluentd_tls_rescue_ssl_errors` | boolean | no        | `false`                                        | Rescue SSL errors in the FluentD output plugin           |
+<!-- markdownlint-enable line-length -->
+
+Examples:
+
+**Note:** It's just an example of a parameter's format, not a recommended parameter.
+
+```yaml
+all:
+  vars:
+    fluentd_install: true
+    fluentd_image: ghcr.io/netcracker/qubership-fluentd:main
+    fluentd_log_level: warn
+    fluentd_keep_custom_config: false
+    fluentd_graylog_host: graylog_graylog_1
+    fluentd_graylog_port: 12201
+    fluentd_tls_enabled: false
+```
+
+[Back to TOC](#table-of-content)
+
 ### FluentBit
+
+All parameters described below should be specified under a section `vars` as the following:
+
+```yaml
+all:
+  vars:
+    fluentbit_install: true
+    ...
+```
+
+<!-- markdownlint-disable line-length -->
+| Parameter                            | Type    | Mandatory | Default value             | Description                                                  |
+| -----------------------------------  | ------- | --------- | ------------------------- | ------------------------------------------------------       |
+| `fluentbit_install`                  | boolean | no        | `true`                    | Enable Fluent Bit installation                               |
+| `fluentbit_image`                    | string  | no        | `fluent/fluent-bit:3.2.2` | Docker image of Fluent Bit                                   |
+| `fluentbit_uid`                      | integer | no        | `110`                     | UID used for Fluent Bit directories and files                |
+| `fluentbit_gid`                      | integer | no        | `110`                     | GID used for Fluent Bit directories and files                |
+| `fluentbit_log_level`                | string  | no        | `warn`                    | Fluent Bit log level                                         |
+| `fluentbit_keep_custom_config`       | boolean | no        | `false`                   | Keep the existing Fluent Bit configuration files             |
+| `fluentbit_graylog_host`             | string  | no        | `graylog_graylog_1`       | Graylog host for Fluent Bit output                           |
+| `fluentbit_graylog_port`             | integer | no        | `12201`                   | Graylog port for Fluent Bit output                           |
+| `fluentbit_graylog_total_limit_size` | string  | no        | `512M`                    | Storage limit for the Graylog output                         |
+| `fluentbit_total_limit_size`         | string  | no        | `1024M`                   | Storage limit for Fluent Bit                                 |
+| `fluentbit_custom_input_conf`        | string  | no        | `-`                       | Custom Fluent Bit input configuration                        |
+| `fluentbit_custom_filter_conf`       | string  | no        | `-`                       | Custom Fluent Bit filter configuration                       |
+| `fluentbit_custom_output_conf`       | string  | no        | `-`                       | Custom Fluent Bit output configuration                       |
+| `fluentbit_tls_enabled`              | boolean | no        | `false`                   | Enable TLS for Fluent Bit output                             |
+| `fluentbit_tls_verify`               | boolean | no        | `true`                    | Enable TLS certificate verification                          |
+| `fluentbit_tls_ca`                   | string  | no        | `-`                       | CA certificate file from the Fluent Bit certs directory      |
+| `fluentbit_tls_cert`                 | string  | no        | `-`                       | Client certificate file from the Fluent Bit certs directory  |
+| `fluentbit_tls_key`                  | string  | no        | `-`                       | Client key file from the Fluent Bit certs directory          |
+| `fluentbit_tls_key_passwd`           | string  | no        | `-`                       | Client key password file from the Fluent Bit certs directory |
+<!-- markdownlint-enable line-length -->
+
+Examples:
+
+**Note:** It's just an example of a parameter's format, not a recommended parameter.
+
+```yaml
+all:
+  vars:
+    fluentbit_install: true
+    fluentbit_image: fluent/fluent-bit:3.2.2
+    fluentbit_log_level: warn
+    fluentbit_keep_custom_config: false
+    fluentbit_graylog_host: graylog_graylog_1
+    fluentbit_graylog_port: 12201
+    fluentbit_graylog_total_limit_size: 512M
+    fluentbit_total_limit_size: 1024M
+    fluentbit_tls_enabled: false
+    fluentbit_tls_verify: true
+```
+
+[Back to TOC](#table-of-content)
 
 ## Post Installation Steps
 
