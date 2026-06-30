@@ -1,0 +1,28 @@
+{
+  "filters": {
+    "comments": true
+  },
+  "ignorePatterns": [
+    "AGENTS.md",
+    "**/AGENTS.md",
+    ".agents/**",
+    "**/.agents/**",
+    ".codex/**",
+    "**/.codex/**",
+    ".claude/apm-hooks.json",
+    "**/.claude/apm-hooks.json",
+    ".claude/settings.json",
+    "**/.claude/settings.json",
+    ".claude/rules/**",
+    "**/.claude/rules/**",
+    ".claude/skills/**",
+    "**/.claude/skills/**",
+    ".cursor/hooks.json",
+    "**/.cursor/hooks.json",
+    ".cursor/rules/**",
+    "**/.cursor/rules/**"
+  ],
+  "rules": {
+    "terminology": true
+  }
+}

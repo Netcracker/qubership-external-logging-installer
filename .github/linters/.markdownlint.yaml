@@ -16,3 +16,13 @@ MD024:
 MD036: false
 # MD041/first-line-heading - First line in a file should be a top-level heading
 MD041: false
+
+ignores:
+  - AGENTS.md
+  - "**/AGENTS.md"
+  - .agents/**/*.md
+  - "**/.agents/**/*.md"
+  - .claude/rules/**/*.md
+  - "**/.claude/rules/**/*.md"
+  - .claude/skills/**/*.md
+  - "**/.claude/skills/**/*.md"
