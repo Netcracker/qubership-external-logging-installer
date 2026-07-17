@@ -1,0 +1,4 @@
+name: troubleshoot-external-logging
+version: 1.0.0
+description: Diagnose failures of the Qubership external logging installer (Graylog, OpenSearch, MongoDB, nginx, Keepalived, and the FluentD or FluentBit agent on the Graylog VM) and its Ansible install runs, from a pasted problem description and logs, with no live system access.
+author: Qubership
