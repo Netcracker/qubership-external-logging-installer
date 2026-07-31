@@ -1,17 +1,55 @@
 ---
-description: Local workflow rules for qubership-external-logging-installer.
+description: Repository-wide guidance for qubership-external-logging-installer.
 applyTo: "**/*"
 ---
 
-# Repository Workflow
+## Scope
 
-When changing or reviewing this repository:
+This repository contains an Ansible installer for a VM-based logging stack built around Graylog, OpenSearch,
+MongoDB, Fluent Bit, Fluentd, Nginx, Keepalived, and Prometheus exporters. These instructions apply repository-wide.
 
-- Treat `docs/installation.md` as the main installation reference and keep it aligned with `playbooks/`, `roles/`,
-  defaults, templates, and inventory examples.
+## Repository map
+
+- `playbooks/playbook.yaml` is the main installation entry point.
+- `roles/*` contains the Ansible roles for logging, storage, proxying, monitoring, and supporting services.
+- `ansible.cfg` points `roles_path` to `/ansible/roles` for containerized or CI execution. For local checks from this
+  checkout, override it with `ANSIBLE_ROLES_PATH=roles`.
+- `docs/installation.md` is the primary installation reference; keep it aligned with playbooks, roles, defaults,
+  templates, and inventory examples.
+- `docs/mongodb_authentication.md`, `docs/observability.md`, and `docs/password-change-guide.md` cover operational
+  procedures that can drift when role variables or templates change.
+- `.github/workflows/`, `.github/linters/`, `.github/super-linter.env`, and `.pre-commit-config.yaml` define the checks
+  that pull requests run.
+
+## Working rules
+
+- Prefer small, evidence-based changes. Inspect the role, defaults, templates, handlers, and related docs before
+  editing.
 - Before choosing checks, inspect `.github/workflows/`, `.github/linters/`, `.github/super-linter.env`, and
   `.pre-commit-config.yaml`.
-- For Ansible syntax checks from this checkout, use
-  `ANSIBLE_ROLES_PATH=roles ansible-playbook --syntax-check playbooks/playbook.yaml`.
-- For Markdown edits, apply `markdown-line-length-120` and use `.github/linters/.markdownlint.yaml`.
-- For APM changes, edit `apm.yml`, run `apm install`, and do not hand-edit dependency-generated rules or skills.
+- For Markdown changes, apply the `markdown-line-length-120` skill: wrap body text at 120 characters, keep one level-one
+  heading, use named links, and add a language tag to every fenced code block.
+- For APM changes, edit the authoritative primitive under `.apm/` or dependency declaration in `apm.yml`. Do not edit
+  generated root instructions, deployed rules, or deployed skills directly unless the user explicitly requests a
+  temporary local patch; for durable dependency changes, update the upstream package first.
+- After changing APM source or dependencies, run `apm install`. The generated `AGENTS.md` footer's `apm compile`
+  command refreshes `AGENTS.md`; use `apm compile --no-dedup` to regenerate both root instruction files.
+
+## Verification
+
+- Run the narrowest relevant Ansible, lint, or documentation checks for the files you changed.
+- For playbook syntax checks from the repository root, use `ANSIBLE_ROLES_PATH=roles ansible-playbook --syntax-check
+  playbooks/playbook.yaml`. In a sandbox with a read-only home directory, also set `ANSIBLE_LOCAL_TEMP=/tmp/ansible`.
+- For APM changes, run `apm audit --ci --no-policy` after installation and compilation.
+- For Markdown or docs-only changes, run markdownlint with `.github/linters/.markdownlint.yaml` on the changed files
+  when the tool is available.
+- Before patching CI failures, inspect the workflow logs and reproduce the failing check locally where practical.
+
+## Done when
+
+- The narrowest applicable checks pass, and the final response lists checks run and checks that could not run.
+- Documentation stays aligned with changed role variables, templates, playbooks, inventory examples, and defaults.
+- APM source changes are reflected in all generated or deployed instruction artifacts.
+- Linter exclusions cover only generated dependency assets, not source files under `.apm/`, `docs/`, `roles/`, or
+  `playbooks/`.
+- The diff contains no secrets, credentials, inventory hostnames, environment-specific values, or unrelated changes.

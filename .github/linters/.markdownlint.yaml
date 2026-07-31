@@ -20,6 +20,7 @@ MD041: false
 ignores:
   - AGENTS.md
   - "**/AGENTS.md"
+  - CLAUDE.md
   - .agents/**/*.md
   - "**/.agents/**/*.md"
   - .claude/rules/**/*.md

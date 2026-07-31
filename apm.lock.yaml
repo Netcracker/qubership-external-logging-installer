@@ -212,5 +212,5 @@ local_deployed_files:
 - .claude/rules/qubership-external-logging-installer.md
 - .cursor/rules/qubership-external-logging-installer.mdc
 local_deployed_file_hashes:
-  .claude/rules/qubership-external-logging-installer.md: sha256:38cdb56eb7caa10415d667742e54c8d82ca7945800f803ac4abad3b698aa1a2b
-  .cursor/rules/qubership-external-logging-installer.mdc: sha256:4a0ae124b4cb77b788b6ddd3dab217149e4c6f7b961b35b29f3a8b1b33543bf7
+  .claude/rules/qubership-external-logging-installer.md: sha256:bfe25d17b1e3bb11dfc7d24c3a6a611ead236142b45a3ca995ed835a228d0608
+  .cursor/rules/qubership-external-logging-installer.mdc: sha256:2960bd4faeebf3130c7466198b6964fdc5d24f54fecac5e030d510eb715af626
