@@ -3,7 +3,6 @@
   "extends": [
     "github>Netcracker/renovate-config:base",
     "github>Netcracker/renovate-config:github-actions",
-    "github>Netcracker/renovate-config:netcracker-dependencies",
-    "schedule:monthly"
+    "github>Netcracker/renovate-config:netcracker-dependencies"
   ]
 }
