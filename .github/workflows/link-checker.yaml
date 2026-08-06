@@ -39,7 +39,6 @@ jobs:
             --retry-wait-time 60
             --max-retries 8
             --accept 100..=103,200..=299,302,429
-            --exclude '^https://stackoverflow[.]com/questions/72841549/container-fails-to-start-insufficient-memory-for-the-java-runtime-environment-t$'
             --cookie-jar cookies.json
             --exclude-all-private
             --max-concurrency 4
