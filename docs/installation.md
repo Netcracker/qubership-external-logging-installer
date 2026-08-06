@@ -124,7 +124,6 @@ And this image can be run using a Docker strictly version **>= 20.x**! Some link
 
 * [https://community.graylog.org/t/upgrading-from-4-3-3/25926/7](https://community.graylog.org/t/upgrading-from-4-3-3/25926/7)
 * [https://github.com/adoptium/containers/issues/215#issuecomment-1142046045](https://github.com/adoptium/containers/issues/215#issuecomment-1142046045)
-* [https://stackoverflow.com/questions/72841549/container-fails-to-start-insufficient-memory-for-the-java-runtime-environment-t](https://stackoverflow.com/questions/72841549/container-fails-to-start-insufficient-memory-for-the-java-runtime-environment-t)
 
 **Do not try** to use the older Docker versions (older than < 20.x) with Graylog > 4.3.3!
 
