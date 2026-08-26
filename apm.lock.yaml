@@ -1,17 +1,17 @@
 lockfile_version: '1'
-generated_at: '2026-08-17T00:11:24.447800+00:00'
+generated_at: '2026-08-26T00:12:12.047424+00:00'
 apm_version: 0.23.0
 dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: qubership-essentials
   host: github.com
-  resolved_commit: 080fc1735d6ec56909e9968ebc764c4f921bf894
+  resolved_commit: 9b0af51d160b866548f97af0ee50c9467766815d
   resolved_ref: main
-  version: 1.0.1
+  version: 1.0.2
   virtual_path: agent-packages/qubership-essentials
   is_virtual: true
   package_type: apm_package
-  content_hash: sha256:7bde0c72f4c760d311fa1b917b612e85927f1a563dea5ba4053191f68fb7b51c
+  content_hash: sha256:18386452cad6e33f3028ed263e3732ad203dc9fe0066be7161f0fb40d4bd7cd3
 - repo_url: Netcracker/qubership-ai-packages
   name: apm-authoring
   host: github.com
