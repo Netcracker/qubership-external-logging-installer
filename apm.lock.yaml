@@ -1,22 +1,22 @@
 lockfile_version: '1'
-generated_at: '2026-09-04T00:23:05.287156+00:00'
+generated_at: '2026-09-05T00:22:54.589856+00:00'
 apm_version: 0.23.0
 dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: qubership-essentials
   host: github.com
-  resolved_commit: 3100e4de9f2b13e5283366d0cdae09c3f98b8e31
+  resolved_commit: 3eee3aa9452514738d1936e79cbeca1748046b74
   resolved_ref: main
-  version: 1.0.2
+  version: 1.0.3
   virtual_path: agent-packages/qubership-essentials
   is_virtual: true
   package_type: apm_package
-  content_hash: sha256:18386452cad6e33f3028ed263e3732ad203dc9fe0066be7161f0fb40d4bd7cd3
+  content_hash: sha256:0fdceb015af525defdac7812371542f4cc039655928775608e652b9d6d5b11ba
 - repo_url: Netcracker/qubership-ai-packages
   name: apm-authoring
   host: github.com
-  resolved_commit: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
-  resolved_ref: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
+  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
   version: 1.0.0
   virtual_path: agent-packages/apm-authoring
   is_virtual: true
@@ -39,8 +39,8 @@ dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: codex-review
   host: github.com
-  resolved_commit: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
-  resolved_ref: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
+  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
   version: 1.0.0
   virtual_path: agent-packages/codex-review
   is_virtual: true
@@ -59,9 +59,9 @@ dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: english-us-developer-style
   host: github.com
-  resolved_commit: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
-  resolved_ref: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
-  version: 2.0.0
+  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  version: 2.1.0
   virtual_path: agent-packages/english-us-developer-style
   is_virtual: true
   depth: 2
@@ -75,17 +75,17 @@ dependencies:
   - .claude/skills/english-developer-style/SKILL.md
   - .cursor/rules/english-developer-style.mdc
   deployed_file_hashes:
-    .agents/skills/english-developer-style/SKILL.md: sha256:c91fecf2c209428808e1c9ffc0cbe6cd735bd0786e266be533620e8164367da7
-    .claude/rules/english-developer-style.md: sha256:7b837ce6ca63996064b7eb7378a54b484f9905a7102d18ee009ee2e1fb9edf7a
-    .claude/skills/english-developer-style/SKILL.md: sha256:c91fecf2c209428808e1c9ffc0cbe6cd735bd0786e266be533620e8164367da7
-    .cursor/rules/english-developer-style.mdc: sha256:77065463f554e95f32be987d5a51849ded6e621515ea1b8e9dd61530c3046928
-  content_hash: sha256:30311d4be0a1b4111895a3ac1f67183ba0a1a64a99f3ed09724ae4731682c8b9
+    .agents/skills/english-developer-style/SKILL.md: sha256:9fa75b769c101eb4f90927c80414e96c41ba6db1b10937dc612ebffaba8043fc
+    .claude/rules/english-developer-style.md: sha256:2da9f6889756beb319a6395f3f363826d144b9b48c97d742cfd1a89ce0017d58
+    .claude/skills/english-developer-style/SKILL.md: sha256:9fa75b769c101eb4f90927c80414e96c41ba6db1b10937dc612ebffaba8043fc
+    .cursor/rules/english-developer-style.mdc: sha256:c7fa36005dd0bdbe2160ba98473582da331ba2b641bec40b97a624ad81d43aa2
+  content_hash: sha256:f97efa2a8e0d5c1bd68ddf9f12a3dcf96d2b9b952d5e4aa968f0bc7c71767034
 - repo_url: Netcracker/qubership-ai-packages
   name: markdown-line-length-120
   host: github.com
-  resolved_commit: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
-  resolved_ref: b5c51a1eaa16ac523d94008db6dd5ed5d946ea08
-  version: 1.0.0
+  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  version: 1.0.1
   virtual_path: agent-packages/markdown-line-length-120
   is_virtual: true
   depth: 2
@@ -99,11 +99,11 @@ dependencies:
   - .claude/skills/markdown-line-length-120/SKILL.md
   - .cursor/rules/markdown-line-length-120.mdc
   deployed_file_hashes:
-    .agents/skills/markdown-line-length-120/SKILL.md: sha256:be48ab0a931d8dffb78b5e9915e9bf156584bd15fae8dff07a643b243e83d52b
-    .claude/rules/markdown-line-length-120.md: sha256:9b5a7c92d21c087354958fc86010e42be3ee734dc73de768ea5001b03c765af3
-    .claude/skills/markdown-line-length-120/SKILL.md: sha256:be48ab0a931d8dffb78b5e9915e9bf156584bd15fae8dff07a643b243e83d52b
-    .cursor/rules/markdown-line-length-120.mdc: sha256:e7f5f594e2cb538a086b664f4154a45a957f9853584a7e11cabf52dc1a7a039b
-  content_hash: sha256:7141481434f0ca7619c9b87659ae44342be4faacd71a7dbbc7996b2bc76487f6
+    .agents/skills/markdown-line-length-120/SKILL.md: sha256:cf4d9f61dfbf07b8b86145e07710ba008016294db891c574f2ec876a5a7a972f
+    .claude/rules/markdown-line-length-120.md: sha256:c8aca12283eb04c1cada89c4ecf4be1a499514ec806e2a5c42628927cfafc431
+    .claude/skills/markdown-line-length-120/SKILL.md: sha256:cf4d9f61dfbf07b8b86145e07710ba008016294db891c574f2ec876a5a7a972f
+    .cursor/rules/markdown-line-length-120.mdc: sha256:53206655c47a82c505af0b708486e65b7db5ecde53078aad629ea30e55b6066d
+  content_hash: sha256:1708d68b8f755365d1ec9a7904a284c23128737a497d4380f960e635a70c0de5
 - repo_url: Netcracker/qubership-workflow-hub
   name: qubership-workflow-hub-usage
   host: github.com
