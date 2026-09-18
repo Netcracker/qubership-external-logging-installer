@@ -1,0 +1,99 @@
+name: Installer CI
+run-name: "Ref: ${{ github.ref_name }}. On ${{ github.event_name }}"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: installer-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect relevant changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      ansible: ${{ steps.detect.outputs.ansible }}
+    steps:
+      - name: Checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Detect installer changes
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" != "pull_request" ]]; then
+            echo "ansible=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          changed="$(git diff --no-renames --name-only "${BASE_SHA}...${HEAD_SHA}")"
+          echo "Changed files:"
+          printf '%s\n' "${changed}"
+
+          ansible=false
+          while IFS= read -r file; do
+            case "${file}" in
+              playbooks/*|roles/*|tests/*|ansible.cfg|.ansible-lint|.github/workflows/installer-ci.yaml)
+                ansible=true
+                ;;
+            esac
+          done <<< "${changed}"
+
+          echo "ansible=${ansible}" >> "${GITHUB_OUTPUT}"
+
+  validate:
+    name: Validate installer
+    needs: changes
+    if: needs.changes.outputs.ansible != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Ansible tooling
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/installer-ci
+          /tmp/installer-ci/bin/pip install --upgrade pip
+          /tmp/installer-ci/bin/pip install -r tests/requirements-ci.txt
+          echo /tmp/installer-ci/bin >> "${GITHUB_PATH}"
+      - name: Run installer checks
+        run: bash tests/run-installer-ci.sh
+
+  installer-ci-gate:
+    name: Installer CI Gate
+    needs: [changes, validate]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require validation when applicable
+        if: >-
+          needs.changes.result != 'success' ||
+          (needs.changes.outputs.ansible != 'false' && needs.validate.result != 'success')
+        run: exit 1
