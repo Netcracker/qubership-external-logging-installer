@@ -1,0 +1,17 @@
+---
+# Fixture inventory for CI. Hosts are unroutable; no real credentials.
+all:
+  hosts:
+    ci.example.invalid:
+      ansible_connection: local
+      ansible_python_interpreter: python3
+      ansible_user: ci
+  vars:
+    graylog_install: true
+    graylog_auth_proxy_enabled: false
+    fluentbit_install: true
+    fluentd_install: false
+    cadvisor_install: false
+    node_exporter_install: false
+    mongodb_exporter_install: false
+    elasticsearch_exporter_install: false
