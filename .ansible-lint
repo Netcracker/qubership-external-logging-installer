@@ -1,0 +1,15 @@
+---
+profile: min
+offline: true
+exclude_paths:
+  - .agents/
+  - .apm/
+  - .claude/
+  - .codex/
+  - .cursor/
+  - .github/
+  - agent-packages/
+  - docs/
+  - grafana/
+skip_list:
+  - yaml

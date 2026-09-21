@@ -9,3 +9,6 @@ target/
 
 # APM dependencies
 apm_modules/
+
+# Local Ansible collections installed by tests/run-installer-ci.sh
+.ansible/

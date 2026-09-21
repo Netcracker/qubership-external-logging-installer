@@ -1,0 +1,7 @@
+---
+- name: Role syntax check
+  hosts: all
+  gather_facts: false
+  become: false
+  roles:
+    - role: "{{ ci_role }}"
