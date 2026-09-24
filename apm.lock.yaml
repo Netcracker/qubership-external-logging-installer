@@ -1,23 +1,24 @@
 lockfile_version: '1'
-generated_at: '2026-09-10T00:22:32.507528+00:00'
-apm_version: 0.23.0
+apm_version: 0.31.0
 dependencies:
-- repo_url: Netcracker/qubership-ai-packages
+- repo_url: netcracker/qubership-ai-packages
+  materialization_repo_url: Netcracker/qubership-ai-packages
   name: qubership-essentials
   host: github.com
-  resolved_commit: 0e384f374d05bf6dc1900f518312db62e71b71f4
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
   resolved_ref: main
-  version: 1.0.3
+  version: 1.1.0
   virtual_path: agent-packages/qubership-essentials
   is_virtual: true
   package_type: apm_package
-  content_hash: sha256:0fdceb015af525defdac7812371542f4cc039655928775608e652b9d6d5b11ba
-- repo_url: Netcracker/qubership-ai-packages
+  content_hash: sha256:2b55c4ebee62c9eda431551239c26de4ba606a9842ff4e580f1b3fbebf7359b3
+- repo_url: netcracker/qubership-ai-packages
+  materialization_repo_url: Netcracker/qubership-ai-packages
   name: apm-authoring
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
-  version: 1.0.0
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
+  version: 1.1.0
   virtual_path: agent-packages/apm-authoring
   is_virtual: true
   depth: 2
@@ -27,20 +28,18 @@ dependencies:
   - .agents/skills/apm-authoring
   - .agents/skills/apm-authoring/SKILL.md
   - .claude/rules/apm-authoring.md
-  - .claude/skills/apm-authoring
-  - .claude/skills/apm-authoring/SKILL.md
   - .cursor/rules/apm-authoring.mdc
   deployed_file_hashes:
-    .agents/skills/apm-authoring/SKILL.md: sha256:1832abc93a14884504dc87d97cc0c2825c7e7b4a6786f2daccf1d6ef172bc907
+    .agents/skills/apm-authoring/SKILL.md: sha256:b4dd9fa65061fcda3bef603ca980c28b0469db41627a3164395d23240b950380
     .claude/rules/apm-authoring.md: sha256:5c4185d3d69333a810c01f5e26a8ea46b033e7082a21f1551433d6c97d8a24a2
-    .claude/skills/apm-authoring/SKILL.md: sha256:1832abc93a14884504dc87d97cc0c2825c7e7b4a6786f2daccf1d6ef172bc907
-    .cursor/rules/apm-authoring.mdc: sha256:fbc8f94d4f0b94c04a0ed042ee06f1f48244fdac316f0ce15e2d38b0affbb9aa
-  content_hash: sha256:1d731d0a26376eda0b82629e6e1cff1b41dfeae13fe8d7e5debb24a1699ea4a8
-- repo_url: Netcracker/qubership-ai-packages
+    .cursor/rules/apm-authoring.mdc: sha256:b63b337e0af85886c49d961ba2063115a8a12c62d74c660e512f9b06c515a048
+  content_hash: sha256:c4931d5235c1b2632d537cf9b0f843ee3fb9dc7d84d8de113160b72ffbce4ed8
+- repo_url: netcracker/qubership-ai-packages
+  materialization_repo_url: Netcracker/qubership-ai-packages
   name: codex-review
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
   version: 1.0.0
   virtual_path: agent-packages/codex-review
   is_virtual: true
@@ -56,11 +55,12 @@ dependencies:
     .agents/skills/codex-review/SKILL.md: sha256:2119ddab29ecb75cc470068fc7464419e386f57127e1cdf3bb5e9bbb48609960
     .claude/skills/codex-review/SKILL.md: sha256:2119ddab29ecb75cc470068fc7464419e386f57127e1cdf3bb5e9bbb48609960
   content_hash: sha256:2e2ea3193e6bb5e8647f60a6d7777b98a2722ef9146f023d6fda0764bd79d7e5
-- repo_url: Netcracker/qubership-ai-packages
+- repo_url: netcracker/qubership-ai-packages
+  materialization_repo_url: Netcracker/qubership-ai-packages
   name: english-us-developer-style
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
   version: 2.1.0
   virtual_path: agent-packages/english-us-developer-style
   is_virtual: true
@@ -78,13 +78,14 @@ dependencies:
     .agents/skills/english-developer-style/SKILL.md: sha256:9fa75b769c101eb4f90927c80414e96c41ba6db1b10937dc612ebffaba8043fc
     .claude/rules/english-developer-style.md: sha256:2da9f6889756beb319a6395f3f363826d144b9b48c97d742cfd1a89ce0017d58
     .claude/skills/english-developer-style/SKILL.md: sha256:9fa75b769c101eb4f90927c80414e96c41ba6db1b10937dc612ebffaba8043fc
-    .cursor/rules/english-developer-style.mdc: sha256:c7fa36005dd0bdbe2160ba98473582da331ba2b641bec40b97a624ad81d43aa2
+    .cursor/rules/english-developer-style.mdc: sha256:0b86cf5f91d3b62ee1be2d806a988e9e6e8835006615c450d98b757319bf8f7d
   content_hash: sha256:f97efa2a8e0d5c1bd68ddf9f12a3dcf96d2b9b952d5e4aa968f0bc7c71767034
-- repo_url: Netcracker/qubership-ai-packages
+- repo_url: netcracker/qubership-ai-packages
+  materialization_repo_url: Netcracker/qubership-ai-packages
   name: markdown-line-length-120
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
   version: 1.0.1
   virtual_path: agent-packages/markdown-line-length-120
   is_virtual: true
@@ -102,9 +103,10 @@ dependencies:
     .agents/skills/markdown-line-length-120/SKILL.md: sha256:cf4d9f61dfbf07b8b86145e07710ba008016294db891c574f2ec876a5a7a972f
     .claude/rules/markdown-line-length-120.md: sha256:c8aca12283eb04c1cada89c4ecf4be1a499514ec806e2a5c42628927cfafc431
     .claude/skills/markdown-line-length-120/SKILL.md: sha256:cf4d9f61dfbf07b8b86145e07710ba008016294db891c574f2ec876a5a7a972f
-    .cursor/rules/markdown-line-length-120.mdc: sha256:53206655c47a82c505af0b708486e65b7db5ecde53078aad629ea30e55b6066d
+    .cursor/rules/markdown-line-length-120.mdc: sha256:90930b1f4e842c0e40f0e9cc2945678ecbc617a65c96a1c19d2d4f58e44fd5c4
   content_hash: sha256:1708d68b8f755365d1ec9a7904a284c23128737a497d4380f960e635a70c0de5
-- repo_url: Netcracker/qubership-workflow-hub
+- repo_url: netcracker/qubership-workflow-hub
+  materialization_repo_url: Netcracker/qubership-workflow-hub
   name: qubership-workflow-hub-usage
   host: github.com
   resolved_commit: 3511065e91edef101ca84ed1c88cfef7120dface
@@ -194,11 +196,588 @@ dependencies:
     .claude/skills/qubership-workflow-conventions/security-model.md: sha256:fe3f48341fa66504572e3b0779244e77d608e1fb437997eae6ab45c0c5cd133b
     .claude/skills/qubership-workflow-conventions/workflow-patterns.md: sha256:5e3162d18c8d8a205dd5a42a30e7d20447135de535786fb43ce384f184707b25
     .claude/skills/qubership-workflow-conventions/zizmor-rules.md: sha256:f0b1e9aa4def06f87e0bb8fff6ef23cdcfbd0565891cd64b274460e8029034dc
-    .cursor/rules/qubership-workflow-hub-usage.mdc: sha256:ea6a01f61b58ae3e1079c1ef5f834c6d7efdebd13dfa6de4dd580fc32dfda275
+    .cursor/rules/qubership-workflow-hub-usage.mdc: sha256:ce4a22a725edc82257ebbffcf26a093c9f8378ecb1b14c704c2ccfb5930f562e
   content_hash: sha256:6d135ff9b92ab29986cc6c64265e6f7abc3c4f223726ed4b1a429dc2556a2689
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/rules/apm-authoring.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  active_owner: netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  content_hash: sha256:5c4185d3d69333a810c01f5e26a8ea46b033e7082a21f1551433d6c97d8a24a2
+- kind: project-relative
+  target: claude
+  value: .claude/rules/english-developer-style.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  active_owner: netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  content_hash: sha256:2da9f6889756beb319a6395f3f363826d144b9b48c97d742cfd1a89ce0017d58
+- kind: project-relative
+  target: claude
+  value: .claude/rules/markdown-line-length-120.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  active_owner: netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  content_hash: sha256:c8aca12283eb04c1cada89c4ecf4be1a499514ec806e2a5c42628927cfafc431
+- kind: project-relative
+  target: claude
+  value: .claude/rules/qubership-external-logging-installer.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:6c9f6fad9f37fc31de0cfd66a7c43b37fe2e8d26fc59155720c84fe72ac99685
+- kind: project-relative
+  target: claude
+  value: .claude/rules/qubership-workflow-hub-usage.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:3b936301f81645936d916eb4b21578b8721dc373b521062860d7ed7731681636
+- kind: project-relative
+  target: claude
+  value: .claude/skills/codex-review
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/codex-review
+  active_owner: netcracker/qubership-ai-packages/agent-packages/codex-review
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/codex-review/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/codex-review
+  active_owner: netcracker/qubership-ai-packages/agent-packages/codex-review
+  content_hash: sha256:2119ddab29ecb75cc470068fc7464419e386f57127e1cdf3bb5e9bbb48609960
+- kind: project-relative
+  target: claude
+  value: .claude/skills/english-developer-style
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  active_owner: netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/english-developer-style/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  active_owner: netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  content_hash: sha256:9fa75b769c101eb4f90927c80414e96c41ba6db1b10937dc612ebffaba8043fc
+- kind: project-relative
+  target: claude
+  value: .claude/skills/markdown-line-length-120
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  active_owner: netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/markdown-line-length-120/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  active_owner: netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  content_hash: sha256:cf4d9f61dfbf07b8b86145e07710ba008016294db891c574f2ec876a5a7a972f
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:209a8bf5a0099b9298013616bfd74f169fb3d46237d80914a782b3ba90cdb130
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/cla.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:245533ccd1f9c6413e0a1b83cdb2d9f7d8e065a9fdb2d5a0fe9694b8b59b57f1
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/cleanup.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:05b82bb4f1933c39981600ac53f916c510741eb25d3636b8b99bc31a600f7560
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/docker.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:50859ac4df9bc845d383cf47cb3dcf8a8846fae4b9d3bbbbd42e265338bcb65b
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/helm.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:2ea93804c4b487ead21619bd17858d9576f71e1def26531548f4ff1d22a00824
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/maven.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:05e2975120a9e482630d35084ef44a86a0a85a686f99bfd39f3a84cf0055d134
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/notifications.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:924424eb5dcdc17fdcb155a090af714a09e906e0808a520262dc7c2b0a4c5f5c
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/pr.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:b584affbec960cac32d107806ebf7fe10394609788941579c42c1b38c478f1f9
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/release.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:d26279c090f6e75733683c93e2c9f75413dd4293004d83960d784a2ee24303c8
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/security.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:1c9ccbc41dd3524783efa0891036ea6c5680f4aacf74452ee65716a5a9f825aa
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-actions-guide/utilities.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:48d8766f47b1831682f4701ab323855bbc04e6689feda7eb2f8892a47a37cdcf
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-templates-guide
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-templates-guide/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:1b8c37cfd3e230a3b145118957d7545baa73eee1d47a25d9186ae680e051fc44
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-workflow-conventions
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-workflow-conventions/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:4e73031615cf16fa3ed72ff1bd66c2a2e1ddf4e44c9cf34cd931ce0e105aa1bf
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-workflow-conventions/debugging-playbook.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:4609eff134db5534ed21be6772e0595369c32525aecd25c9b9d8b0ffcbeabcfa
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-workflow-conventions/security-model.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:fe3f48341fa66504572e3b0779244e77d608e1fb437997eae6ab45c0c5cd133b
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-workflow-conventions/workflow-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:5e3162d18c8d8a205dd5a42a30e7d20447135de535786fb43ce384f184707b25
+- kind: project-relative
+  target: claude
+  value: .claude/skills/qubership-workflow-conventions/zizmor-rules.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:f0b1e9aa4def06f87e0bb8fff6ef23cdcfbd0565891cd64b274460e8029034dc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/apm-authoring
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  active_owner: netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/apm-authoring/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  active_owner: netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  content_hash: sha256:b4dd9fa65061fcda3bef603ca980c28b0469db41627a3164395d23240b950380
+- kind: project-relative
+  target: codex
+  value: .agents/skills/codex-review
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/codex-review
+  active_owner: netcracker/qubership-ai-packages/agent-packages/codex-review
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/codex-review/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/codex-review
+  active_owner: netcracker/qubership-ai-packages/agent-packages/codex-review
+  content_hash: sha256:2119ddab29ecb75cc470068fc7464419e386f57127e1cdf3bb5e9bbb48609960
+- kind: project-relative
+  target: codex
+  value: .agents/skills/english-developer-style
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  active_owner: netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/english-developer-style/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  active_owner: netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  content_hash: sha256:9fa75b769c101eb4f90927c80414e96c41ba6db1b10937dc612ebffaba8043fc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/markdown-line-length-120
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  active_owner: netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/markdown-line-length-120/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  active_owner: netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  content_hash: sha256:cf4d9f61dfbf07b8b86145e07710ba008016294db891c574f2ec876a5a7a972f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:209a8bf5a0099b9298013616bfd74f169fb3d46237d80914a782b3ba90cdb130
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/cla.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:245533ccd1f9c6413e0a1b83cdb2d9f7d8e065a9fdb2d5a0fe9694b8b59b57f1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/cleanup.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:05b82bb4f1933c39981600ac53f916c510741eb25d3636b8b99bc31a600f7560
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/docker.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:50859ac4df9bc845d383cf47cb3dcf8a8846fae4b9d3bbbbd42e265338bcb65b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/helm.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:2ea93804c4b487ead21619bd17858d9576f71e1def26531548f4ff1d22a00824
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/maven.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:05e2975120a9e482630d35084ef44a86a0a85a686f99bfd39f3a84cf0055d134
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/notifications.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:924424eb5dcdc17fdcb155a090af714a09e906e0808a520262dc7c2b0a4c5f5c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/pr.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:b584affbec960cac32d107806ebf7fe10394609788941579c42c1b38c478f1f9
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/release.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:d26279c090f6e75733683c93e2c9f75413dd4293004d83960d784a2ee24303c8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/security.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:1c9ccbc41dd3524783efa0891036ea6c5680f4aacf74452ee65716a5a9f825aa
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-actions-guide/utilities.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:48d8766f47b1831682f4701ab323855bbc04e6689feda7eb2f8892a47a37cdcf
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-templates-guide
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-templates-guide/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:1b8c37cfd3e230a3b145118957d7545baa73eee1d47a25d9186ae680e051fc44
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-workflow-conventions
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-workflow-conventions/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:4e73031615cf16fa3ed72ff1bd66c2a2e1ddf4e44c9cf34cd931ce0e105aa1bf
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-workflow-conventions/debugging-playbook.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:4609eff134db5534ed21be6772e0595369c32525aecd25c9b9d8b0ffcbeabcfa
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-workflow-conventions/security-model.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:fe3f48341fa66504572e3b0779244e77d608e1fb437997eae6ab45c0c5cd133b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-workflow-conventions/workflow-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:5e3162d18c8d8a205dd5a42a30e7d20447135de535786fb43ce384f184707b25
+- kind: project-relative
+  target: codex
+  value: .agents/skills/qubership-workflow-conventions/zizmor-rules.md
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:f0b1e9aa4def06f87e0bb8fff6ef23cdcfbd0565891cd64b274460e8029034dc
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/apm-authoring.mdc
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  active_owner: netcracker/qubership-ai-packages/agent-packages/apm-authoring
+  content_hash: sha256:b63b337e0af85886c49d961ba2063115a8a12c62d74c660e512f9b06c515a048
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/english-developer-style.mdc
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  active_owner: netcracker/qubership-ai-packages/agent-packages/english-us-developer-style
+  content_hash: sha256:0b86cf5f91d3b62ee1be2d806a988e9e6e8835006615c450d98b757319bf8f7d
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/markdown-line-length-120.mdc
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  active_owner: netcracker/qubership-ai-packages/agent-packages/markdown-line-length-120
+  content_hash: sha256:90930b1f4e842c0e40f0e9cc2945678ecbc617a65c96a1c19d2d4f58e44fd5c4
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/qubership-external-logging-installer.mdc
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:1a875a92a1e0aadfc9f4dfc5f52e2a1a645395bcbed29699e054ec53b938d574
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/qubership-workflow-hub-usage.mdc
+  runtime: null
+  scope: project
+  owners:
+  - netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  active_owner: netcracker/qubership-workflow-hub/agent-packages/qubership-workflow-hub-usage
+  content_hash: sha256:ce4a22a725edc82257ebbffcf26a093c9f8378ecb1b14c704c2ccfb5930f562e
 local_deployed_files:
 - .claude/rules/qubership-external-logging-installer.md
 - .cursor/rules/qubership-external-logging-installer.mdc
 local_deployed_file_hashes:
-  .claude/rules/qubership-external-logging-installer.md: sha256:38cdb56eb7caa10415d667742e54c8d82ca7945800f803ac4abad3b698aa1a2b
-  .cursor/rules/qubership-external-logging-installer.mdc: sha256:4a0ae124b4cb77b788b6ddd3dab217149e4c6f7b961b35b29f3a8b1b33543bf7
+  .claude/rules/qubership-external-logging-installer.md: sha256:6c9f6fad9f37fc31de0cfd66a7c43b37fe2e8d26fc59155720c84fe72ac99685
+  .cursor/rules/qubership-external-logging-installer.mdc: sha256:1a875a92a1e0aadfc9f4dfc5f52e2a1a645395bcbed29699e054ec53b938d574
