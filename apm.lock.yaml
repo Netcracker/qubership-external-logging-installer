@@ -1,23 +1,23 @@
 lockfile_version: '1'
-generated_at: '2026-09-10T00:22:32.507528+00:00'
+generated_at: '2026-09-26T00:23:15.371463+00:00'
 apm_version: 0.23.0
 dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: qubership-essentials
   host: github.com
-  resolved_commit: 0e384f374d05bf6dc1900f518312db62e71b71f4
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
   resolved_ref: main
-  version: 1.0.3
+  version: 1.1.0
   virtual_path: agent-packages/qubership-essentials
   is_virtual: true
   package_type: apm_package
-  content_hash: sha256:0fdceb015af525defdac7812371542f4cc039655928775608e652b9d6d5b11ba
+  content_hash: sha256:2b55c4ebee62c9eda431551239c26de4ba606a9842ff4e580f1b3fbebf7359b3
 - repo_url: Netcracker/qubership-ai-packages
   name: apm-authoring
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
-  version: 1.0.0
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
+  version: 1.1.0
   virtual_path: agent-packages/apm-authoring
   is_virtual: true
   depth: 2
@@ -31,16 +31,16 @@ dependencies:
   - .claude/skills/apm-authoring/SKILL.md
   - .cursor/rules/apm-authoring.mdc
   deployed_file_hashes:
-    .agents/skills/apm-authoring/SKILL.md: sha256:1832abc93a14884504dc87d97cc0c2825c7e7b4a6786f2daccf1d6ef172bc907
+    .agents/skills/apm-authoring/SKILL.md: sha256:b4dd9fa65061fcda3bef603ca980c28b0469db41627a3164395d23240b950380
     .claude/rules/apm-authoring.md: sha256:5c4185d3d69333a810c01f5e26a8ea46b033e7082a21f1551433d6c97d8a24a2
-    .claude/skills/apm-authoring/SKILL.md: sha256:1832abc93a14884504dc87d97cc0c2825c7e7b4a6786f2daccf1d6ef172bc907
+    .claude/skills/apm-authoring/SKILL.md: sha256:b4dd9fa65061fcda3bef603ca980c28b0469db41627a3164395d23240b950380
     .cursor/rules/apm-authoring.mdc: sha256:fbc8f94d4f0b94c04a0ed042ee06f1f48244fdac316f0ce15e2d38b0affbb9aa
-  content_hash: sha256:1d731d0a26376eda0b82629e6e1cff1b41dfeae13fe8d7e5debb24a1699ea4a8
+  content_hash: sha256:c4931d5235c1b2632d537cf9b0f843ee3fb9dc7d84d8de113160b72ffbce4ed8
 - repo_url: Netcracker/qubership-ai-packages
   name: codex-review
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
   version: 1.0.0
   virtual_path: agent-packages/codex-review
   is_virtual: true
@@ -59,8 +59,8 @@ dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: english-us-developer-style
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
   version: 2.1.0
   virtual_path: agent-packages/english-us-developer-style
   is_virtual: true
@@ -83,8 +83,8 @@ dependencies:
 - repo_url: Netcracker/qubership-ai-packages
   name: markdown-line-length-120
   host: github.com
-  resolved_commit: 2925e6e57848f10e27f98956b89284c1212e6c98
-  resolved_ref: 2925e6e57848f10e27f98956b89284c1212e6c98
+  resolved_commit: 43ea92b972804eb9c16871d68d29cccbf9865225
+  resolved_ref: main
   version: 1.0.1
   virtual_path: agent-packages/markdown-line-length-120
   is_virtual: true
@@ -200,5 +200,5 @@ local_deployed_files:
 - .claude/rules/qubership-external-logging-installer.md
 - .cursor/rules/qubership-external-logging-installer.mdc
 local_deployed_file_hashes:
-  .claude/rules/qubership-external-logging-installer.md: sha256:38cdb56eb7caa10415d667742e54c8d82ca7945800f803ac4abad3b698aa1a2b
-  .cursor/rules/qubership-external-logging-installer.mdc: sha256:4a0ae124b4cb77b788b6ddd3dab217149e4c6f7b961b35b29f3a8b1b33543bf7
+  .claude/rules/qubership-external-logging-installer.md: sha256:6c9f6fad9f37fc31de0cfd66a7c43b37fe2e8d26fc59155720c84fe72ac99685
+  .cursor/rules/qubership-external-logging-installer.mdc: sha256:69b8f92768cd713e5a6280c8af5fb7f8fcbd3ac4ae59c4b9c5133df0f1c9507c
