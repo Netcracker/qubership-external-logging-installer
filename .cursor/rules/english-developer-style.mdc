@@ -1,5 +1,5 @@
 ---
-description: Trigger for the english-developer-style skill (American English default): load it before writing or rewording any English text a developer will read.
+description: "Trigger for the english-developer-style skill (American English default): load it before writing or rewording any English text a developer will read."
 globs: "**"
 ---
 

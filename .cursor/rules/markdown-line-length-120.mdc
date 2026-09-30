@@ -1,5 +1,5 @@
 ---
-description: Trigger for the `markdown-line-length-120` skill.
+description: "Trigger for the `markdown-line-length-120` skill."
 globs: "**/*.md"
 ---
 
