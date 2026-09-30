@@ -48,7 +48,7 @@
       loop_control:
         label: "{{ { 'method': item.1.method, 'url': item.1.url, 'response': out.stdout_lines } }}"
 
-    - name: Remove confiuguration files from target machine
+    - name: Remove configuration files from target machine
       file:
         state: absent
         path: "{{ file }}"
