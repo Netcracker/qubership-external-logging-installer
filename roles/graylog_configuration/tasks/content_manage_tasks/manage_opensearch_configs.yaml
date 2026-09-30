@@ -31,7 +31,8 @@
         label: "{{ { 'method': item.1.method, 'url': item.1.url, 'file': file } }}"
       ignore_errors: true
       when:
-        - ansible_facts['distribution'] != "Ubuntu"
+        - ansible_facts['selinux'] is defined
+        - ansible_facts['selinux']['status'] == "enabled"
 
     - name: Send configuration into opensearch
       command: |
