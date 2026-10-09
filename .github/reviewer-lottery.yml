@@ -4,5 +4,5 @@ groups:
   - name: rotating
     reviewers: 1
     usernames:
-      - Beauline
       - NikolaiKuziaevQubership
+      - bagwan-shoaib
