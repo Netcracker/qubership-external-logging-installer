@@ -1,6 +1,6 @@
 ---
 description: Local workflow rules for qubership-external-logging-installer.
-globs: "**/*"
+globs: **/*
 ---
 
 # Repository Workflow
