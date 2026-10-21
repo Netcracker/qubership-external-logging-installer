@@ -5,5 +5,23 @@
     "github>Netcracker/renovate-config:github-actions",
     "github>Netcracker/renovate-config:netcracker-dependencies",
     "github>Netcracker/renovate-config:automerge"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Container images in role defaults, for example graylog_image: \"graylog/graylog:5.2.9\"",
+      "managerFilePatterns": ["/^roles/[^/]+/defaults/main\\.ya?ml$/"],
+      "matchStrings": ["_image:\\s*\"(?<depName>[^\":]+):(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Major versions of the stack change data formats and need a migration, so update them by hand",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["graylog/graylog", "mongo", "opensearchproject/opensearch"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
   ]
 }
