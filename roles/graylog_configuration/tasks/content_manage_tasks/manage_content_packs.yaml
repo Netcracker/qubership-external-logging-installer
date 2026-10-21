@@ -1,6 +1,6 @@
 ---
 - name: Get all content-packs
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/content_packs
     validate_certs: false
     user: admin
@@ -15,16 +15,16 @@
   register: content_packs_list
 
 - name: Get 'Qubership dashboard` content-pack id
-  set_fact:
+  ansible.builtin.set_fact:
     qubership_content_pack_id: "{{ content_packs_list | json_query(jq_content_pack) }}"
   vars:
     jq_content_pack: "json.content_packs[?name==`Qubership dashboard`].id | [0]"
 
-- debug:
+- ansible.builtin.debug:
     var: qubership_content_pack_id
 
 - name: Get all dashboards
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/dashboards
     validate_certs: false
     user: admin
@@ -39,14 +39,14 @@
   register: dashboards_list
 
 - name: Get dashboard ids
-  set_fact:
+  ansible.builtin.set_fact:
     dashboard_from_server_id: "{{ dashboards_list | json_query(jq_dashboard) }}"
     k8s_events_dashboard_from_server_id: "{{ dashboards_list | json_query(jq_k8s_events_dashboard) }}"
   vars:
     jq_dashboard: "json.views[?title==`Sources by Service`].id | [0]"
     jq_k8s_events_dashboard: "json.views[?title==`Kubernetes Events`].id | [0]"
 
-- debug:
+- ansible.builtin.debug:
     msg: "Qubership dashboard installed in the Graylog from content pack with id = {{ qubership_content_pack_id }}"
   when:
     - qubership_content_pack_id is defined
@@ -55,7 +55,7 @@
 - name: Remove default dashboards
   block:
     - name: Get installations id
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/content_packs/{{ qubership_content_pack_id }}/installations
         validate_certs: false
         user: admin
@@ -69,17 +69,17 @@
         return_content: true
       register: installations_info
 
-    - debug:
+    - ansible.builtin.debug:
         msg: "{{ installations_info }}"
 
     - name: Get installation id of dashboards
-      set_fact:
+      ansible.builtin.set_fact:
         installation_id: "{{ installations_info | json_query(jq_dashboard) }}"
       vars:
         jq_dashboard: "json.installations[?content_pack_id==`{{ qubership_content_pack_id }}`]._id | [0]"
 
     - name: Uninstall dashboards
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/content_packs/{{ qubership_content_pack_id }}/installations/{{ item }}
         validate_certs: false
         user: admin
@@ -97,12 +97,12 @@
       no_log: true
 
     - name: Print Uninstall dashboards results
-      debug:
+      ansible.builtin.debug:
         msg: "Uninstalled installation_id={{ item.item }} → status={{ item.status }}"
       loop: "{{ uninstall_results.results }}"
 
     - name: Delete content-pack
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/content_packs/{{ qubership_content_pack_id }}
         validate_certs: false
         user: admin
@@ -125,7 +125,7 @@
     - update_content | bool
 
 - name: Upload content-packs
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/content_packs
     validate_certs: false
     user: admin
@@ -142,7 +142,7 @@
     - "{{ role_path }}/files/content_packs/*.json"
 
 - name: Get all dashboards
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/dashboards
     validate_certs: false
     user: admin
@@ -157,13 +157,13 @@
   register: dashboards_list
 
 - name: Get Qubership dashboard id
-  set_fact:
+  ansible.builtin.set_fact:
     dashboard_from_server_id: "{{ dashboards_list | json_query(jq_dashboard) }}"
   vars:
     jq_dashboard: "json.views[?title==`Sources by Service`].id | [0]"
 
 - name: Install default dashboards
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/content_packs/{{ graylog_dashboard_id }}/1/installations
     validate_certs: false
     user: admin

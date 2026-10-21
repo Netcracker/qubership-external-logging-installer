@@ -8,7 +8,7 @@
     saved_search_ids_from_graylog: "{{ saved_searches_from_graylog | map(attribute='search_id') | list }}"
   block:
     - name: Set 'saved_searches_views_map'
-      set_fact:
+      ansible.builtin.set_fact:
         saved_searches_views_map: "{{ [ saved_search ] + saved_searches_views_map }}"
       vars:
         saved_search: { title: "{{ title }}", src: "{{ item }}" }
@@ -18,7 +18,7 @@
         - "{{ saved_search_views_files_glob }}"
 
     - name: Set 'saved_searches_map'
-      set_fact:
+      ansible.builtin.set_fact:
         saved_searches_map: "{{ [ saved_search ] + saved_searches_map }}"
       vars:
         saved_search: { id: "{{ id }}", src: "{{ item }}" }
@@ -32,7 +32,7 @@
         - update_content | bool
       block:
         - name: Update the required saved searches
-          uri:
+          ansible.builtin.uri:
             url: https://localhost/api/views/search
             validate_certs: false
             user: admin
@@ -55,7 +55,7 @@
             label: "{{ item.id }}"
 
     - name: Upload saved searches
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/views/search
         validate_certs: false
         user: admin
@@ -78,7 +78,7 @@
         label: "{{ item.id }}"
 
     - name: Upload saved searches views
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/views
         validate_certs: false
         user: admin

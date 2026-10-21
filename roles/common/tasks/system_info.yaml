@@ -1,6 +1,6 @@
 ---
 - name: hostname
-  debug:
+  ansible.builtin.debug:
     var=ansible_hostname
 
 - name: System date and timezone
@@ -8,7 +8,7 @@
     msg: |
       Date: "{{ ansible_date_time.date }}"
       Timezone: "{{ ansible_date_time.tz }}"
-  debug:
+  ansible.builtin.debug:
     msg: "{{ msg.split('\n') }}"
 
 - name: Network information
@@ -17,7 +17,7 @@
       All Interface List: "{{ ansible_interfaces }}"
       All IP: "{{ ansible_all_ipv4_addresses }}"
       Gateway: "{{ ansible_default_ipv4.gateway }}"
-  debug:
+  ansible.builtin.debug:
     msg: "{{ msg.split('\n') }}"
 
 - name: Operating system and Kernel information
@@ -28,7 +28,7 @@
       Distribution Version: "{{ ansible_distribution_version }}"
       Kernel: "{{ ansible_kernel }}"
       Architecture: "{{ ansible_architecture }}"
-  debug:
+  ansible.builtin.debug:
     msg: "{{ msg.split('\n') }}"
 
 - name: Hardware information
@@ -38,5 +38,5 @@
       CPU Core: "{{ ansible_processor_vcpus }}"
       RAM: "{{ ansible_memtotal_mb }}"
       SWAP: "{{ ansible_memory_mb.swap.total }}"
-  debug:
+  ansible.builtin.debug:
      msg: "{{ msg.split('\n') }}"

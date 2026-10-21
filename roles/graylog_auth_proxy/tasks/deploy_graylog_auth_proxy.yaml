@@ -1,13 +1,13 @@
 ---
 - name: Set docker image with registry
-  set_fact:
+  ansible.builtin.set_fact:
     graylog_auth_proxy_image: "{{ docker_registry }}/{{ graylog_auth_proxy_image }}"
   when:
     - docker_registry is defined
     - docker_registry != 0
 
 - name: Set default graylog-auth-proxy volumes
-  set_fact:
+  ansible.builtin.set_fact:
     proxy_volumes:
       - "{{ graylog_volume }}/graylog-auth-proxy/config/config.yaml:/usr/src/app/config.yaml:ro,z"
       - "{{ graylog_volume }}/graylog-auth-proxy/ssl/:/usr/share/ssl/:ro,z"
@@ -17,14 +17,14 @@
     - htpasswd is defined
     - htpasswd is not none
     - htpasswd | trim | length > 0
-  set_fact:
+  ansible.builtin.set_fact:
     proxy_volumes: "{{ proxy_volumes + htpasswd_volume }}"
   vars:
     htpasswd_volume:
       - "{{ htpasswd }}:/usr/src/app/.htpasswd:ro,z"
 
 - name: Pull graylog_auth_proxy image
-  docker_image:
+  community.docker.docker_image:
     name: "{{ graylog_auth_proxy_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -32,7 +32,7 @@
     - not docker_registry_validate_certs|bool
 
 - name: Pull graylog_auth_proxy image with local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ graylog_auth_proxy_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -45,7 +45,7 @@
     - docker_registry_password is not defined
 
 - name: Pull graylog_auth_proxy image without local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ graylog_auth_proxy_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -57,7 +57,7 @@
     - docker_registry_password is not defined
 
 - name: Create and start a 'graylog_auth_proxy' container
-  docker_container:
+  community.docker.docker_container:
     name: graylog_auth_proxy
     image: "{{ graylog_auth_proxy_image }}"
     state: started
@@ -79,7 +79,7 @@
     command: python /usr/src/app/graylog_auth_proxy.py --config "./config.yaml"
 
 - name: Wait for container will be started
-  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_auth_proxy
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_auth_proxy
   register: result
   until: result.stdout == 'running'
   retries: 5

@@ -1,11 +1,11 @@
 ---
-- include_tasks: system_info.yaml
+- ansible.builtin.include_tasks: system_info.yaml
   tags: [information]
 
-- include_tasks: file_descriptors.yaml
+- ansible.builtin.include_tasks: file_descriptors.yaml
   tags: [descriptors]
 
-- include_tasks: create_user_group.yaml
+- ansible.builtin.include_tasks: create_user_group.yaml
   tags: [common]
   when:
     - ((node_exporter_install|bool)
@@ -13,10 +13,10 @@
       or (elasticsearch_exporter_install|bool)
       or (proxy_exporter_install|bool))
 
-- include_tasks: certificates_custom.yaml
+- ansible.builtin.include_tasks: certificates_custom.yaml
   tags: [certs]
 
-- include_tasks: certificates_registries.yaml
+- ansible.builtin.include_tasks: certificates_registries.yaml
   tags: [certs]
   when:
     - ((raw_artifacts_registry_validate_certs|bool)

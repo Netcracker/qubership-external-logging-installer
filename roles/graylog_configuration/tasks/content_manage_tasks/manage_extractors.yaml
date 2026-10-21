@@ -1,6 +1,6 @@
 ---
 - name: Get a list of all inputs
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs
     validate_certs: false
     user: admin
@@ -15,7 +15,7 @@
   register: inputs_list
 
 - name: Get the ids of the inputs created/updated
-  set_fact:
+  ansible.builtin.set_fact:
     inputs_ids: "{{ inputs_ids + input_id }}"
   with_items:
     - "{{ docker_ports }}"
@@ -25,7 +25,7 @@
     inputs_ids: []
 
 - name: Get all extractors of an input
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ item }}/extractors
     validate_certs: false
     user: admin
@@ -42,7 +42,7 @@
     - "{{ inputs_ids }}"
 
 - name: Set 'content_extractors_dir' fact to divide API for Graylog 4 and 5
-  set_fact:
+  ansible.builtin.set_fact:
     content_extractors_dir: "files/extractors/graylog_5"
 
 - name: Update the extractors
@@ -50,7 +50,7 @@
     - update_content | bool
   block:
     - name: Update the 'replace_timestamp_extractor' to an input
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
         validate_certs: false
         user: admin
@@ -75,7 +75,7 @@
         label: "{{ input_id }}, extractor_id={{ extractor_id }}"
 
     - name: Update the 'kubernetes_extractor' to an input
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
         validate_certs: false
         user: admin
@@ -100,7 +100,7 @@
         label: "{{ input_id }}, extractor_id={{ extractor_id }}"
 
     - name: Update the 'kubernetes_labels_extractor' to an input
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
         validate_certs: false
         user: admin
@@ -125,7 +125,7 @@
         label: "{{ input_id }}, extractor_id={{ extractor_id }}"
 
     - name: Update the 'docker_extractor' to an input
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
         validate_certs: false
         user: admin
@@ -150,7 +150,7 @@
         label: "{{ input_id }}, extractor_id={{ extractor_id }}"
 
     - name: Update the 'microservice_framework_extractor' to an input
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs/{{ input_id }}/extractors/{{ extractor_id }}
         validate_certs: false
         user: admin
@@ -175,7 +175,7 @@
         label: "{{ input_id }}, extractor_id={{ extractor_id }}"
 
 - name: Add the 'replace_timestamp_extractor' to an input
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ input_id }}/extractors
     validate_certs: false
     user: admin
@@ -200,7 +200,7 @@
     label: "{{ input_id }}"
 
 - name: Add the 'kubernetes_extractor' to an input
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ input_id }}/extractors
     validate_certs: false
     user: admin
@@ -225,7 +225,7 @@
     label: "{{ input_id }}"
 
 - name: Add the 'kubernetes_labels_extractor' to an input
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ input_id }}/extractors
     validate_certs: false
     user: admin
@@ -250,7 +250,7 @@
     label: "{{ input_id }}"
 
 - name: Add the 'docker_extractor' to an input
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ input_id }}/extractors
     validate_certs: false
     user: admin
@@ -275,7 +275,7 @@
     label: "{{ input_id }}"
 
 - name: Add the 'microservice_framework_extractor' to an input
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ input_id }}/extractors
     validate_certs: false
     user: admin
@@ -300,7 +300,7 @@
     label: "{{ input_id }}"
 
 - name: Update the order of messageprocessors
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/messageprocessors/config
     validate_certs: false
     user: admin

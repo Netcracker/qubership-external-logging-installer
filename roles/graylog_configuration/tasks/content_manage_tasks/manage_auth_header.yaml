@@ -1,5 +1,5 @@
 - name: Update the HTTP header authentication configuration
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/authentication/http-header-auth-config
     validate_certs: false
     user: admin

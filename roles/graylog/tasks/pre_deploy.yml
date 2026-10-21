@@ -1,12 +1,12 @@
 ---
 - name: Set 'project_src' if not local connection
-  set_fact:
+  ansible.builtin.set_fact:
     project_src: "~/graylog"
   when:
     - ansible_connection != 'local'
 
 - name: Ensure necessary directories exist and is available
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     owner: "{{ item.owner }}"
@@ -27,7 +27,7 @@
 
 # Copy to the root home directory /root/graylog/ because run with become: True
 - name: Copy the necessary scripts
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "~/graylog/"
     mode: a+x
@@ -38,12 +38,12 @@
     - "{{ role_path }}/files/processing-change-password.sh"
 
 - name: Set default value for 'root_password' if it is not set
-  set_fact:
+  ansible.builtin.set_fact:
     root_password: "admin"
   when: (root_password is undefined) or (root_password is none) or (root_password | trim | length == 0)
 
 - name: Calculate sha256 for 'root_password' that will use in graylog.conf
-  set_fact:
+  ansible.builtin.set_fact:
     root_password_sha2: "{{ root_password | hash('sha256') }}"
   when:
     - root_password is defined
@@ -51,7 +51,7 @@
     - root_password | trim | length > 0
 
 - name: Prepare Graylog config
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ graylog_uid }}"
@@ -64,7 +64,7 @@
 - name: Set custom params in Graylog config
   with_dict:
     - "{{ graylog_custom_params }}"
-  ini_file:
+  community.general.ini_file:
     path: "{{ graylog_volume }}/graylog/config/graylog.conf"
     owner: "{{ graylog_uid }}"
     group: "{{ graylog_gid }}"
@@ -75,7 +75,7 @@
   when: graylog_custom_params is defined
 
 - name: Create directories.json
-  file:
+  ansible.builtin.file:
     path: "{{ graylog_volume }}/graylog/config/directories.json"
     state: touch
     owner: "{{ graylog_uid }}"
@@ -83,6 +83,6 @@
     mode: "0766"
 
 - name: Initialize directories.json
-  copy:
+  ansible.builtin.copy:
     dest: "{{ graylog_volume }}/graylog/config/directories.json"
     content: "{}"

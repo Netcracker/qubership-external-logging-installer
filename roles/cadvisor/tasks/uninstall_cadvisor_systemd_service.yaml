@@ -1,13 +1,13 @@
 ---
 - name: Check if cAdvisor service started
-  command: "systemctl status cadvisor"
+  ansible.builtin.command: "systemctl status cadvisor"
   changed_when: false
   check_mode: no
   register: is_cadvisor_installed
   ignore_errors: true
 
 - name: Stop and disable cAdvisor service
-  systemd:
+  ansible.builtin.systemd:
     name: cadvisor
     enabled: no
     state: stopped
@@ -17,13 +17,13 @@
     - is_cadvisor_installed.rc | int == 0
 
 - name: Check that cAdvisor binary exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ cadvisor_host_bin_dir }}/cadvisor"
   register: cadvisor_binary
   ignore_errors: true
 
 - name: Delete cAdvisor binary
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ cadvisor_host_bin_dir }}/cadvisor"
   when:
@@ -31,13 +31,13 @@
     - cadvisor_binary.stat.exists
 
 - name: Check that cAdvisor systemd unit config exists
-  stat:
+  ansible.builtin.stat:
     path: /etc/systemd/system/cadvisor.service
   register: cadvisor_config
   ignore_errors: true
 
 - name: Delete cAdvisor systemd unit config exists
-  file:
+  ansible.builtin.file:
     state: absent
     dest: /etc/systemd/system/cadvisor.service
   when:

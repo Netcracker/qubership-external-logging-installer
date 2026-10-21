@@ -1,12 +1,12 @@
 ---
 - name: Get 'default_index_set_id'
-  set_fact:
+  ansible.builtin.set_fact:
     default_index_set_id: "{{ indexes_list | json_query(jq_default_index_set_id) }}"
   vars:
     jq_default_index_set_id: "json.index_sets[?default==`true`].id | [0]"
 
 - name: Get 'Default index set' stats
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}/stats
     validate_certs: false
     user: admin
@@ -24,7 +24,7 @@
     - "{{ default_index_set_id }}"
 
 - name: Update the 'Default index set'
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}
     validate_certs: false
     user: admin
@@ -50,7 +50,7 @@
       max_number_of_indices: "{{ max_number_of_indices }}"
 
 - name: Get index ids
-  set_fact:
+  ansible.builtin.set_fact:
     audit_index_set_id: "{{ indexes_list | json_query(jq_audit_index_set_id) | default(omit) }}"
     access_index_set_id: "{{ indexes_list | json_query(jq_access_index_set_id) | default(omit) }}"
     int_index_set_id: "{{ indexes_list | json_query(jq_int_index_set_id) | default(omit) }}"
@@ -64,15 +64,15 @@
     jq_k8s_events_index_set_id: "json.index_sets[?index_prefix==`\"gray_k8s_event\"`].id | [0]"
 
 - name: Get current date time
-  shell: "date +%Y-%m-%dT%H:%M:%S.%3NZ"
+  ansible.builtin.shell: "date +%Y-%m-%dT%H:%M:%S.%3NZ"
   register: tstamp
 
 - name: Define current date time
-  set_fact:
+  ansible.builtin.set_fact:
     current_date: "{{ tstamp.stdout }}"
 
 - name: Update the 'Audit index set'
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}
     validate_certs: false
     user: admin
@@ -104,7 +104,7 @@
       max_number_of_indices: "{{ audit_logs_max_number_of_indices }}"
 
 - name: Update the 'Access index set'
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}
     validate_certs: false
     user: admin
@@ -136,7 +136,7 @@
       max_number_of_indices: "{{ access_logs_max_number_of_indices }}"
 
 - name: Update the 'Integration index set'
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}
     validate_certs: false
     user: admin
@@ -168,7 +168,7 @@
       max_number_of_indices: "{{ integration_logs_max_number_of_indices }}"
 
 - name: Update the 'Nginx index set'
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}
     validate_certs: false
     user: admin
@@ -200,7 +200,7 @@
       max_number_of_indices: "{{ nginx_logs_max_number_of_indices }}"
 
 - name: Update the 'Kubernetes events index set'
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/indices/index_sets/{{ item }}
     validate_certs: false
     user: admin
@@ -237,7 +237,7 @@
     - (audit_index_set_id is undefined) or (audit_index_set_id is none) or (audit_index_set_id | trim | length == 0)
   block:
     - name: Create Audit index
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/indices/index_sets/
         validate_certs: false
         user: admin
@@ -262,7 +262,7 @@
           max_number_of_indices: "{{ audit_logs_max_number_of_indices }}"
 
     - name: Set 'audit_index_set_id'
-      set_fact:
+      ansible.builtin.set_fact:
         audit_index_set_id: "{{ index_response.json.id }}"
 
 - name: Create the 'Access index set'
@@ -271,7 +271,7 @@
     - (access_index_set_id is undefined) or (access_index_set_id is none) or (access_index_set_id | trim | length == 0)
   block:
     - name: Create Access index
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/indices/index_sets/
         validate_certs: false
         user: admin
@@ -296,7 +296,7 @@
           max_number_of_indices: "{{ access_logs_max_number_of_indices }}"
 
     - name: Set 'access_index_set_id'
-      set_fact:
+      ansible.builtin.set_fact:
         access_index_set_id: "{{ index_response.json.id }}"
 
 - name: Create the 'Integration index set'
@@ -305,7 +305,7 @@
     - (int_index_set_id is undefined) or (int_index_set_id is none) or (int_index_set_id | trim | length == 0)
   block:
     - name: Create Integration index
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/indices/index_sets/
         validate_certs: false
         user: admin
@@ -330,7 +330,7 @@
           max_number_of_indices: "{{ integration_logs_max_number_of_indices }}"
 
     - name: Set 'int_index_set_id'
-      set_fact:
+      ansible.builtin.set_fact:
         int_index_set_id: "{{ index_response.json.id }}"
 
 - name: Create the 'Nginx index set'
@@ -339,7 +339,7 @@
     - (nginx_index_set_id is undefined) or (nginx_index_set_id is none) or (nginx_index_set_id | trim | length == 0)
   block:
     - name: Create Nginx index
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/indices/index_sets/
         validate_certs: false
         user: admin
@@ -364,7 +364,7 @@
           max_number_of_indices: "{{ nginx_logs_max_number_of_indices }}"
 
     - name: Set 'nginx_index_set_id'
-      set_fact:
+      ansible.builtin.set_fact:
         nginx_index_set_id: "{{ index_response.json.id }}"
 
 - name: Create the 'Kubernetes events index set'
@@ -373,7 +373,7 @@
     - (k8s_events_index_set_id is undefined) or (k8s_events_index_set_id is none) or (k8s_events_index_set_id | trim | length == 0)
   block:
     - name: Create Kubernetes events index
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/indices/index_sets/
         validate_certs: false
         user: admin
@@ -398,5 +398,5 @@
           max_number_of_indices: "{{ k8s_events_max_number_of_indices }}"
 
     - name: Set 'k8s_events_index_set_id'
-      set_fact:
+      ansible.builtin.set_fact:
         k8s_events_index_set_id: "{{ index_response.json.id }}"
