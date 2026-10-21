@@ -1,0 +1,54 @@
+---
+# Deploys playbooks/graylog.yml into a privileged systemd container that runs its own Docker daemon.
+# Run from the extensions/ directory: molecule test -s graylog_stack
+driver:
+  name: docker
+platforms:
+  - name: graylog-ubuntu2404
+    image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:bbf48c50bf652d059118ba025663055ca64f550adaa13405021f418d52a52a84
+    pre_build_image: true
+    privileged: true
+    cgroupns_mode: host
+    override_command: false
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      # The inner Docker daemon cannot use overlayfs on top of the container's own overlayfs.
+      - /var/lib/docker
+    groups:
+      - graylog
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/../roles
+  config_options:
+    defaults:
+      callbacks_enabled: profile_tasks
+      stdout_callback: default
+  inventory:
+    group_vars:
+      graylog:
+        ansible_host: graylog-ubuntu2404
+        check_prerequisites_enabled: false
+        graylog_heap_size_mb: 1024
+        elasticsearch_heap_size_mb: 1024
+        max_size: 104857600
+        max_number_of_indices: 2
+        graylog_auth_proxy_enabled: false
+        fluentbit_install: true
+        fluentd_install: false
+        node_exporter_install: true
+        mongodb_exporter_install: true
+        elasticsearch_exporter_install: true
+        cadvisor_install: true
+scenario:
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+verifier:
+  name: ansible

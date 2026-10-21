@@ -9,6 +9,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    # Nightly run catches breakage from new upstream images and collection releases.
+    - cron: "17 2 * * *"
   workflow_dispatch: {}
 
 permissions: {}
@@ -53,7 +56,8 @@ jobs:
           ansible=false
           while IFS= read -r file; do
             case "${file}" in
-              playbooks/*|roles/*|tests/*|ansible.cfg|.ansible-lint|.github/workflows/installer-ci.yaml)
+              playbooks/*|roles/*|tests/*|extensions/*|meta/*|galaxy.yml|requirements.yml|CHANGELOG.md|\
+              ansible.cfg|.ansible-lint|.ansible-lint-ignore|.github/workflows/installer-ci.yaml)
                 ansible=true
                 ;;
             esac
@@ -84,9 +88,71 @@ jobs:
       - name: Run installer checks
         run: bash tests/run-installer-ci.sh
 
+  sanity:
+    name: Collection sanity tests
+    needs: changes
+    if: needs.changes.outputs.ansible != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # ansible-test requires the collection to sit at ansible_collections/<namespace>/<name>
+          path: ansible_collections/qubership/observability
+          persist-credentials: false
+      - name: Install Ansible tooling
+        working-directory: ansible_collections/qubership/observability
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/installer-ci
+          /tmp/installer-ci/bin/pip install --upgrade pip
+          /tmp/installer-ci/bin/pip install -r tests/requirements-ci.txt
+          echo /tmp/installer-ci/bin >> "${GITHUB_PATH}"
+      - name: Run ansible-test sanity
+        working-directory: ansible_collections/qubership/observability
+        run: ansible-test sanity --python 3.12 --color yes
+
+  molecule:
+    name: Molecule ${{ matrix.scenario }}
+    needs: changes
+    if: needs.changes.outputs.ansible != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - graylog_stack
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Molecule
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/molecule
+          /tmp/molecule/bin/pip install --upgrade pip
+          /tmp/molecule/bin/pip install -r tests/requirements-molecule.txt
+          echo /tmp/molecule/bin >> "${GITHUB_PATH}"
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml -p "${RUNNER_TEMP}/collections"
+      - name: Run Molecule
+        working-directory: extensions
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ${{ runner.temp }}/collections
+          ANSIBLE_FORCE_COLOR: "true"
+          SCENARIO: ${{ matrix.scenario }}
+        run: molecule test -s "${SCENARIO}"
+
   installer-ci-gate:
     name: Installer CI Gate
-    needs: [changes, validate]
+    needs: [changes, validate, sanity, molecule]
     if: ${{ always() && github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -95,5 +161,8 @@ jobs:
       - name: Require validation when applicable
         if: >-
           needs.changes.result != 'success' ||
-          (needs.changes.outputs.ansible != 'false' && needs.validate.result != 'success')
+          (needs.changes.outputs.ansible != 'false' && (
+            needs.validate.result != 'success' ||
+            needs.sanity.result != 'success' ||
+            needs.molecule.result != 'success'))
         run: exit 1
