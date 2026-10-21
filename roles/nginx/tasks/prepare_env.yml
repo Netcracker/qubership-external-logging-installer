@@ -38,7 +38,7 @@
         common_name: "{{ ansible_host }}"
 
     - name: Generate a Self Signed OpenSSL certificate for NGINX
-      openssl_certificate:
+      community.crypto.x509_certificate:
         path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.crt"
         privatekey_path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.pem"
         csr_path: "{{ graylog_volume }}/nginx/ssl/{{ ansible_host }}.csr"

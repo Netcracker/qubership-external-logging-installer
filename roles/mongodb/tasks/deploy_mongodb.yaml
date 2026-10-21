@@ -44,7 +44,8 @@
     name: graylog_mongo_1
     image: "{{ mongo_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     security_opts:
@@ -100,7 +101,8 @@
     name: graylog_mongo_1
     image: "{{ mongo_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     security_opts:
@@ -120,4 +122,3 @@
         aliases:
           - mongo
     command: mongod --wiredTigerEngineConfigString="cache_size=512M" --auth
-    recreate: true

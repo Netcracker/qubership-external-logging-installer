@@ -52,7 +52,8 @@
     name: graylog_graylog_1
     image: "{{ graylog_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     security_opts:

@@ -1,25 +1,13 @@
 ---
-- name: Set artifact path
-  block:
-    - name: Set tarball url with registry
-      ansible.builtin.set_fact:
-        cadvisor_binary_url: "{{ raw_artifacts_registry }}/{{ cadvisor_binary }}"
-      when:
-        - raw_artifacts_registry is defined
-        - raw_artifacts_registry is not none
-
-    - name: Set tarball url
-      ansible.builtin.set_fact:
-        cadvisor_binary_url: "{{ cadvisor_binary }}"
-      when:
-        - raw_artifacts_registry is not defined
-
-    - name: Set tarball custom url
-      ansible.builtin.set_fact:
-        cadvisor_binary_url: "{{ cadvisor_custom_binary }}"
-      when:
-        - cadvisor_custom_binary is defined
-        - cadvisor_custom_binary is not none
+- name: Resolve cAdvisor download URL
+  # A custom URL wins. A full URL in cadvisor_binary is used as is; a relative path is joined to raw_artifacts_registry.
+  ansible.builtin.set_fact:
+    cadvisor_binary_url: >-
+      {{ cadvisor_custom_binary
+         if (cadvisor_custom_binary is defined and cadvisor_custom_binary is not none and cadvisor_custom_binary | length > 0)
+         else (cadvisor_binary
+               if (cadvisor_binary is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
+               else raw_artifacts_registry ~ '/' ~ cadvisor_binary) }}
 
 - name: Download cAdvisor with credentials
   when:

@@ -44,7 +44,8 @@
     name: graylog_fluentd_1
     image: "{{ fluentd_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     privileged: true

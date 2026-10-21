@@ -1,19 +1,13 @@
 ---
-- name: Set artifact download path
-  block:
-    - name: Set node-exporter tarball url with registry
-      ansible.builtin.set_fact:
-        node_exporter_tarball_url: "{{ raw_artifacts_registry }}/{{ node_exporter_tarball }}"
-      when:
-        - raw_artifacts_registry is defined
-        - raw_artifacts_registry is not none
-
-    - name: Set node-exporter tarball custom url
-      ansible.builtin.set_fact:
-        node_exporter_tarball_url: "{{ node_exporter_custom_tarball }}"
-      when:
-        - node_exporter_custom_tarball is defined
-        - node_exporter_custom_tarball is not none
+- name: Resolve node_exporter download URL
+  # A custom URL wins. A full URL in node_exporter_tarball is used as is; a relative path is joined to raw_artifacts_registry.
+  ansible.builtin.set_fact:
+    node_exporter_tarball_url: >-
+      {{ node_exporter_custom_tarball
+         if (node_exporter_custom_tarball is defined and node_exporter_custom_tarball is not none and node_exporter_custom_tarball | length > 0)
+         else (node_exporter_tarball
+               if (node_exporter_tarball is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
+               else raw_artifacts_registry ~ '/' ~ node_exporter_tarball) }}
 
 - name: Set default node-exporter flags
   ansible.builtin.set_fact:

@@ -1,19 +1,13 @@
 ---
-- name: Set artifact download path
-  block:
-    - name: Set elasticsearch-exporter tarball url with registry
-      ansible.builtin.set_fact:
-        elasticsearch_exporter_tarball_url: "{{ raw_artifacts_registry}}/{{ elasticsearch_exporter_tarball }}"
-      when:
-        - raw_artifacts_registry is defined
-        - raw_artifacts_registry is not none
-
-    - name: Set elasticsearch-exporter tarball custom url
-      ansible.builtin.set_fact:
-        elasticsearch_exporter_tarball_url: "{{ elasticsearch_exporter_custom_tarball }}"
-      when:
-        - elasticsearch_exporter_custom_tarball is defined
-        - elasticsearch_exporter_custom_tarball is not none
+- name: Resolve elasticsearch_exporter download URL
+  # A custom URL wins. A full URL in elasticsearch_exporter_tarball is used as is; a relative path is joined to raw_artifacts_registry.
+  ansible.builtin.set_fact:
+    elasticsearch_exporter_tarball_url: >-
+      {{ elasticsearch_exporter_custom_tarball
+         if (elasticsearch_exporter_custom_tarball is defined and elasticsearch_exporter_custom_tarball is not none and elasticsearch_exporter_custom_tarball | length > 0)
+         else (elasticsearch_exporter_tarball
+               if (elasticsearch_exporter_tarball is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
+               else raw_artifacts_registry ~ '/' ~ elasticsearch_exporter_tarball) }}
 
 - name: Download elasticsearch-exporter archive with credentials
   when:

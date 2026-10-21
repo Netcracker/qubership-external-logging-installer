@@ -44,7 +44,8 @@
     name: graylog_web_1
     image: "{{ nginx_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     security_opts:
