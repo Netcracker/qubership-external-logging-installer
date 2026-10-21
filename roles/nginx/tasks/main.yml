@@ -3,4 +3,3 @@
 - ansible.builtin.import_tasks: manage_certificates.yml
 - ansible.builtin.import_tasks: run_nginx.yml
 - ansible.builtin.import_tasks: post_deploy.yml
-

@@ -43,4 +43,3 @@
       register: udp_check_result
       with_items:
         - "{{ udp_ports_to_check }}"
-
