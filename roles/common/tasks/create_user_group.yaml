@@ -1,13 +1,13 @@
 ---
 - name: Create all-exporter group
-  group:
+  ansible.builtin.group:
     name: "{{ exporters_system_group }}"
     state: present
     system: yes
   when: (exporters_system_user != "root") or (exporters_system_group != "root")
 
 - name: Create all-exporter user
-  user:
+  ansible.builtin.user:
     name: "{{ exporters_system_user }}"
     groups:
       - "{{ exporters_system_group }}"

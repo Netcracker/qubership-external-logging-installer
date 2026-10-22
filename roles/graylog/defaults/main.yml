@@ -10,6 +10,11 @@
 # default: true
 graylog_install: true
 
+## GELF TCP input ports. Graylog publishes each port and graylog_configuration creates a GELF TCP input for it.
+# default: [12201]
+docker_ports:
+  - 12201
+
 validate_certs: false
 ssl_cert_file: ~
 

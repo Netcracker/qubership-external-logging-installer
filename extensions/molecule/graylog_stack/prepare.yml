@@ -1,0 +1,41 @@
+---
+- name: Prepare the test host like a fresh VM with Docker installed
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Install Docker and the tools the roles call
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - python3-docker
+          - procps
+          - iproute2
+          - unzip
+          - acl
+        state: present
+        update_cache: true
+
+    # Docker 29 stores images with the containerd snapshotter, which cannot unpack whiteout files inside this
+    # nested container. A drop-in keeps the classic overlay2 driver, because the roles rewrite daemon.json.
+    - name: Create the Docker service drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/docker.service.d
+        state: directory
+        mode: "0755"
+
+    - name: Use the overlay2 storage driver for the nested Docker daemon
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/docker.service.d/molecule.conf
+        mode: "0644"
+        content: |
+          [Service]
+          ExecStart=
+          ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --storage-driver=overlay2
+
+    - name: Start Docker
+      ansible.builtin.systemd_service:
+        name: docker
+        state: restarted
+        enabled: true
+        daemon_reload: true

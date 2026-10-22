@@ -1,12 +1,12 @@
 ---
 - name: Get duplicator output id
-  set_fact:
+  ansible.builtin.set_fact:
     output_duplicator_id: "{{ outputs_list | json_query(fetch_output_duplicator_id) | default(omit) }}"
   vars:
     fetch_output_duplicator_id: "json.outputs[?title==`output-duplicator`].id | [0]"
 
 - name: Update an output duplicator
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/outputs/{{ item }}
     validate_certs: false
     user: admin
@@ -34,7 +34,7 @@
     - (output_duplicator_id is undefined) or (output_duplicator_id is none) or (output_duplicator_id | trim | length == 0)
   block:
     - name: Create an output duplicator
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/outputs
         validate_certs: false
         user: admin
@@ -52,17 +52,17 @@
         port: "{{ duplicator_default_port }}"
 
     - name: Set 'output_duplicator_id'
-      set_fact:
+      ansible.builtin.set_fact:
         output_duplicator_id: "{{ output_response.json.id }}"
 
 - name: Get duplicator input id
-  set_fact:
+  ansible.builtin.set_fact:
     input_duplicator_id: "{{ inputs_list | json_query(fetch_input_duplicator_id) | default(omit) }}"
   vars:
     fetch_input_duplicator_id: "json.inputs[?attributes.port==`{{ duplicator_default_port }}`].id | [0]"
 
 - name: Update an input duplicator
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/inputs/{{ item }}
     validate_certs: false
     user: admin
@@ -89,7 +89,7 @@
     - (input_duplicator_id is undefined) or (input_duplicator_id is none) or (input_duplicator_id | trim | length == 0)
   block:
     - name: Create an input duplicator
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs
         validate_certs: false
         user: admin
@@ -106,23 +106,23 @@
         port: "{{ duplicator_default_port }}"
 
     - name: Set 'input_duplicator_id'
-      set_fact:
+      ansible.builtin.set_fact:
         input_duplicator_id: "{{ input_response.json.id }}"
 
 - name: Get 'Other site logs' stream id
-  set_fact:
+  ansible.builtin.set_fact:
     other_site_logs_stream_id: "{{ streams_list | json_query(jq_other_site_logs_stream_id) | default(omit) }}"
   vars:
     jq_other_site_logs_stream_id: "json.streams[?title==`Other site logs`].id | [0]"
 
 - name: Get 'default_index_id'
-  set_fact:
+  ansible.builtin.set_fact:
     default_index_set_id: "{{ indexes_list | json_query(jq_default_index_set_id) }}"
   vars:
     jq_default_index_set_id: "json.index_sets[?default==`true`].id | [0]"
 
 - name: Update the 'Other site logs' stream
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/streams/{{ other_site_logs_stream_id }}
     validate_certs: false
     user: admin
@@ -150,7 +150,7 @@
     - (other_site_logs_stream_id is undefined) or (other_site_logs_stream_id is none) or (other_site_logs_stream_id | trim | length == 0)
   block:
     - name: Create the 'Other site logs' stream
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/streams
         validate_certs: false
         user: admin
@@ -170,17 +170,17 @@
           index_set_id: "{{ default_index_set_id }}"
 
     - name: Set 'audit_logs_stream_id'
-      set_fact:
+      ansible.builtin.set_fact:
         other_site_logs_stream_id: "{{ other_site_logs_stream_response.json.stream_id }}"
 
 - name: Get 'Route Other site logs' processing rule id
-  set_fact:
+  ansible.builtin.set_fact:
     other_site_logs_rule_id: "{{ rules_list | json_query(fetch_other_site_logs_rule_id) | default(omit) }}"
   vars:
     fetch_other_site_logs_rule_id: "json[?title==`Route Other site logs`].id | [0]"
 
 - name: Update the 'Route Other site logs' processing rule
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/pipelines/rule/{{ item }}
     validate_certs: false
     user: admin
@@ -214,7 +214,7 @@
     - (other_site_logs_rule_id is undefined) or (other_site_logs_rule_id is none) or (other_site_logs_rule_id | trim | length == 0)
   block:
     - name: Create the 'Route Other site logs' processing rule
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/pipelines/rule
         validate_certs: false
         user: admin
@@ -238,11 +238,11 @@
           rule_source: "{{ lookup('template', processing_rule_source, template_vars=custom_params) }}"
 
     - name: Set 'other_site_logs_rule_id'
-      set_fact:
+      ansible.builtin.set_fact:
         other_site_logs_rule_id: "{{ other_site_logs_rule_response.json.id }}"
 
 - name: Resume the 'Other site logs' stream
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/streams/{{ item }}/resume
     validate_certs: false
     user: admin
@@ -257,49 +257,49 @@
     - "{{ other_site_logs_stream_id }}"
 
 - name: Get audit logs stream id
-  set_fact:
+  ansible.builtin.set_fact:
     audit_logs_stream_id: "{{ streams_list | json_query(fetch_audit_logs_stream_id) | default(omit) }}"
   vars:
     fetch_audit_logs_stream_id: "json.outputs[?title==`Audit logs`].id | [0]"
   when: audit_logs_stream_id is undefined
 
 - name: Get audit logs rule ids
-  set_fact:
+  ansible.builtin.set_fact:
     audit_logs_rule_id: "{{ rules_list | json_query(fetch_audit_logs_rule_id) | default(omit) }}"
   vars:
     fetch_audit_logs_rule_id: "json[?title==`Route Audit logs`].id | [0]"
   when: audit_logs_rule_id is undefined
 
 - name: Get system logs rule ids
-  set_fact:
+  ansible.builtin.set_fact:
     system_logs_rule_id: "{{ rules_list | json_query(fetch_system_logs_rule_id) | default(omit) }}"
   vars:
     fetch_system_logs_rule_id: "json[?title==`Route System logs`].id | [0]"
   when: system_logs_rule_id is undefined
 
 - name: Get remove kubernetes rule ids
-  set_fact:
+  ansible.builtin.set_fact:
     remove_kubernetes_rule_id: "{{ rules_list | json_query(fetch_remove_kubernetes_rule_id) | default(omit) }}"
   vars:
     fetch_remove_kubernetes_rule_id: "json[?title==`Remove kubernetes field`].id | [0]"
   when: remove_kubernetes_rule_id is undefined
 
 - name: Get remove kubernetes labels rule ids
-  set_fact:
+  ansible.builtin.set_fact:
     remove_kubernetes_labels_rule_id: "{{ rules_list | json_query(fetch_remove_kubernetes_labels_rule_id) | default(omit) }}"
   vars:
     fetch_remove_kubernetes_labels_rule_id: "json[?title==`Remove kubernetes labels field`].id | [0]"
   when: remove_kubernetes_labels_rule_id is undefined
 
 - name: Get unsupported symbols logs rule ids
-  set_fact:
+  ansible.builtin.set_fact:
     unsupported_symbols_rule_id: "{{ rules_list | json_query(fetch_unsupported_symbols_rule_id) | default(omit) }}"
   vars:
     fetch_unsupported_symbols_rule_id: "json[?title==`Processing unsupported symbols`].id | [0]"
   when: unsupported_symbols_rule_id is undefined
 
 - name: Configure Audit logs rule
-  set_fact:
+  ansible.builtin.set_fact:
     audit_logs_rule:
       rule_id: "{{ audit_logs_rule_id }}"
       rule_title: "Route Audit logs"
@@ -311,7 +311,7 @@
       route_to_stream_id: "{{ audit_logs_stream_id }}"
 
 - name: Configure Remove kubernetes rule
-  set_fact:
+  ansible.builtin.set_fact:
     remove_kubernetes_rule:
       rule_id: "{{ remove_kubernetes_rule_id }}"
       rule_title: "Remove kubernetes field"
@@ -319,7 +319,7 @@
       rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/remove_kubernetes.rule.j2') }}"
 
 - name: Configure Remove kubernetes labels rule
-  set_fact:
+  ansible.builtin.set_fact:
     remove_kubernetes_labels_rule:
       rule_id: "{{ remove_kubernetes_labels_rule_id }}"
       rule_title: "Remove kubernetes labels field"
@@ -327,7 +327,7 @@
       rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/remove_kubernetes_labels.rule.j2') }}"
 
 - name: Configure Processing unsupported symbols rule
-  set_fact:
+  ansible.builtin.set_fact:
     unsupported_symbols_rule:
       rule_id: "{{ unsupported_symbols_rule_id }}"
       rule_title: "Processing unsupported symbols"
@@ -335,14 +335,14 @@
       rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/unsupported_symbol.rule.j2') }}"
 
 - name: Get system logs stream id
-  set_fact:
+  ansible.builtin.set_fact:
     system_logs_stream_id: "{{ streams_list | json_query(fetch_system_logs_stream_id) | default(omit) }}"
   vars:
     fetch_system_logs_stream_id: "json.outputs[?title==`System logs`].id | [0]"
   when: system_logs_stream_id is undefined
 
 - name: Configure System logs rule
-  set_fact:
+  ansible.builtin.set_fact:
     system_logs_rule:
       rule_id: "{{ system_logs_rule_id }}"
       rule_title: "Route System logs"
@@ -354,7 +354,7 @@
       route_to_stream_id: "{{ system_logs_stream_id }}"
 
 - name: Update a processing rules
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/pipelines/rule/{{ item.rule_id }}
     validate_certs: false
     user: admin
@@ -381,14 +381,14 @@
       rule_source: "{{ item.rule_source }}"
 
 - name: Get 'Logs routing' pipeline id
-  set_fact:
+  ansible.builtin.set_fact:
     logs_routing_pipeline_id: "{{ pipelines_list | json_query(jq_logs_routing_pipeline_stages) | default(omit) }}"
   vars:
     jq_logs_routing_pipeline_stages: "json[?title==`Logs routing`].id | [0]"
   when: logs_routing_pipeline_id is undefined
 
 - name: Update stages in the 'Logs routing' pipeline
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/system/pipelines/pipeline/{{ item }}
     validate_certs: false
     user: admin
@@ -407,7 +407,7 @@
       duplicator_enabled: "{{ duplicator_enabled | bool }}"
 
 - name: Set 'default_stream_id'
-  set_fact:
+  ansible.builtin.set_fact:
     default_stream_id: "{{ streams_list | json_query(fetch_default_stream_id) }}"
   vars:
     fetch_default_stream_id: "json.streams[?title==`Default Stream`].id | [0]"
@@ -415,7 +415,7 @@
     - (default_stream_id is undefined) or (default_stream_id is none) or (default_stream_id | trim | length == 0)
 
 - name: Set 'default_stream_id' as All messages stream ID
-  set_fact:
+  ansible.builtin.set_fact:
     default_stream_id: "{{ streams_list | json_query(fetch_all_messages_stream_id) }}"
   vars:
     fetch_all_messages_stream_id: "json.streams[?title==`All messages`].id | [0]"
@@ -423,7 +423,7 @@
     - (default_stream_id is undefined) or (default_stream_id is none) or (default_stream_id | trim | length == 0)
 
 - name: Associate an output with streams
-  uri:
+  ansible.builtin.uri:
     url: https://localhost/api/streams/{{ item }}/outputs
     validate_certs: false
     user: admin

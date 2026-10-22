@@ -1,0 +1,44 @@
+---
+- name: Verify the Graylog stack
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Wait until Graylog reports ALIVE through nginx
+      ansible.builtin.uri:
+        url: https://localhost/api/system/lbstatus
+        validate_certs: false
+        return_content: true
+      register: graylog_lbstatus
+      until: graylog_lbstatus.status == 200 and 'ALIVE' in graylog_lbstatus.content
+      retries: 30
+      delay: 10
+
+    - name: Check that each exporter serves metrics
+      ansible.builtin.uri:
+        url: "http://localhost:{{ item.port }}/metrics"
+        return_content: true
+      register: exporter_metrics
+      # Handlers restart the exporters at the end of converge, so give them time to listen again.
+      until: exporter_metrics.status == 200 and item.metric in exporter_metrics.content
+      retries: 12
+      delay: 5
+      loop:
+        - { name: node_exporter, port: 9100, metric: node_cpu_seconds_total }
+        - { name: cadvisor, port: 8282, metric: container_cpu_usage_seconds_total }
+        - { name: mongodb_exporter, port: "{{ mongodb_exporter_listen_port | default(9216) }}", metric: mongodb_up }
+        - { name: opensearch_exporter, port: "{{ elasticsearch_exporter_listen_port | default(9114) }}", metric: elasticsearch_cluster_health_status }
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Check that every stack container is running
+      community.docker.docker_container_info:
+        name: "{{ item }}"
+      register: stack_container
+      failed_when: not stack_container.exists or stack_container.container.State.Status != 'running'
+      loop:
+        - graylog_mongo_1
+        - graylog_storage_1
+        - graylog_graylog_1
+        - graylog_web_1
+        - graylog_fluentbit_1

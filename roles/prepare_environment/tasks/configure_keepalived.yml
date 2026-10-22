@@ -1,6 +1,6 @@
 ---
 - name: Check that keepalived enabled
-  set_fact:
+  ansible.builtin.set_fact:
     keepalived_enabled: true
   when:
     - keepalived_virtual_ip_address is defined
@@ -21,7 +21,7 @@
     - keepalived_enabled | default('false') | bool
   block:
     - name: Check if chrony exists  # noqa 403
-      command: keepalived --version
+      ansible.builtin.command: keepalived --version
       register: result
       ignore_errors: True
 
@@ -29,12 +29,12 @@
       when: result is success
       block:
         - name: Add keepalived config file
-          template:
+          ansible.builtin.template:
             src: "{{ role_path }}/templates/configs/keepalived.conf.j2"
             dest: "/etc/keepalived/keepalived.conf"
 
         - name: Copy the necessary scripts
-          copy:
+          ansible.builtin.copy:
             src: "{{ role_path }}/files/keepalived/check_graylog_status.sh"
             dest: "/etc/keepalived/files/"
             setype: keepalived_unconfined_script_exec_t
@@ -42,7 +42,7 @@
             force: true
 
         - name: Start keepalived
-          service:
+          ansible.builtin.service:
             name: keepalived
             enabled: true
             state: restarted

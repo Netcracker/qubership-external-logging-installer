@@ -1,6 +1,6 @@
 ---
-- include_tasks: prepare_env.yaml
+- ansible.builtin.include_tasks: prepare_env.yaml
   tags: [opensearch]
 
-- include_tasks: deploy_opensearch.yaml
+- ansible.builtin.include_tasks: deploy_opensearch.yaml
   tags: [opensearch]

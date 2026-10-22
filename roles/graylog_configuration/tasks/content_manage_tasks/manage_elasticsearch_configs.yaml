@@ -1,6 +1,6 @@
 ---
 - name: Collect elasticsearch configs
-  set_fact:
+  ansible.builtin.set_fact:
     elasticsearch_configs: "{{ elasticsearch_configs | default([]) + content.requests }}"
   vars:
     content: "{{ lookup('file','{{ item }}') | from_json }}"
@@ -11,7 +11,7 @@
   when: elasticsearch_configs is defined
   block:
     - name: Copy configuration into target machine
-      copy:
+      ansible.builtin.copy:
         content: "{{ body }}"
         dest: "{{ file }}"
       vars:
@@ -23,7 +23,7 @@
 
       # The "sefcontext" ansible task does not work here, please check it again after ansible upgrade
     - name: Modify SELinux context
-      command: "chcon -t container_file_t {{ file }}"
+      ansible.builtin.command: "chcon -t container_file_t {{ file }}"
       vars:
         file: "{{ graylog_volume }}/elasticsearch/config/request_body-{{ item.0 }}.json"
       with_indexed_items: "{{ elasticsearch_configs }}"
@@ -35,7 +35,7 @@
         - ansible_facts['selinux']['status'] == "enabled"
 
     - name: Send configuration into elasticsearch
-      command: |
+      ansible.builtin.command: |
         docker exec --tty graylog_elasticsearch_1 \
         curl \
           --request {{ item.1.method }} \
@@ -49,7 +49,7 @@
         label: "{{ { 'method': item.1.method, 'url': item.1.url, 'response': out.stdout_lines } }}"
 
     - name: Remove configuration files from target machine
-      file:
+      ansible.builtin.file:
         state: absent
         path: "{{ file }}"
       vars:
@@ -59,7 +59,7 @@
         label: "{{ { 'method': item.1.method, 'url': item.1.url, 'file': file} }}"
 
 - name: Install path to archive directory
-  uri:
+  ansible.builtin.uri:
     url: http://localhost:9200/_snapshot/{{ path_repo }}
     validate_certs: false
     user: admin

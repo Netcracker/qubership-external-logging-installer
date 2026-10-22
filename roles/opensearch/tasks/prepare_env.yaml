@@ -1,6 +1,6 @@
 ---
 - name: Ensure necessary directories exist and is available
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     mode: "{{ item.mode }}"
@@ -21,7 +21,7 @@
     label: "{{ item.path }}"
 
 - name: Prepare Opensearch default config
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ opensearch_uid }}"
@@ -36,11 +36,11 @@
     - { src: "{{ role_path }}/files/default-config/opensearch-reports-scheduler/", dest: "{{ graylog_volume }}/opensearch/config/opensearch-reports-scheduler/", mode: "0600" }
 
 - name: Calculate salt for security plugin
-  set_fact:
+  ansible.builtin.set_fact:
     opensearch_security_salt: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
 
 - name: Prepare Opensearch config files
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ opensearch_uid }}"
@@ -52,7 +52,7 @@
     - { src: "jvm.options.jinja", dest: "{{ graylog_volume }}/opensearch/config/jvm.options", mode: "0600" }
 
 - name: Create OpenSearch volumes
-  command: >
+  ansible.builtin.command: >
     docker volume create --driver local
     --opt type=none
     --opt o=bind
@@ -65,7 +65,7 @@
     label: "{{ item.name }}"
 
 - name: Set ACL to snapshots directory
-  command: setfacl -d -m o::rwx "{{ graylog_volume }}/opensearch/snapshots"
+  ansible.builtin.command: setfacl -d -m o::rwx "{{ graylog_volume }}/opensearch/snapshots"
 
 - name: Set ACL to snapshots graylog directory
-  command: setfacl -d -m o::rwx "{{ graylog_volume }}/opensearch/snapshots/graylog"
+  ansible.builtin.command: setfacl -d -m o::rwx "{{ graylog_volume }}/opensearch/snapshots/graylog"

@@ -1,6 +1,6 @@
 ---
 - name: Set empty tls_cert_file var if it is not exist
-  set_fact:
+  ansible.builtin.set_fact:
     tls_cert_file: ""
   when:
     - ((tls_cert_file is not defined)
@@ -8,7 +8,7 @@
       or (tls_cert_file | trim | length == 0))
 
 - name: Set empty tls_key_file var if it is not exist
-  set_fact:
+  ansible.builtin.set_fact:
     tls_key_file: ""
   when:
     - ((tls_key_file is not defined)
@@ -16,7 +16,7 @@
       or (tls_key_file | trim | length == 0))
 
 - name: Set empty tls_key_password var if it is not exist
-  set_fact:
+  ansible.builtin.set_fact:
     tls_key_password: ""
   when:
     - ((tls_key_password is not defined)
@@ -34,11 +34,11 @@
         - update_content | bool
       block:
         - name: Set 'inputs_to_update'
-          set_fact:
+          ansible.builtin.set_fact:
             inputs_to_update: "{{ docker_ports | intersect(gelf_tcp_input_ports) }}"
 
         - name: Update the required inputs
-          uri:
+          ansible.builtin.uri:
             url: https://localhost/api/system/inputs/{{ input_id }}
             validate_certs: false
             user: admin
@@ -64,7 +64,7 @@
             label: "{{ item }}, id={{ input_id }}"
 
     - name: Create the required inputs
-      uri:
+      ansible.builtin.uri:
         url: https://localhost/api/system/inputs
         validate_certs: false
         user: admin

@@ -1,2 +1,4 @@
 ansible-core==2.18.6
 ansible-lint==25.8.2
+# json_query filter used by graylog_configuration and graylog_output_duplicator
+jmespath==1.0.1

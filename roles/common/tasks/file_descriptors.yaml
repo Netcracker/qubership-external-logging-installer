@@ -1,20 +1,20 @@
 ---
 - name: Set file-max limit
-  sysctl:
+  ansible.posix.sysctl:
     name: fs.file-max
     value: "1618107"
     state: present
     reload: yes
 
 - name: Set vm.max_map_count
-  sysctl:
+  ansible.posix.sysctl:
     name: vm.max_map_count
     value: "262144"
     state: present
     reload: yes
 
 - name: Setting-up nofles and nproc limit for users
-  pam_limits:
+  community.general.pam_limits:
     domain: "{{ item.domain }}"
     limit_type: "{{ item.limit_type }}"
     limit_item: "{{ item.limit_item }}"

@@ -1,6 +1,6 @@
 ---
 - name: Ensure necessary directories exist and is available
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     mode: "{{ item.mode }}"
@@ -16,7 +16,7 @@
     label: "{{ item.path }}"
 
 - name: Define FluentD volumes
-  set_fact:
+  ansible.builtin.set_fact:
     fluentd_volumes:
       - "{{ graylog_volume }}/fluentd/pos:/fluentd/etc/pos:z"
       - "{{ graylog_volume }}/fluentd/conf.d/:/fluentd/etc/conf.d/:ro,z"
@@ -34,12 +34,12 @@
     dest_config_path: "{{ graylog_volume }}/fluentd/conf.d"
   block:
     - name: Clean FluentD configuration folder
-      file:
+      ansible.builtin.file:
         path: "{{ dest_config_path }}"
         state: absent
 
     - name: Create FluentD config dir
-      file:
+      ansible.builtin.file:
         path: "{{ dest_config_path }}"
         state: directory
         mode: "0775"
@@ -47,17 +47,17 @@
         group: "{{ fluentd_gid }}"
 
     - name: Copy template Graylog output config file
-      template:
+      ansible.builtin.template:
         src: "output-graylog.conf.j2"
         dest: "{{ dest_config_path }}/output-graylog.conf"
 
     - name: Copy template FluentD system config file
-      template:
+      ansible.builtin.template:
         src: "system.conf.j2"
         dest: "{{ dest_config_path }}/system.conf"
 
     - name: Copy FluentD config files to configuration directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ dest_config_path }}"
       with_fileglob:
@@ -71,7 +71,7 @@
         label: "{{ item | basename }}"
 
     - name: Write config to custom-input.conf
-      copy:
+      ansible.builtin.copy:
         content: "{{ fluentd_custom_input_conf | replace('\\n', '\n') }}"
         dest: "{{ dest_config_path }}/custom-input.conf"
       when:
@@ -80,7 +80,7 @@
         - fluentd_custom_input_conf | trim | length > 0
 
     - name: Write config to custom-filter.conf
-      copy:
+      ansible.builtin.copy:
         content: "{{ fluentd_custom_filter_conf | replace('\\n', '\n') }}"
         dest: "{{ dest_config_path }}/custom-filter.conf"
       when:
@@ -89,7 +89,7 @@
         - fluentd_custom_filter_conf | trim | length > 0
 
     - name: Write config to custom-output.conf
-      copy:
+      ansible.builtin.copy:
         content: "{{ fluentd_custom_output_conf | replace('\\n', '\n') }}"
         dest: "{{ dest_config_path }}/custom-output.conf"
       when:
@@ -98,7 +98,7 @@
         - fluentd_custom_output_conf | trim | length > 0
 
     - name: Copy new fluentd.conf from role's default
-      copy:
+      ansible.builtin.copy:
         src: "{{ role_path }}/files/conf.d/fluentd.conf"
         dest: "{{ dest_config_path }}/fluentd.conf"
   when: not fluentd_keep_custom_config|bool

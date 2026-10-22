@@ -1,25 +1,13 @@
 ---
-- name: Set artifact path
-  block:
-    - name: Set tarball url with registry
-      set_fact:
-        cadvisor_binary_url: "{{ raw_artifacts_registry }}/{{ cadvisor_binary }}"
-      when:
-        - raw_artifacts_registry is defined
-        - raw_artifacts_registry is not none
-
-    - name: Set tarball url
-      set_fact:
-        cadvisor_binary_url: "{{ cadvisor_binary }}"
-      when:
-        - raw_artifacts_registry is not defined
-
-    - name: Set tarball custom url
-      set_fact:
-        cadvisor_binary_url: "{{ cadvisor_custom_binary }}"
-      when:
-        - cadvisor_custom_binary is defined
-        - cadvisor_custom_binary is not none
+- name: Resolve cAdvisor download URL
+  # A custom URL wins. A full URL in cadvisor_binary is used as is; a relative path is joined to raw_artifacts_registry.
+  ansible.builtin.set_fact:
+    cadvisor_binary_url: >-
+      {{ cadvisor_custom_binary
+         if (cadvisor_custom_binary is defined and cadvisor_custom_binary is not none and cadvisor_custom_binary | length > 0)
+         else (cadvisor_binary
+               if (cadvisor_binary is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
+               else raw_artifacts_registry ~ '/' ~ cadvisor_binary) }}
 
 - name: Download cAdvisor with credentials
   when:
@@ -27,7 +15,7 @@
     - raw_artifacts_registry_password is defined
   block:
     - name: Download cAdvisor tarball
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ cadvisor_binary_url }}"
         dest: "/tmp/cadvisor"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -40,7 +28,7 @@
       when: not raw_artifacts_registry_validate_certs | bool
 
     - name: Download cAdvisor tarball with local CA cert
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ cadvisor_binary_url }}"
         dest: "/tmp/cadvisor"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -56,7 +44,7 @@
         - raw_artifacts_registry_ca_cert_file is defined
 
     - name: Download cAdvisor tarball without local CA cert
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ cadvisor_binary_url }}"
         dest: "/tmp/cadvisor"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -73,7 +61,7 @@
   when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
   block:
     - name: Download cAdvisor tarball
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ cadvisor_binary_url }}"
         dest: "/tmp/cadvisor"
         validate_certs: no
@@ -84,7 +72,7 @@
       when: not raw_artifacts_registry_validate_certs | bool
 
     - name: Download cAdvisor tarball with local CA cert
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ cadvisor_binary_url }}"
         dest: "/tmp/cadvisor"
       environment:
@@ -98,7 +86,7 @@
         - raw_artifacts_registry_ca_cert_file is defined
 
     - name: Download cAdvisor tarball without local CA cert
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ cadvisor_binary_url }}"
         dest: "/tmp/cadvisor"
       register: _download_tarball
@@ -110,7 +98,7 @@
         - raw_artifacts_registry_ca_cert_file is not defined
 
 - name: Propagate cAdvisor binary
-  copy:
+  ansible.builtin.copy:
     src: /tmp/cadvisor
     dest: "{{ cadvisor_host_bin_dir }}/cadvisor"
     remote_src: yes
@@ -121,7 +109,7 @@
   notify: Restart cAdvisor service
 
 - name: Copy cAdvisor systemd service file
-  template:
+  ansible.builtin.template:
     src: cadvisor.service.jinja
     dest: /etc/systemd/system/cadvisor.service
     owner: root
@@ -131,7 +119,7 @@
   when: not cadvisor_keep_custom_config|bool
 
 - name: Start and enable cAdvisor service
-  systemd:
+  ansible.builtin.systemd:
     name: cadvisor
     enabled: yes
     state: started

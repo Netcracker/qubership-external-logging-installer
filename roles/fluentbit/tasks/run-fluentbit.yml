@@ -1,13 +1,13 @@
 ---
 - name: Set docker image with registry
-  set_fact:
+  ansible.builtin.set_fact:
     fluentbit_image: "{{ docker_registry }}/{{ fluentbit_image }}"
   when:
     - docker_registry is defined
     - docker_registry != 0
 
 - name: Pull FluentBit image
-  docker_image:
+  community.docker.docker_image:
     name: "{{ fluentbit_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -15,7 +15,7 @@
     - not docker_registry_validate_certs|bool
 
 - name: Pull FluentBit image with local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ fluentbit_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -28,7 +28,7 @@
     - docker_registry_password is not defined
 
 - name: Pull FluentBit image without local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ fluentbit_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -40,11 +40,12 @@
     - docker_registry_password is not defined
 
 - name: FluentBit container start
-  docker_container:
+  community.docker.docker_container:
     name: graylog_fluentbit_1
     image: "{{ fluentbit_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     privileged: true
@@ -62,7 +63,7 @@
           - fluentbit
 
 - name: Wait for FluentBit to start
-  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_fluentbit_1  # noqa 206
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_fluentbit_1  # noqa 206
   register: result
   until: result.stdout == 'running'
   delay: 2

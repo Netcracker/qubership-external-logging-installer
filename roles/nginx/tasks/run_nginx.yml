@@ -1,13 +1,13 @@
 ---
 - name: Set docker image with registry
-  set_fact:
+  ansible.builtin.set_fact:
     nginx_image: "{{ docker_registry }}/{{ nginx_image }}"
   when:
     - docker_registry is defined
     - docker_registry != 0
 
 - name: Pull nginx image
-  docker_image:
+  community.docker.docker_image:
     name: "{{ nginx_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -15,7 +15,7 @@
     - not docker_registry_validate_certs|bool
 
 - name: Pull nginx image with local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ nginx_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -28,7 +28,7 @@
     - docker_registry_password is not defined
 
 - name: Pull nginx image without local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ nginx_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -40,11 +40,12 @@
     - docker_registry_password is not defined
 
 - name: Create and start a 'nginx' container
-  docker_container:
+  community.docker.docker_container:
     name: graylog_web_1
     image: "{{ nginx_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     security_opts:
@@ -68,7 +69,7 @@
           - web
 
 - name: Wait for container will be started
-  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_web_1  # noqa 206
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_web_1  # noqa 206
   register: result
   until: result.stdout == 'running'
   retries: 5

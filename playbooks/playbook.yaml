@@ -1,25 +1,18 @@
 ---
-- name: Installation roles
+# Deprecated: use playbooks/graylog.yml, or qubership.observability.graylog when the collection is installed.
+# This file runs graylog.yml on all inventory hosts, as before, and is removed in a later release.
+- name: Warn about the deprecated playbook path
   hosts: all
-  gather_facts: true
-  become: yes
-  roles:
-    # Prepare steps
-    - { name: common, become: yes }
-    - { name: prepare_environment, become: yes }
-    # Main components
-    - { name: mongodb, become: yes }
-    - { name: opensearch, become: yes }
-    - { name: graylog_auth_proxy, become: yes }
-    - { name: graylog, become: yes }
-    - { name: nginx, become: yes }
-    - { name: graylog_configuration, become: yes }
-    - { name: graylog_output_duplicator, become: yes }
-    # Self-logging
-    - { name: fluentd, become: yes }
-    - { name: fluentbit, become: yes }
-    # Monitoring
-    - { name: node_exporter, become: yes }
-    - { name: mongodb_exporter, become: yes }
-    - { name: opensearch_exporter, become: yes }
-    - { name: cadvisor, become: yes }
+  gather_facts: false
+  tasks:
+    - name: Print the deprecation warning
+      ansible.builtin.debug:
+        msg: >-
+          playbooks/playbook.yaml is deprecated and will be removed in a later release.
+          Run playbooks/graylog.yml instead, and set graylog_target_hosts=all or put the hosts in the graylog group.
+      run_once: true
+
+- name: Deploy Graylog
+  ansible.builtin.import_playbook: graylog.yml
+  vars:
+    graylog_target_hosts: all
