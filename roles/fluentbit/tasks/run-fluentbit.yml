@@ -63,7 +63,7 @@
           - fluentbit
 
 - name: Wait for FluentBit to start
-  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_fluentbit_1  # noqa 206
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_fluentbit_1  # noqa: jinja[spacing]
   register: result
   until: result.stdout == 'running'
   delay: 2

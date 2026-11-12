@@ -8,10 +8,10 @@
     group: "{{ item.group }}"
     recurse: true
   with_items:
-    - {path: "{{ graylog_volume }}/fluent-bit/", mode: "0777", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
-    - {path: "{{ graylog_volume }}/fluent-bit/conf/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
-    - {path: "{{ graylog_volume }}/fluent-bit/certs/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
-    - {path: "{{ graylog_volume }}/fluent-bit/db/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}"}
+    - { path: "{{ graylog_volume }}/fluent-bit/", mode: "0777", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}" }
+    - { path: "{{ graylog_volume }}/fluent-bit/conf/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}" }
+    - { path: "{{ graylog_volume }}/fluent-bit/certs/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}" }
+    - { path: "{{ graylog_volume }}/fluent-bit/db/", mode: "0775", owner: "{{ fluentbit_uid }}", group: "{{ fluentbit_gid }}" }
   loop_control:
     label: "{{ item.path }}"
 

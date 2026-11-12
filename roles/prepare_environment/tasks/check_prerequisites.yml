@@ -170,7 +170,7 @@
             - 80
             - 443
 
-        # All block bellow can be changed in ansible 2.8, when docker_container_info will available
+        # All block below can be changed in ansible 2.8, when docker_container_info will available
         - name: Collect active allowed graylog ports
           block:
             - name: Collect docker active ports

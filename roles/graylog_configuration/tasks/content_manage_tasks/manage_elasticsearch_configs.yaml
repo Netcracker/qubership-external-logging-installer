@@ -21,7 +21,7 @@
       loop_control:
         label: "{{ { 'method': item.1.method, 'url': item.1.url, 'file': file } }}"
 
-      # The "sefcontext" ansible task does not work here, please check it again after ansible upgrade
+    # The "sefcontext" ansible task does not work here, please check it again after ansible upgrade
     - name: Modify SELinux context
       ansible.builtin.command: "chcon -t container_file_t {{ file }}"
       vars:

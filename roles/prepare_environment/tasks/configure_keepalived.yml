@@ -20,7 +20,7 @@
   when:
     - keepalived_enabled | default('false') | bool
   block:
-    - name: Check if chrony exists  # noqa 403
+    - name: Check if chrony exists  # noqa: package-latest
       ansible.builtin.command: keepalived --version
       register: result
       ignore_errors: True

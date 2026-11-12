@@ -14,7 +14,7 @@ Source repositories and what each one contributes:
 | Q | this repository (GitHub) | Graylog stack base, public images, CI, community files |
 | L | internal logging installer (GitLab) | Graylog fixes made after Q was forked in January 2025 |
 | V | internal VictoriaLogs playbooks (GitLab) | VictoriaLogs roles, compose mode, Podman, TLS sources |
-| M | internal monitoring installer (GitLab) | haproxy and keepalived exporters, uninstall flow, `docker` role |
+| M | internal monitoring installer (GitLab) | HAProxy and keepalived exporters, uninstall flow, `docker` role |
 
 Findings that shape the plan:
 
@@ -151,7 +151,7 @@ Each stage ends with a tagged release and updated docs.
 - [ ] Release workflow: build the collection tarball on release and attach it to the GitHub release. It needs a
       decision on the tag and release flow (see the Qubership `tag-action` and `release-drafter` patterns).
 - [ ] Renovate rules for GitHub release URLs in exporter defaults. The version appears twice in each URL, so a plain
-      regex manager would break the file name.
+      regular expression manager would break the filename.
 - [ ] Idempotence in Molecule. Container tasks use `recreate: true`, so a second run always reports changes. Stage 2
       replaces this with restarts on config change in `container_runtime`.
 - [ ] Rocky 9 platform for the scenario, and shared Molecule config once a second scenario exists.

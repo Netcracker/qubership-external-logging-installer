@@ -72,7 +72,7 @@
           - storage
 
 - name: Wait for containers will be started
-  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_storage_1  # noqa 206
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_storage_1  # noqa: jinja[spacing]
   register: result
   until: result.stdout == 'running'
   retries: 5

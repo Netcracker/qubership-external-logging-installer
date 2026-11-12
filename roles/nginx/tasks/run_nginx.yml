@@ -69,7 +69,7 @@
           - web
 
 - name: Wait for container will be started
-  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_web_1  # noqa 206
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_web_1  # noqa: jinja[spacing]
   register: result
   until: result.stdout == 'running'
   retries: 5
