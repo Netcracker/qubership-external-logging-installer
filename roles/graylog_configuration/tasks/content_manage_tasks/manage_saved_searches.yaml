@@ -12,7 +12,7 @@
         saved_searches_views_map: "{{ [ saved_search ] + saved_searches_views_map }}"
       vars:
         saved_search: { title: "{{ title }}", src: "{{ item }}" }
-        title: "{{ (lookup('file','{{ item }}') | from_json).title }}"
+        title: "{{ (lookup('file', item) | from_json).title }}"
         saved_searches_views_map: []
       with_fileglob:
         - "{{ saved_search_views_files_glob }}"
@@ -22,7 +22,7 @@
         saved_searches_map: "{{ [ saved_search ] + saved_searches_map }}"
       vars:
         saved_search: { id: "{{ id }}", src: "{{ item }}" }
-        id: "{{ (lookup('file','{{ item }}') | from_json).id }}"
+        id: "{{ (lookup('file', item) | from_json).id }}"
         saved_searches_map: []
       with_fileglob:
         - "{{ saved_search_files_glob }}"
@@ -43,7 +43,7 @@
             status_code: 201
             headers:
               X-Requested-By: Graylog API Browser
-            body: "{{ lookup('file','{{ item.src }}') }}"
+            body: "{{ lookup('file', item.src) }}"
             body_format: json
           when:
             - item.id in saved_searches_to_update
@@ -66,7 +66,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('file','{{ item.src }}') }}"
+        body: "{{ lookup('file', item.src) }}"
         body_format: json
       when:
         - item.id in saved_searches_to_create
@@ -89,7 +89,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('file','{{ item.src }}') }}"
+        body: "{{ lookup('file', item.src) }}"
         body_format: json
       when:
         - item.title in saved_searches_views_to_create

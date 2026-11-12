@@ -16,7 +16,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/outputs/output-duplicator.json.j2') }}"
+    body: "{{ lookup('template', role_path ~ '/files/outputs/output-duplicator.json.j2') }}"
     body_format: json
   when:
     - update_content | bool
@@ -44,7 +44,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/outputs/output-duplicator.json.j2') }}"
+        body: "{{ lookup('template', role_path ~ '/files/outputs/output-duplicator.json.j2') }}"
         body_format: json
       register: output_response
       vars:
@@ -72,7 +72,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/inputs/udp_input.json.j2') }}"
+    body: "{{ lookup('template', role_path ~ '/files/inputs/udp_input.json.j2') }}"
     body_format: json
   when:
     - update_content | bool
@@ -99,7 +99,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/inputs/udp_input.json.j2') }}"
+        body: "{{ lookup('template', role_path ~ '/files/inputs/udp_input.json.j2') }}"
         body_format: json
       register: input_response
       vars:
@@ -132,7 +132,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -160,7 +160,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: other_site_logs_stream_response
       vars:
@@ -190,7 +190,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -224,7 +224,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: other_site_logs_rule_response
       vars:
@@ -304,7 +304,7 @@
       rule_id: "{{ audit_logs_rule_id }}"
       rule_title: "Route Audit logs"
       rule_description: "Route Audit logs to the appropriate stream"
-      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/audit_logs.rule.j2', template_vars=template_vars) }}"
+      rule_source: "{{ lookup('template', role_path ~ '/files/processing_rules/audit_logs.rule.j2', template_vars=template_vars) }}"
   vars:
     template_vars:
       input_id: "{{ input_duplicator_id }}"
@@ -316,7 +316,7 @@
       rule_id: "{{ remove_kubernetes_rule_id }}"
       rule_title: "Remove kubernetes field"
       rule_description: "Remove kubernetes field"
-      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/remove_kubernetes.rule.j2') }}"
+      rule_source: "{{ lookup('template', role_path ~ '/files/processing_rules/remove_kubernetes.rule.j2') }}"
 
 - name: Configure Remove kubernetes labels rule
   ansible.builtin.set_fact:
@@ -324,7 +324,7 @@
       rule_id: "{{ remove_kubernetes_labels_rule_id }}"
       rule_title: "Remove kubernetes labels field"
       rule_description: "Remove kubernetes labels field"
-      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/remove_kubernetes_labels.rule.j2') }}"
+      rule_source: "{{ lookup('template', role_path ~ '/files/processing_rules/remove_kubernetes_labels.rule.j2') }}"
 
 - name: Configure Processing unsupported symbols rule
   ansible.builtin.set_fact:
@@ -332,7 +332,7 @@
       rule_id: "{{ unsupported_symbols_rule_id }}"
       rule_title: "Processing unsupported symbols"
       rule_description: "Processing unsupported symbols (Replace '/' to '_')"
-      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/unsupported_symbol.rule.j2') }}"
+      rule_source: "{{ lookup('template', role_path ~ '/files/processing_rules/unsupported_symbol.rule.j2') }}"
 
 - name: Get system logs stream id
   ansible.builtin.set_fact:
@@ -347,7 +347,7 @@
       rule_id: "{{ system_logs_rule_id }}"
       rule_title: "Route System logs"
       rule_description: "Route System logs to the appropriate stream"
-      rule_source: "{{ lookup('template', '{{ role_path }}/files/processing_rules/system_logs.rule.j2', template_vars=template_vars) }}"
+      rule_source: "{{ lookup('template', role_path ~ '/files/processing_rules/system_logs.rule.j2', template_vars=template_vars) }}"
   vars:
     template_vars:
       input_id: "{{ input_duplicator_id }}"
@@ -364,7 +364,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - item.rule_id | trim | length > 0
@@ -398,7 +398,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/pipeline.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/pipeline.json.j2', template_vars=template_vars) }}"
     body_format: json
   with_items:
     - "{{ logs_routing_pipeline_id }}"
@@ -433,7 +433,7 @@
     status_code: 202
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/stream_outputs.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/stream_outputs.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - item | trim | length > 0

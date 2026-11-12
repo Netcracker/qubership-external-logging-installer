@@ -123,7 +123,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/roles/operator.json.j2') }}"
+    body: "{{ lookup('template', role_path ~ '/files/roles/operator.json.j2') }}"
     body_format: json
   when:
     - operatorRole.status == 404
@@ -140,7 +140,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/roles/operator.json.j2') }}"
+    body: "{{ lookup('template', role_path ~ '/files/roles/operator.json.j2') }}"
     body_format: json
   when:
     - update_content | bool
@@ -173,7 +173,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/roles/auditViewer.json.j2') }}"
+    body: "{{ lookup('template', role_path ~ '/files/roles/auditViewer.json.j2') }}"
     body_format: json
   when:
     - auditViewerRole.status == 404
@@ -190,7 +190,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/roles/auditViewer.json.j2') }}"
+    body: "{{ lookup('template', role_path ~ '/files/roles/auditViewer.json.j2') }}"
     body_format: json
   when:
     - update_content | bool
@@ -223,7 +223,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/operator.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/operator.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - operator.status == 404
@@ -243,7 +243,7 @@
     status_code: 204
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/operator.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/operator.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -279,7 +279,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/auditViewer.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/auditViewer.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - auditViewer.status == 404
@@ -299,7 +299,7 @@
     status_code: 204
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/auditViewer.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/auditViewer.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -335,7 +335,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/telegraf_operator.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/telegraf_operator.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - telegraf_operator.status == 404
@@ -355,7 +355,7 @@
     status_code: 204
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/telegraf_operator.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/telegraf_operator.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -391,7 +391,7 @@
     status_code: 201
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/admin_with_trusted_header.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/admin_with_trusted_header.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - admin_with_trusted_header.status == 404
@@ -412,7 +412,7 @@
     status_code: 204
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/user_accounts/admin_with_trusted_header.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/user_accounts/admin_with_trusted_header.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool

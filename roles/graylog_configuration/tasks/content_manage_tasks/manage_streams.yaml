@@ -31,7 +31,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - audit_logs_install | lower | trim == 'true'
@@ -56,7 +56,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - system_logs_install | lower | trim == 'true'
@@ -81,7 +81,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - integration_logs_install | lower | trim == 'true'
@@ -106,7 +106,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - access_logs_install | lower | trim == 'true'
@@ -131,7 +131,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - nginx_logs_install | lower | trim == 'true'
@@ -156,7 +156,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - k8s_events_install | lower | trim == 'true'
@@ -187,7 +187,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: audit_logs_stream_response
       vars:
@@ -218,7 +218,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: system_logs_stream_response
       vars:
@@ -248,7 +248,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: int_logs_stream_response
       vars:
@@ -279,7 +279,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: access_logs_stream_response
       vars:
@@ -311,7 +311,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: nginx_logs_stream_response
       vars:
@@ -343,7 +343,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/stream.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/stream.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: k8s_events_stream_response
       vars:
@@ -505,7 +505,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - audit_logs_install | lower | trim == 'true'
@@ -534,7 +534,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - system_logs_install | lower | trim == 'true'
@@ -563,7 +563,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - remove_kubernetes_rule_id is defined
@@ -590,7 +590,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - remove_kubernetes_labels_rule_id is defined
@@ -617,7 +617,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - unsupported_symbols_rule_id is defined
@@ -644,7 +644,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - integration_logs_install | lower | trim == 'true'
@@ -673,7 +673,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - access_logs_install | lower | trim == 'true'
@@ -702,7 +702,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - nginx_logs_install | lower | trim == 'true'
@@ -731,7 +731,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       when:
         - k8s_events_install | lower | trim == 'true'
@@ -765,7 +765,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: audit_logs_rule_response
       vars:
@@ -797,7 +797,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: system_logs_rule_response
       vars:
@@ -829,7 +829,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: remove_kubernetes_rule_response
       vars:
@@ -860,7 +860,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: remove_kubernetes_labels_rule_response
       vars:
@@ -892,7 +892,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: unsupported_symbols_rule_response
       vars:
@@ -923,7 +923,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: int_logs_rule_response
       vars:
@@ -955,7 +955,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: access_logs_rule_response
       vars:
@@ -989,7 +989,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: nginx_logs_rule_response
       vars:
@@ -1023,7 +1023,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/processing_rule.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/processing_rule.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: k8s_events_rule_response
       vars:

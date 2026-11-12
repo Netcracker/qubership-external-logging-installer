@@ -35,7 +35,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/indexes/default_index.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/indexes/default_index.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - (update_content | bool) or (default_index_set_stats | json_query(jq_documents_number) | int == 0)
@@ -83,7 +83,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/indexes/audit_index.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/indexes/audit_index.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -115,7 +115,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/indexes/access_index.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/indexes/access_index.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -147,7 +147,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/indexes/integration_index.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/indexes/integration_index.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -179,7 +179,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/indexes/nginx_index.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/indexes/nginx_index.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -211,7 +211,7 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('template', '{{ role_path }}/files/indexes/k8s_events_index.json.j2', template_vars=template_vars) }}"
+    body: "{{ lookup('template', role_path ~ '/files/indexes/k8s_events_index.json.j2', template_vars=template_vars) }}"
     body_format: json
   when:
     - update_content | bool
@@ -248,7 +248,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/indexes/audit_index.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/indexes/audit_index.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: index_response
       vars:
@@ -282,7 +282,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/indexes/access_index.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/indexes/access_index.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: index_response
       vars:
@@ -316,7 +316,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/indexes/integration_index.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/indexes/integration_index.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: index_response
       vars:
@@ -350,7 +350,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/indexes/nginx_index.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/indexes/nginx_index.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: index_response
       vars:
@@ -384,7 +384,7 @@
         status_code: 200
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/indexes/k8s_events_index.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/indexes/k8s_events_index.json.j2', template_vars=template_vars) }}"
         body_format: json
       register: index_response
       vars:

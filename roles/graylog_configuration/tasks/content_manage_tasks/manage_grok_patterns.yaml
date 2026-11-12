@@ -1,7 +1,7 @@
 ---
 - name: Grok patterns management tasks
   vars:
-    grok_pattern_file: "{{ lookup('file','{{ role_path }}/files/grok_patterns.json') | from_json }}"
+    grok_pattern_file: "{{ lookup('file', role_path ~ '/files/grok_patterns.json') | from_json }}"
     grok_pattern_names: "{{ grok_pattern_file.patterns | map(attribute='name') | list }}"
     grok_patterns_from_graylog: "{{ grok_patterns_list.json.patterns }}"
     grok_pattern_names_from_graylog: "{{ grok_patterns_from_graylog | map(attribute='name') | list }}"

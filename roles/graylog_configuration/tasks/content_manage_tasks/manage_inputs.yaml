@@ -49,7 +49,7 @@
             status_code: 201
             headers:
               X-Requested-By: Graylog API Browser
-            body: "{{ lookup('template', '{{ role_path }}/files/inputs/tcp_input.json.j2', template_vars=template_vars) }}"
+            body: "{{ lookup('template', role_path ~ '/files/inputs/tcp_input.json.j2', template_vars=template_vars) }}"
             body_format: json
           with_items:
             - "{{ inputs_to_update }}"
@@ -75,7 +75,7 @@
         status_code: 201
         headers:
           X-Requested-By: Graylog API Browser
-        body: "{{ lookup('template', '{{ role_path }}/files/inputs/tcp_input.json.j2', template_vars=template_vars) }}"
+        body: "{{ lookup('template', role_path ~ '/files/inputs/tcp_input.json.j2', template_vars=template_vars) }}"
         body_format: json
       with_items:
         - "{{ inputs_to_create }}"

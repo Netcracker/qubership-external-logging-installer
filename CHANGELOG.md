@@ -20,6 +20,8 @@ All notable changes to this project are documented in this file. The format foll
 - The collection requirements file moved from `tests/requirements.yml` to `requirements.yml`.
 - ansible-lint runs the `production` profile on the whole collection. Existing violations are listed in
   `.ansible-lint-ignore`.
+- graylog_configuration and graylog_output_duplicator build lookup paths with Jinja expressions instead of templates
+  nested in strings, which ansible-core 2.23 stops rendering.
 
 ### Deprecated
 
@@ -43,3 +45,4 @@ All notable changes to this project are documented in this file. The format foll
 - Pipeline rules failed to install from a checkout with Windows line endings, because Graylog rejects carriage returns
   in the rule source. They are now removed before the rule is sent.
 - Role shell scripts start with `#!/usr/bin/env bash`, which `ansible-test sanity` accepts.
+

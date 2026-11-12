@@ -10,5 +10,5 @@
     status_code: 200
     headers:
       X-Requested-By: Graylog API Browser
-    body: "{{ lookup('file','{{ role_path }}/files/auth_header.json') }}"
+    body: "{{ lookup('file', role_path ~ '/files/auth_header.json') }}"
     body_format: json
