@@ -173,8 +173,10 @@ Each stage ends with a tagged release and updated docs.
 
 ### Stage 3: Graylog fixes from L
 
-- [ ] `graylog_configuration`: `is not none` guards, remove all content packs, boolean `tls_enable`, `lookup('file')`
-      instead of nested templating. Grok pattern order and `\r` in rule sources were fixed in stage 1.
+- [ ] `graylog_configuration`: `is not none` guards, remove all content packs, boolean `tls_enable`. Grok pattern
+      order, `\r` in rule sources, and nested templates in lookups were fixed in stage 1.
+- [ ] `graylog_configuration`: prefix registered and `set_fact` variables with `graylog_configuration_`, then remove
+      the 114 `var-naming[no-role-prefix]` entries that ansible-lint 26 added to `.ansible-lint-ignore`.
 - [ ] `graylog_auth_proxy`: `domain`, `access_control_max_age`, cookie and session settings, and `technical_users_*`.
 - [ ] `mongodb`: idempotent user creation without `ignore_errors`.
 - [ ] `graylog`: `graylog_config_root_timezone`.

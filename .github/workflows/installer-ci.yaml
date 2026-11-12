@@ -113,7 +113,10 @@ jobs:
           echo /tmp/installer-ci/bin >> "${GITHUB_PATH}"
       - name: Run ansible-test sanity
         working-directory: ansible_collections/qubership/observability
-        run: ansible-test sanity --python 3.12 --color yes
+        # Test with the runner's Python, because ansible-test only finds interpreters that are installed.
+        run: |
+          set -euo pipefail
+          ansible-test sanity --python "$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')" --color yes
 
   molecule:
     name: Molecule ${{ matrix.scenario }}
