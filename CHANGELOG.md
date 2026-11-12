@@ -13,6 +13,7 @@ All notable changes to this project are documented in this file. The format foll
   target another group.
 - A Molecule scenario, `graylog_stack`, deploys the playbook into a container and checks Graylog, the exporters, and
   the stack containers.
+- `graylog_password_secret` sets the Graylog `password_secret`.
 
 ### Changed
 
@@ -46,3 +47,8 @@ All notable changes to this project are documented in this file. The format foll
   in the rule source. They are now removed before the rule is sent.
 - Role shell scripts start with `#!/usr/bin/env bash`, which `ansible-test sanity` accepts.
 
+### Security
+
+- `graylog.conf` no longer ships one hardcoded `password_secret` for every installation. The role keeps the value of an
+  existing installation, so users stay signed in and encrypted values stay readable, and prints a warning when that
+  value is the old public one. A fresh install gets a random 96-character secret.

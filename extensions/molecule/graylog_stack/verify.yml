@@ -42,3 +42,20 @@
         - graylog_graylog_1
         - graylog_web_1
         - graylog_fluentbit_1
+
+    - name: Read the Graylog config
+      ansible.builtin.slurp:
+        src: "{{ graylog_volume | default('/var/lib') }}/graylog/config/graylog.conf"
+      register: graylog_config
+      no_log: true
+
+    - name: Check that the install generated its own password secret
+      vars:
+        graylog_secret: >-
+          {{ ((graylog_config.content | b64decode | regex_findall('(?m)^password_secret\s*=\s*(\S+)')) + ['']) | first }}
+      ansible.builtin.assert:
+        that:
+          - graylog_secret | length >= 64
+          - graylog_secret | hash('sha256') != '962fd74cb98aae5dc21e19290d3f90c2d0a2359ac113563049efa73229150617'
+        quiet: true
+      no_log: true

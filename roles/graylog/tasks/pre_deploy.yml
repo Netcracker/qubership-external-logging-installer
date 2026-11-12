@@ -50,6 +50,35 @@
     - root_password is not none
     - root_password | trim | length > 0
 
+- name: Read the password secret from the existing Graylog config
+  ansible.builtin.slurp:
+    src: "{{ graylog_volume }}/graylog/config/graylog.conf"
+  register: graylog_existing_config
+  failed_when: false
+  no_log: true
+  when: graylog_password_secret | default('', true) | length == 0
+
+# Keep the secret of an existing installation: a new one would sign out all users and break encrypted values.
+- name: Choose the Graylog password secret
+  ansible.builtin.set_fact:
+    graylog_password_secret_effective: >-
+      {{ graylog_password_secret if graylog_password_secret | default('', true) | length > 0
+         else graylog_existing_secret if graylog_existing_secret | length > 0
+         else lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], length=96) }}
+  vars:
+    graylog_existing_secret: >-
+      {{ ((graylog_existing_config.content | default('') | b64decode
+           | regex_findall('(?m)^password_secret\s*=\s*(\S+)')) + ['']) | first }}
+  no_log: true
+
+- name: Warn when Graylog uses the password secret that earlier installer versions shipped
+  ansible.builtin.debug:
+    msg: >-
+      graylog.conf uses the password_secret that earlier installer versions set on every installation, so it is
+      publicly known. Set graylog_password_secret to a unique random value of at least 64 characters. Changing it
+      signs out all users and makes values encrypted with the old secret, such as access tokens, unreadable.
+  when: graylog_password_secret_effective | hash('sha256') == '962fd74cb98aae5dc21e19290d3f90c2d0a2359ac113563049efa73229150617'
+
 - name: Prepare Graylog config
   ansible.builtin.template:
     src: "{{ item.src }}"
