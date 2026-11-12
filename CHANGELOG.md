@@ -46,6 +46,11 @@ All notable changes to this project are documented in this file. The format foll
 - Pipeline rules failed to install from a checkout with Windows line endings, because Graylog rejects carriage returns
   in the rule source. They are now removed before the rule is sent.
 - Role shell scripts start with `#!/usr/bin/env bash`, which `ansible-test sanity` accepts.
+- With ansible-core 2.19 and later, a fresh install failed or misbehaved in graylog_configuration:
+  - the GELF TCP input request sent `"tls_enable": False`, which is not JSON
+  - content pack, dashboard, and extractor lookups that found nothing broke the next condition
+  - a broken condition hid the warning about an unsupported OS
+- The Operator and Audit Viewer role requests were invalid JSON when the "Other site logs" stream existed.
 
 ### Security
 

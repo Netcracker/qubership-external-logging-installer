@@ -30,7 +30,7 @@
       ansible.builtin.fail:
         msg: "{{ msg.split('\n') }}"
       when:
-        - ansible_facts.distribution not in {{ supported_os_families }}
+        - ansible_facts.distribution not in supported_os_families
       ignore_errors: true
 
 - name: Check prerequisites

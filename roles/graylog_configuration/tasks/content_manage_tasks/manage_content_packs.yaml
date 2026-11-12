@@ -16,7 +16,7 @@
 
 - name: Get 'Qubership dashboard` content-pack id
   ansible.builtin.set_fact:
-    qubership_content_pack_id: "{{ content_packs_list | json_query(jq_content_pack) }}"
+    qubership_content_pack_id: "{{ content_packs_list | json_query(jq_content_pack) | default('', true) }}"
   vars:
     jq_content_pack: "json.content_packs[?name==`Qubership dashboard`].id | [0]"
 
@@ -40,8 +40,8 @@
 
 - name: Get dashboard ids
   ansible.builtin.set_fact:
-    dashboard_from_server_id: "{{ dashboards_list | json_query(jq_dashboard) }}"
-    k8s_events_dashboard_from_server_id: "{{ dashboards_list | json_query(jq_k8s_events_dashboard) }}"
+    dashboard_from_server_id: "{{ dashboards_list | json_query(jq_dashboard) | default('', true) }}"
+    k8s_events_dashboard_from_server_id: "{{ dashboards_list | json_query(jq_k8s_events_dashboard) | default('', true) }}"
   vars:
     jq_dashboard: "json.views[?title==`Sources by Service`].id | [0]"
     jq_k8s_events_dashboard: "json.views[?title==`Kubernetes Events`].id | [0]"
@@ -158,7 +158,7 @@
 
 - name: Get Qubership dashboard id
   ansible.builtin.set_fact:
-    dashboard_from_server_id: "{{ dashboards_list | json_query(jq_dashboard) }}"
+    dashboard_from_server_id: "{{ dashboards_list | json_query(jq_dashboard) | default('', true) }}"
   vars:
     jq_dashboard: "json.views[?title==`Sources by Service`].id | [0]"
 

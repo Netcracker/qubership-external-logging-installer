@@ -68,7 +68,7 @@
       with_items:
         - "{{ extractors_list_from_inputs.results }}"
       vars:
-        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
         input_id: "{{ item.url.split('/')[-2] }}"
         jq_extractor_id: "json.extractors[?title=='replace_timestamp'].id | [0]"
       loop_control:
@@ -93,7 +93,7 @@
       with_items:
         - "{{ extractors_list_from_inputs.results }}"
       vars:
-        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
         input_id: "{{ item.url.split('/')[-2] }}"
         jq_extractor_id: "json.extractors[?title=='kuber_extractor'].id | [0]"
       loop_control:
@@ -118,7 +118,7 @@
       with_items:
         - "{{ extractors_list_from_inputs.results }}"
       vars:
-        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
         input_id: "{{ item.url.split('/')[-2] }}"
         jq_extractor_id: "json.extractors[?title=='kuber_labels_extractor'].id | [0]"
       loop_control:
@@ -143,7 +143,7 @@
       with_items:
         - "{{ extractors_list_from_inputs.results }}"
       vars:
-        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
         input_id: "{{ item.url.split('/')[-2] }}"
         jq_extractor_id: "json.extractors[?title=='docker_extractor'].id | [0]"
       loop_control:
@@ -168,7 +168,7 @@
       with_items:
         - "{{ extractors_list_from_inputs.results }}"
       vars:
-        extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+        extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
         input_id: "{{ item.url.split('/')[-2] }}"
         jq_extractor_id: "json.extractors[?title=='Microservice Framework Backend'].id | [0]"
       loop_control:
@@ -193,7 +193,7 @@
   with_items:
     - "{{ extractors_list_from_inputs.results }}"
   vars:
-    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
     input_id: "{{ item.url.split('/')[-2] }}"
     jq_extractor_id: "json.extractors[?title=='replace_timestamp'].id | [0]"
   loop_control:
@@ -218,7 +218,7 @@
   with_items:
     - "{{ extractors_list_from_inputs.results }}"
   vars:
-    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
     input_id: "{{ item.url.split('/')[-2] }}"
     jq_extractor_id: "json.extractors[?title=='kuber_extractor'].id | [0]"
   loop_control:
@@ -243,7 +243,7 @@
   with_items:
     - "{{ extractors_list_from_inputs.results }}"
   vars:
-    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
     input_id: "{{ item.url.split('/')[-2] }}"
     jq_extractor_id: "json.extractors[?title=='kuber_labels_extractor'].id | [0]"
   loop_control:
@@ -268,7 +268,7 @@
   with_items:
     - "{{ extractors_list_from_inputs.results }}"
   vars:
-    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
     input_id: "{{ item.url.split('/')[-2] }}"
     jq_extractor_id: "json.extractors[?title=='docker_extractor'].id | [0]"
   loop_control:
@@ -293,7 +293,7 @@
   with_items:
     - "{{ extractors_list_from_inputs.results }}"
   vars:
-    extractor_id: "{{ item | json_query(jq_extractor_id) }}"
+    extractor_id: "{{ item | json_query(jq_extractor_id) | default('', true) }}"
     input_id: "{{ item.url.split('/')[-2] }}"
     jq_extractor_id: "json.extractors[?title=='Microservice Framework Backend'].id | [0]"
   loop_control:
