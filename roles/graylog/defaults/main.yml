@@ -10,6 +10,11 @@
 # default: true
 graylog_install: true
 
+## GELF TCP input ports. Graylog publishes each port and graylog_configuration creates a GELF TCP input for it.
+# default: [12201]
+docker_ports:
+  - 12201
+
 validate_certs: false
 ssl_cert_file: ~
 
@@ -60,6 +65,12 @@ graylog_gid: 1100
 # Credentials for root user/super admin
 root_username: admin
 root_password: admin
+
+# Secret that Graylog uses to sign sessions and encrypt stored values, such as access tokens.
+# Use at least 64 characters, for example the output of `pwgen -N 1 -s 96`.
+# When empty, the role keeps the value from the existing graylog.conf on the host, or generates a random one on a
+# fresh install. Changing it signs out all users and makes values encrypted with the old secret unreadable.
+graylog_password_secret: ""
 
 # Size of internal ring buffers. Raise this if raising outputbuffer_processors does not help anymore.
 # For optimum performance your LogMessage objects in the ring buffer should fit in your CPU L3 cache.

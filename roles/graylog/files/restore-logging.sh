@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 restore_vault=$1
 status_file=/srv/docker/graylog/restore.successful
 echo 'restore from' "$restore_vault"

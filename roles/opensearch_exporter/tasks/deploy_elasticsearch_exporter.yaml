@@ -1,19 +1,13 @@
 ---
-- name: Set artifact download path
-  block:
-    - name: Set elasticsearch-exporter tarball url with registry
-      set_fact:
-        elasticsearch_exporter_tarball_url: "{{ raw_artifacts_registry}}/{{ elasticsearch_exporter_tarball }}"
-      when:
-        - raw_artifacts_registry is defined
-        - raw_artifacts_registry is not none
-
-    - name: Set elasticsearch-exporter tarball custom url
-      set_fact:
-        elasticsearch_exporter_tarball_url: "{{ elasticsearch_exporter_custom_tarball }}"
-      when:
-        - elasticsearch_exporter_custom_tarball is defined
-        - elasticsearch_exporter_custom_tarball is not none
+- name: Resolve elasticsearch_exporter download URL
+  # A custom URL wins. A full URL in elasticsearch_exporter_tarball is used as is; a relative path is joined to raw_artifacts_registry.
+  ansible.builtin.set_fact:
+    elasticsearch_exporter_tarball_url: >-
+      {{ elasticsearch_exporter_custom_tarball
+         if (elasticsearch_exporter_custom_tarball is defined and elasticsearch_exporter_custom_tarball is not none and elasticsearch_exporter_custom_tarball | length > 0)
+         else (elasticsearch_exporter_tarball
+               if (elasticsearch_exporter_tarball is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
+               else raw_artifacts_registry ~ '/' ~ elasticsearch_exporter_tarball) }}
 
 - name: Download elasticsearch-exporter archive with credentials
   when:
@@ -22,7 +16,7 @@
   block:
     - name: Download elasticsearch-exporter archive
       when: not raw_artifacts_registry_validate_certs | bool
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ elasticsearch_exporter_tarball_url }}"
         dest: "/tmp/elasticsearch_exporter.tar.gz"
         validate_certs: no
@@ -37,7 +31,7 @@
       when:
         - raw_artifacts_registry_validate_certs | bool
         - raw_artifacts_registry_ca_cert_file is defined
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ elasticsearch_exporter_tarball_url }}"
         dest: "/tmp/elasticsearch_exporter.tar.gz"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -53,7 +47,7 @@
       when:
         - raw_artifacts_registry_validate_certs | bool
         - raw_artifacts_registry_ca_cert_file is not defined
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ elasticsearch_exporter_tarball_url }}"
         dest: "/tmp/elasticsearch_exporter.tar.gz"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -68,7 +62,7 @@
   block:
     - name: Download elasticsearch-exporter archive
       when: not raw_artifacts_registry_validate_certs | bool
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ elasticsearch_exporter_tarball_url }}"
         dest: "/tmp/elasticsearch_exporter.tar.gz"
         validate_certs: no
@@ -81,7 +75,7 @@
       when:
         - raw_artifacts_registry_validate_certs | bool
         - raw_artifacts_registry_ca_cert_file is defined
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ elasticsearch_exporter_tarball_url }}"
         dest: "/tmp/elasticsearch_exporter.tar.gz"
       environment:
@@ -95,7 +89,7 @@
       when:
         - raw_artifacts_registry_validate_certs | bool
         - raw_artifacts_registry_ca_cert_file is not defined
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ elasticsearch_exporter_tarball_url }}"
         dest: "/tmp/elasticsearch_exporter.tar.gz"
       register: _download_archive
@@ -104,14 +98,14 @@
       delay: 2
 
 - name: Unarchive elasticsearch-exporter binary
-  unarchive:
+  ansible.builtin.unarchive:
     src: "/tmp/elasticsearch_exporter.tar.gz"
     dest: /tmp
     remote_src: yes
     extra_opts: [--strip-components=1]
 
 - name: Propagate elasticsearch-exporter binary
-  copy:
+  ansible.builtin.copy:
     src: /tmp/elasticsearch_exporter
     dest: "{{ elasticsearch_exporter_host_bin_dir }}/elasticsearch_exporter"
     remote_src: yes
@@ -127,7 +121,7 @@
     - elasticsearch_exporter_admin_password is not defined
   block:
     - name: Set elasticsearch-exporter credentials from OpenSearch parameters
-      set_fact:
+      ansible.builtin.set_fact:
         elasticsearch_exporter_admin_username: "{{ opensearch_admin_username }}"
         elasticsearch_exporter_admin_password: "{{ opensearch_admin_password }}"
       when:
@@ -137,7 +131,7 @@
         - opensearch_admin_password is not none
 
 - name: Copy elasticsearch-exporter systemd service file
-  template:
+  ansible.builtin.template:
     src: elasticsearch_exporter.service.jinja
     dest: /etc/systemd/system/elasticsearch_exporter.service
     owner: root
@@ -146,14 +140,14 @@
   notify: Restart Elasticsearch exporter
 
 - name: Start and enable elasticsearch-exporter service
-  systemd:
+  ansible.builtin.systemd:
     name: elasticsearch_exporter
     enabled: yes
     state: started
     daemon_reload: yes
 
 - name: Delete temporary files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:

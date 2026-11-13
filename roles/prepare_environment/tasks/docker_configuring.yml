@@ -6,31 +6,31 @@
     - configure_docker is undefined or configure_docker | lower | trim != 'false'
   block:
     - name: Archive docker daemon.json repo files for backup
-      shell: cd /etc/docker && tar -czvf /etc/docker/daemon_json_`date +"%Y-%m-%d-%H-%M-%S"`.tgz daemon.json
+      ansible.builtin.shell: cd /etc/docker && tar -czvf /etc/docker/daemon_json_`date +"%Y-%m-%d-%H-%M-%S"`.tgz daemon.json
       ignore_errors: true
 
     - name: Delete docker daemon.json repo file after backup
-      file:
+      ansible.builtin.file:
         path: "/etc/docker/daemon.json"
         state: absent
         force: true
       ignore_errors: true
 
     - name: Set flag centos7
-      set_fact:
+      ansible.builtin.set_fact:
         centos7: true
       when:
         - ansible_facts['distribution'] == "CentOS"
         - ansible_facts['distribution_major_version'] == "7"
 
     - name: Check docker storage options
-      shell: cat /etc/sysconfig/docker-storage && cat /etc/sysconfig/docker-storage-setup
+      ansible.builtin.shell: cat /etc/sysconfig/docker-storage && cat /etc/sysconfig/docker-storage-setup
       register: docker_storage_options
       when:
         - centos7 is defined
 
     - name: Check the need to add overlay2 driver by OS
-      set_fact:
+      ansible.builtin.set_fact:
         need_overlay2: true
       when:
         - centos7 is defined
@@ -41,7 +41,7 @@
         - ansible_facts['distribution'] != "Amazon"
       block:
         - name: Create docker config directory
-          file:
+          ansible.builtin.file:
             path: /etc/docker
             state: directory
             mode: 0600
@@ -49,7 +49,7 @@
             group: root
 
         - name: Add insecure docker repository, overlay2 driver and bridge0 in dockerd config
-          template:
+          ansible.builtin.template:
             src: "{{ role_path }}/templates/daemon.json.j2"
             dest: "/etc/docker/daemon.json"
             force: true
@@ -58,7 +58,7 @@
     - name: Amazon Linux add options in /etc/sysconfig/docker config for docker
       block:
         - name: Write docker options and docker registry in config
-          lineinfile:
+          ansible.builtin.lineinfile:
             dest: /etc/sysconfig/docker
             regexp: '^OPTIONS=.*$'
             line: "OPTIONS='\
@@ -79,12 +79,12 @@
         - docker_pids_limit | int(-1) >= 0
       block:
         - name: Deleting old pids-limit options
-          replace:
+          ansible.builtin.replace:
             path: /etc/sysconfig/docker
             regexp: '--default-pids-limit=[0-9]*\s{0,}'
           ignore_errors: true
         - name: Adding new pids-limit options
-          replace:
+          ansible.builtin.replace:
             path: /etc/sysconfig/docker
             regexp: "^OPTIONS='"
             replace: "OPTIONS='--default-pids-limit={{ docker_pids_limit }} "
@@ -102,12 +102,12 @@
             - docker_threads_soft_limit | int(-1) >= 0
           block:
             - name: Deleting old ulimit nproc options
-              replace:
+              ansible.builtin.replace:
                 path: /etc/sysconfig/docker
                 regexp: '--default-ulimit nproc=[0-9]*:[0-9]*\s{0,}'
 
             - name: Adding new ulimit nproc options
-              replace:
+              ansible.builtin.replace:
                 path: /etc/sysconfig/docker
                 regexp: "^OPTIONS='"
                 replace: "OPTIONS='--default-ulimit nproc={{ default_ulimit_nproc }} "
@@ -115,7 +115,7 @@
                 default_ulimit_nproc: "{{ docker_threads_soft_limit }}:{{ docker_threads_hard_limit }}"
 
         - name: Check default bridge
-          stat:
+          ansible.builtin.stat:
             path: /etc/sysconfig/network-scripts/ifcfg-bridge0
           register: bridge_file
 
@@ -126,26 +126,26 @@
             - not(bridge_file.stat.exists | bool)
           block:
             - name: Add script for configure bridge0 and remove docker0
-              template:
+              ansible.builtin.template:
                 src: "{{ role_path }}/templates/configs/ifcfg-bridge0"
                 dest: /etc/sysconfig/network-scripts/ifcfg-bridge0
                 mode: 644
 
             - name: Restart network service
-              service:
+              ansible.builtin.service:
                 name: network
                 state: restarted
                 enabled: true
 
             - name: Remove docker0
-              shell: |
+              ansible.builtin.shell: |
                 ip link set dev br0 up
                 ip link set dev docker0 down;
                 ip link del name dev br0;
                 iptables -t nat -F POSTROUTING;
 
             - name: Update audit.rules
-              blockinfile:
+              ansible.builtin.blockinfile:
                 dest: /etc/audit/rules.d/audit.rules
                 block: |
                   # Rules to audit all Docker daemon activities
@@ -161,12 +161,12 @@
                 create: true
 
             - name: Restart auditd
-              command: /sbin/service auditd restart
+              ansible.builtin.command: /sbin/service auditd restart
               args:
                 warn: false    # set warn=false to prevent warnings
 
     - name: Update owner and group of certs.d
-      file:
+      ansible.builtin.file:
         path: /etc/docker/certs.d
         state: directory
         owner: root
@@ -175,13 +175,13 @@
         recurse: true
 
     - name: Restart docker service
-      service:
+      ansible.builtin.service:
         name: docker
         state: restarted
         enabled: true
 
 - name: Create a logging network
-  docker_network:
+  community.docker.docker_network:
     name: logging
     state: present
 
@@ -190,7 +190,7 @@
     - docker_registry_username is defined
     - docker_registry_password is defined
     - not docker_registry_validate_certs|bool
-  docker_login:
+  community.docker.docker_login:
     registry_url: "{{ docker_registry }}"
     username: "{{ docker_registry_username }}"
     password: "{{ docker_registry_password }}"
@@ -202,7 +202,7 @@
     - docker_registry_password is defined
     - docker_registry_validate_certs|bool
     - docker_registry_ca_cert_file is defined
-  docker_login:
+  community.docker.docker_login:
     registry_url: "{{ docker_registry }}"
     username: "{{ docker_registry_username }}"
     password: "{{ docker_registry_password }}"
@@ -216,7 +216,7 @@
     - docker_registry_password is defined
     - docker_registry_validate_certs|bool
     - docker_registry_ca_cert_file is not defined
-  docker_login:
+  community.docker.docker_login:
     registry_url: "{{ docker_registry }}"
     username: "{{ docker_registry_username }}"
     password: "{{ docker_registry_password }}"

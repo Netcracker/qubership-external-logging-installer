@@ -8,6 +8,7 @@
     * [Software Requirements](#software-requirements)
   * [Installation](#installation)
     * [Quick Start](#quick-start)
+    * [Install as a collection](#install-as-a-collection)
     * [Advanced Installation](#advanced-installation)
   * [Usage](#usage)
     * [Basic Operations](#basic-operations)
@@ -76,10 +77,11 @@ on virtual machines.
    cd qubership-external-logging-installer
    ```
 
-2. **Install Ansible dependencies:**
+2. **Install Ansible and the required collections:**
 
    ```bash
-   pip3 install ansible
+   pip3 install ansible jmespath
+   ansible-galaxy collection install -r requirements.yml
    ```
 
 3. **Configure your inventory:**
@@ -88,9 +90,11 @@ on virtual machines.
    # Create inventory file with your target hosts and parameters
    cat > inventory.yml << 'EOF'
    all:
-     hosts:
-       your-server-ip:
-         ansible_user: ubuntu
+     children:
+       graylog:
+         hosts:
+           your-server-ip:
+             ansible_user: ubuntu
      vars:
        graylog_install: true
    EOF
@@ -102,8 +106,22 @@ on virtual machines.
 4. **Run the playbook:**
 
    ```bash
-   ansible-playbook -i inventory.yml playbooks/playbook.yaml
+   ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml
    ```
+
+   The playbook targets the `graylog` inventory group. To target another group, add
+   `-e graylog_target_hosts=<group>`. `playbooks/playbook.yaml` still works on all hosts but is deprecated.
+
+### Install as a collection
+
+The repository is also the Ansible collection `qubership.observability`. Build and install it, then run the playbook
+by its collection name:
+
+```bash
+ansible-galaxy collection build
+ansible-galaxy collection install qubership-observability-*.tar.gz
+ansible-playbook -i inventory.yml qubership.observability.graylog
+```
 
 ### Advanced Installation
 
@@ -129,7 +147,7 @@ echo '{"version":"1.1","host":"test","short_message":"Hello Graylog"}' | nc your
 
 ```bash
 # Check service status
-ansible-playbook -i inventory.yml playbooks/playbook.yaml --tags health_check
+ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml --tags health_check
 
 # View logs
 docker logs graylog
@@ -140,7 +158,7 @@ docker logs graylog
 ### Key Configuration Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `graylog_image` | Graylog Docker image | `graylog/graylog:5.2.9` |
 | `opensearch_heap_size` | OpenSearch JVM heap | `2g` |
 | `mongodb_version` | MongoDB version | `4.4` |
@@ -214,12 +232,19 @@ The project includes automated linting and validation:
 # Run Super Linter (same as CI)
 docker run --rm -e RUN_LOCAL=true -v $(pwd):/tmp/lint github/super-linter:latest
 
-# Ansible syntax check
-ansible-playbook --syntax-check playbooks/playbook.yaml
+# Syntax checks, collection build, and ansible-lint (same as CI)
+pip3 install -r tests/requirements-ci.txt
+bash tests/run-installer-ci.sh
+
+# Deploy the playbook into a container and check Graylog, the exporters, and the stack containers
+pip3 install -r tests/requirements-molecule.txt
+cd extensions && molecule test -s graylog_stack
 
 # Dry run deployment
-ansible-playbook -i inventory.yml playbooks/playbook.yaml --check
+ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml --check
 ```
+
+The Molecule scenario needs Docker on the machine that runs it and about 6 GB of free RAM.
 
 ### Manual Testing
 

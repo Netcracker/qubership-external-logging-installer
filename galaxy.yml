@@ -1,0 +1,57 @@
+---
+namespace: qubership
+name: observability
+version: 0.29.0
+readme: README.md
+authors:
+  - Qubership contributors
+description: >-
+  Roles and playbooks that deploy logging and monitoring components on virtual machines: Graylog with OpenSearch and
+  MongoDB, log agents, and Prometheus exporters.
+license:
+  - Apache-2.0
+tags:
+  - logging
+  - monitoring
+  - graylog
+  - opensearch
+  - fluentbit
+  - prometheus
+dependencies:
+  ansible.posix: ">=1.5.0"
+  community.crypto: ">=2.0.0"
+  community.docker: ">=3.10.0"
+  community.general: ">=8.0.0"
+repository: https://github.com/Netcracker/qubership-external-logging-installer
+documentation: https://github.com/Netcracker/qubership-external-logging-installer/tree/main/docs
+issues: https://github.com/Netcracker/qubership-external-logging-installer/issues
+build_ignore:
+  - .agents
+  - .ansible
+  - .ansible-lint
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .pre-commit-config.yaml
+  - .yamlignore
+  - AGENTS.md
+  - CODE-OF-CONDUCT.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - ansible.cfg
+  - .apm
+  - .claude
+  - .codex
+  - .cursor
+  - .github
+  - .qubership
+  - agent-packages
+  - apm.lock.yaml
+  - apm.yml
+  - commitlint.config.js
+  - docs/plans
+  - docs/troubleshooting
+  - extensions
+  - renovate.json
+  - tests
+  - "*.tar.gz"

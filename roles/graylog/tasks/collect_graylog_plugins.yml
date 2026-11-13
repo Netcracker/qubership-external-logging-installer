@@ -1,6 +1,6 @@
 ---
 - name: Fetch installed plugin files
-  find:
+  ansible.builtin.find:
     file_type: file
     paths: "{{ graylog_volume }}/graylog/plugins/"
     patterns: "*.jar"
@@ -14,7 +14,7 @@
 #   "version": "4.3.9"
 # }]
 - name: Store plugins to variable
-  set_fact:
+  ansible.builtin.set_fact:
     internal_installed_graylog_plugins: "{{ internal_installed_graylog_plugins + [ plugin ] }}"
   vars:
     plugin_name_regex: "^([a-zA-Z\\d]+(?:-[a-zA-Z\\d]+)*)-(\\d+\\.\\d+\\.\\d+)(?:-[a-zA-Z]+)?\\.jar$"
@@ -30,7 +30,7 @@
     - plugin_version | length == 1
 
 - name: Print list of already installed Graylog plugins
-  debug:
+  ansible.builtin.debug:
     var: "{{ item }}"
   with_items:
     - "{{ internal_installed_graylog_plugins }}"

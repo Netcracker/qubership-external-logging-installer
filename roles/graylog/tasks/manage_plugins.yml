@@ -1,22 +1,22 @@
 ---
 - name: Create plugins directory
-  file:
+  ansible.builtin.file:
     path: "{{ graylog_volume }}/graylog/plugins/"
     state: directory
     mode: 0777
 
 - name: Initialize variables
-  set_fact:
+  ansible.builtin.set_fact:
     # List of installed Graylog plugins, use to selectively remove a set of plugins
     internal_installed_graylog_plugins: []
     # Result list of Graylog plugins, after parse, merge and override
     internal_resulted_graylog_plugins_list: []
 
 - name: Collect plugins before installation
-  include_tasks: collect_graylog_plugins.yml
+  ansible.builtin.include_tasks: collect_graylog_plugins.yml
 
 - name: Remove OOB old plugin versions
-  file:
+  ansible.builtin.file:
     path: "{{ item.file }}"
     state: absent
   with_items: "{{ internal_installed_graylog_plugins }}"
@@ -29,12 +29,12 @@
 - name: Prepare default plugins coordinates
   block:
     - name: Calculate plugins paths from user and default values
-      set_fact:
+      ansible.builtin.set_fact:
         # User values from "plugins_path" should override default values from "default_plugins_path"
         internal_plugins_paths: "{{ default_plugins_path | combine(plugins_path | default({})) }}"
 
     - name: Specify link for plugins with registry
-      set_fact:
+      ansible.builtin.set_fact:
         internal_resulted_graylog_plugins_list: "{{ internal_resulted_graylog_plugins_list + ['/'.join((raw_artifacts_registry, item.value))] }}"
       when:
         - item is defined
@@ -53,7 +53,7 @@
     - raw_artifacts_registry_password is defined
   block:
     - name: Copy custom plugins
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item | trim }}"
         dest: "{{ graylog_volume }}/graylog/plugins/"
         validate_certs: no
@@ -68,7 +68,7 @@
         - "{{ plugins.split(',') }}"
 
     - name: Copy custom plugins with SSL-certificate
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item | trim }}"
         dest: "{{ graylog_volume }}/graylog/plugins/"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -85,7 +85,7 @@
         - "{{ plugins.split(',') }}"
 
     - name: Copy custom plugins without SSL-certificate
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item | trim }}"
         dest: "{{ graylog_volume }}/graylog/plugins/"
         url_username: "{{ raw_artifacts_registry_username }}"
@@ -103,7 +103,7 @@
   when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
   block:
     - name: Copy custom plugins
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item | trim }}"
         dest: "{{ graylog_volume }}/graylog/plugins/"
         validate_certs: no
@@ -116,7 +116,7 @@
         - "{{ plugins.split(',') }}"
 
     - name: Copy custom plugins with SSL-certificate
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item | trim }}"
         dest: "{{ graylog_volume }}/graylog/plugins/"
       environment:
@@ -131,7 +131,7 @@
         - "{{ plugins.split(',') }}"
 
     - name: Copy custom plugins without SSL-certificate
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item | trim }}"
         dest: "{{ graylog_volume }}/graylog/plugins/"
       when:

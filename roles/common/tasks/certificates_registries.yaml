@@ -1,6 +1,6 @@
 ---
 - name: Create directory for registries CA certificates
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ item }}"
     owner: root
@@ -10,7 +10,7 @@
     - "{{ ssl_data_host_path }}"
 
 - name: Copy CA cert for Raw registry from local path
-  copy:
+  ansible.builtin.copy:
     src: "{{ ssl_module_files_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
     dest: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
     owner: root
@@ -23,7 +23,7 @@
     - ssl_module_files_path is defined
 
 - name: Copy CA cert for Docker registry from local path
-  copy:
+  ansible.builtin.copy:
     src: "{{ ssl_module_files_path }}/{{ docker_registry_ca_cert_file }}"
     dest: "{{ ssl_data_host_path }}/{{ docker_registry_ca_cert_file }}"
     owner: root
