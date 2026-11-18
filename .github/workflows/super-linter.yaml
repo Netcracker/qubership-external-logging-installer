@@ -107,4 +107,3 @@ jobs:
       - name: Require successful lint
         if: needs.prepare-configs.result != 'success' || needs.run-lint.result != 'success'
         run: exit 1
-

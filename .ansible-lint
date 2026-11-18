@@ -1,8 +1,11 @@
 ---
-profile: min
+# Existing violations are listed per file in .ansible-lint-ignore. New code must pass the production profile.
+# Remove entries from that file as the roles are fixed; do not add new ones.
+profile: production
 offline: true
 exclude_paths:
   - .agents/
+  - .ansible/
   - .apm/
   - .claude/
   - .codex/
@@ -11,5 +14,8 @@ exclude_paths:
   - agent-packages/
   - docs/
   - grafana/
+  # role-syntax.yml takes the role name from -e ci_role and cannot be linted on its own
+  - tests/fixtures/
 skip_list:
+  # yamllint runs through super-linter with .github/linters/.yaml-lint.yml
   - yaml

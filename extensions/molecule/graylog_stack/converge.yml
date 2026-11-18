@@ -1,0 +1,3 @@
+---
+- name: Deploy the Graylog playbook
+  ansible.builtin.import_playbook: ../../../playbooks/graylog.yml

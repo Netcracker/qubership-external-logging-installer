@@ -1,0 +1,32 @@
+---
+# graylog.conf holds password_secret, so its tasks never print a diff, even with --diff.
+- name: Prepare Graylog config
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/graylog.conf.j2"
+    dest: "{{ graylog_volume }}/graylog/config/graylog.conf"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_uid }}"
+    mode: "0766"
+  diff: false
+
+- name: Prepare Graylog logging config
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/log4j2.xml.j2"
+    dest: "{{ graylog_volume }}/graylog/config/log4j2.xml"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_uid }}"
+    mode: "0766"
+
+- name: Set custom params in Graylog config
+  with_dict:
+    - "{{ graylog_custom_params }}"
+  community.general.ini_file:
+    path: "{{ graylog_volume }}/graylog/config/graylog.conf"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_gid }}"
+    mode: "0766"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    section: null
+  diff: false
+  when: graylog_custom_params is defined

@@ -1,5 +1,5 @@
 - name: Ensure necessary directories exist and is available
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     mode: "{{ item.mode }}"
@@ -13,6 +13,6 @@
     label: "{{ item.path }}"
 
 - name: Prepare graylog-auth-proxy config
-  template:
+  ansible.builtin.template:
     src: "{{ role_path }}/templates/config.yaml.j2"
     dest: "{{ graylog_volume }}/graylog-auth-proxy/config/config.yaml"

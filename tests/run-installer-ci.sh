@@ -10,7 +10,8 @@ export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_COLLECTIONS_PATH:-${root}/.ansible/co
 export ANSIBLE_FORCE_COLOR="${ANSIBLE_FORCE_COLOR:-false}"
 
 inventory="${root}/tests/fixtures/inventory.ci.yml"
-playbook="${root}/playbooks/playbook.yaml"
+playbook="${root}/playbooks/graylog.yml"
+legacy_playbook="${root}/playbooks/playbook.yaml"
 expected_roles=(
     common
     prepare_environment
@@ -34,7 +35,7 @@ mkdir -p "${ANSIBLE_LOCAL_TEMP}" "${ANSIBLE_COLLECTIONS_PATH}"
 echo "==> Install Ansible collections"
 galaxy_ok=0
 for attempt in 1 2 3 4 5; do
-    if ansible-galaxy collection install -r "${root}/tests/requirements.yml" -p "${ANSIBLE_COLLECTIONS_PATH}"; then
+    if ansible-galaxy collection install -r "${root}/requirements.yml" -p "${ANSIBLE_COLLECTIONS_PATH}"; then
         galaxy_ok=1
         break
     fi
@@ -46,8 +47,22 @@ if [[ "${galaxy_ok}" -ne 1 ]]; then
     exit 1
 fi
 
-echo "==> Syntax-check playbook against the CI inventory"
+echo "==> Syntax-check playbooks against the CI inventory"
 ansible-playbook --syntax-check -i "${inventory}" "${playbook}"
+ansible-playbook --syntax-check -i "${inventory}" "${legacy_playbook}"
+
+echo "==> Build and install the collection"
+build_dir="$(mktemp -d)"
+trap 'rm -rf "${build_dir}"' EXIT
+ansible-galaxy collection build --force --output-path "${build_dir}" "${root}"
+# Install into a separate path, so later checks keep resolving roles from this checkout.
+ansible-galaxy collection install --force --no-deps -p "${build_dir}/collections" \
+    "${build_dir}"/qubership-observability-*.tar.gz
+
+echo "==> Syntax-check the installed collection playbook"
+(cd "${build_dir}" && ANSIBLE_ROLES_PATH="${build_dir}/no-roles" \
+    ANSIBLE_COLLECTIONS_PATH="${build_dir}/collections:${ANSIBLE_COLLECTIONS_PATH}" \
+    ansible-playbook --syntax-check -i "${inventory}" qubership.observability.graylog)
 
 echo "==> Parse CI inventory"
 ansible-inventory -i "${inventory}" --list >/dev/null
@@ -63,5 +78,26 @@ for role in "${expected_roles[@]}"; do
         -e "ci_role=${role}"
 done
 
-echo "==> ansible-lint (min profile)"
-ansible-lint "${playbook}"
+echo "==> Test how the graylog role keeps an existing password secret"
+ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/test.yml"
+
+echo "==> Check that --diff does not print the Graylog password secret"
+diff_volume="${build_dir}/graylog-volume"
+diff_secret="DiffCheckSecretThatMustNotAppearInTheOutput$(date +%s%N)"
+mkdir -p "${diff_volume}/graylog/config"
+printf 'password_secret = %s\nis_leader = true\n' "${diff_secret}" >"${diff_volume}/graylog/config/graylog.conf"
+diff_output="$(ansible-playbook -i localhost, --check --diff "${root}/tests/graylog_password_secret/diff.yml" \
+    -e "graylog_volume=${diff_volume}" -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)")"
+if grep -qF -- "${diff_secret}" <<<"${diff_output}"; then
+    echo "::error::ansible-playbook --diff printed the Graylog password secret"
+    exit 1
+fi
+# The log4j2.xml diff proves that the run printed diffs at all.
+if ! grep -qF -- "log4j2.xml" <<<"${diff_output}"; then
+    printf '%s\n' "${diff_output}"
+    echo "::error::ansible-playbook --diff printed no diff, so the secret check proves nothing"
+    exit 1
+fi
+
+echo "==> ansible-lint (production profile, baseline in .ansible-lint-ignore)"
+ansible-lint

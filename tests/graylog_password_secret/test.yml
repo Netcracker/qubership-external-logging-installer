@@ -1,0 +1,94 @@
+---
+# Checks how the graylog role keeps the password_secret of an existing installation.
+# Run it with ANSIBLE_ROLES_PATH pointing at roles/.
+- name: Test the choice of the Graylog password secret
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+    secret: ThisIsTheExistingSecretOfThisInstallationAndItIsLongerThanSixtyFourCharacters0123456789
+    cases:
+      - name: equals sign
+        config: "password_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: indented key
+        config: "  password_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: colon separator
+        config: "password_secret: {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: whitespace separator
+        config: "password_secret\t{{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: no space around the separator
+        config: "password_secret={{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: spaces inside the value
+        config: "password_secret = first half second half\n"
+        expect: first half second half
+      - name: Windows line endings
+        config: "is_leader = true\r\npassword_secret = {{ secret }}\r\nhttp_bind_address = 0.0.0.0:9000\r\n"
+        expect: "{{ secret }}"
+      - name: commented-out key
+        config: "#password_secret = old\n! password_secret = older\npassword_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: last definition wins
+        config: "password_secret = old\npassword_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: escaped trailing backslash
+        config: "password_secret = {{ secret }}\\\\\n"
+        expect: "{{ secret }}\\\\"
+      - name: similar key
+        config: "password_secret_old = old\n"
+        expect: fail
+      - name: missing key
+        config: "is_leader = true\n"
+        expect: fail
+      - name: empty value
+        config: "password_secret =\n"
+        expect: fail
+      - name: value that continues on the next line
+        config: "password_secret = {{ secret }}\\\n  more\n"
+        expect: fail
+      - name: explicit secret wins over the existing one
+        config: "password_secret = old\n"
+        explicit: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: fresh install
+        expect: random
+  tasks:
+    - name: Create a Graylog volume for each case
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: graylog
+      register: volumes
+      loop: "{{ cases }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Create the config directories
+      ansible.builtin.file:
+        path: "{{ item.path }}/graylog/config"
+        state: directory
+        mode: "0700"
+      loop: "{{ volumes.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    - name: Run the cases
+      ansible.builtin.include_tasks: case.yml
+      vars:
+        case: "{{ item.item }}"
+        case_volume: "{{ item.path }}"
+      loop: "{{ volumes.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    - name: Remove the Graylog volumes
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ volumes.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"

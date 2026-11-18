@@ -7,7 +7,7 @@
   delegate_to: 127.0.0.1
   block:
     - name: Prepare cert file
-      copy:
+      ansible.builtin.copy:
         src: "/tmp/{{ tls_cert_file }}"
         dest: "{{ role_path }}/files/Certificate.crt"
       delegate_to: 127.0.0.1
@@ -17,7 +17,7 @@
         - tls_cert_file | trim | length > 0
 
     - name: Prepare key file
-      copy:
+      ansible.builtin.copy:
         src: "/tmp/{{ tls_key_file }}"
         dest: "{{ role_path }}/files/Key.key"
       delegate_to: 127.0.0.1
@@ -33,7 +33,7 @@
   delegate_to: 127.0.0.1
   block:
     - name: Prepare cert file
-      copy:
+      ansible.builtin.copy:
         src: "{{ ssl_module_files_path }}/{{ tls_cert_file }}"
         dest: "{{ role_path }}/files/Certificate.crt"
       delegate_to: 127.0.0.1
@@ -43,7 +43,7 @@
         - tls_cert_file | trim | length > 0
 
     - name: Prepare key file
-      copy:
+      ansible.builtin.copy:
         src: "{{ ssl_module_files_path }}/{{ tls_key_file }}"
         dest: "{{ role_path }}/files/Key.key"
       delegate_to: 127.0.0.1
@@ -57,14 +57,14 @@
     - tls_enabled | bool
   block:
     - name: Copy custom certificate for input
-      copy:
+      ansible.builtin.copy:
         src: "{{ role_path }}/files/Certificate.crt"
         dest: "{{ graylog_volume }}/graylog/data/ssl/Certificate.crt"
         force: true
         backup: true
 
     - name: Copy custom key for input
-      copy:
+      ansible.builtin.copy:
         src: "{{ role_path }}/files/Key.key"
         dest: "{{ graylog_volume }}/graylog/data/ssl/Key.key"
         force: true
@@ -72,7 +72,7 @@
 
     # Permissions for directory should already changed in previous tasks from pre_deploy.yaml
     - name: Change ownership and permissions for certificates
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: file
         owner: "{{ graylog_uid }}"

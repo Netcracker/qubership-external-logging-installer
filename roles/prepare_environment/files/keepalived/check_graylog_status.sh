@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check web Graylog status (200 or NOT)
 graylog_is_available() {

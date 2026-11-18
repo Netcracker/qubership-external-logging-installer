@@ -10,7 +10,7 @@
     "decompress_size_limit": 8388608,
     "port": {{ port }},
     "tls_key_file": {% if tls_enabled and tls_key_file is defined %}"/usr/share/graylog/data/ssl/Key.key"{% else %}""{% endif %},
-    "tls_enable": {{ tls_enabled }},
+    "tls_enable": {{ tls_enabled | bool | to_json }},
     "tls_key_password": {% if tls_enabled and tls_key_password is defined %}"{{ tls_key_password }}"{% else %}""{% endif %},
     "max_message_size": 2097152,
     "tls_client_auth": "disabled",

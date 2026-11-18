@@ -12,7 +12,11 @@ When changing or reviewing this repository:
 - Before choosing checks, inspect `.github/workflows/`, `.github/linters/`, `.github/super-linter.env`, and
   `.pre-commit-config.yaml`.
 - For Ansible syntax checks from this checkout, use `ANSIBLE_ROLES_PATH=roles ansible-playbook --syntax-check
-  playbooks/playbook.yaml`, or `bash tests/run-installer-ci.sh` after installing `tests/requirements-ci.txt`. In a
+  playbooks/graylog.yml`, or `bash tests/run-installer-ci.sh` after installing `tests/requirements-ci.txt`. In a
   sandbox with a read-only home directory, also set `ANSIBLE_LOCAL_TEMP=/tmp/ansible`.
+- For role or playbook changes, run the Molecule scenario: `cd extensions && molecule test -s graylog_stack` after
+  installing `tests/requirements-molecule.txt`.
+- ansible-lint runs the `production` profile with a baseline in `.ansible-lint-ignore`. Remove entries you fix; do not
+  add new ones.
 - For Markdown edits, apply `markdown-line-length-120` and use `.github/linters/.markdownlint.yaml`.
 - For APM changes, edit `apm.yml`, run `apm install`, and do not hand-edit dependency-generated rules or skills.

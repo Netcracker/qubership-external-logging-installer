@@ -5,7 +5,10 @@ MongoDB, Fluent Bit, Fluentd, Nginx, Keepalived, and Prometheus exporters.
 
 ## Repository map
 
-- `playbooks/playbook.yaml` is the main installation entry point.
+- The repository is the Ansible collection `qubership.observability` (`galaxy.yml`, `meta/runtime.yml`).
+- `playbooks/graylog.yml` is the main installation entry point. `playbooks/playbook.yaml` is a deprecated wrapper that
+  runs it on all hosts.
+- `extensions/molecule/` holds Molecule scenarios that deploy the playbooks into containers.
 - `roles/*` contains the Ansible roles for logging, storage, proxying, monitoring, and supporting services.
 - `ansible.cfg` points `roles_path` to `/ansible/roles` for containerized or CI execution. For local checks from this
   checkout, override it with `ANSIBLE_ROLES_PATH=roles`.
@@ -28,7 +31,9 @@ MongoDB, Fluent Bit, Fluentd, Nginx, Keepalived, and Prometheus exporters.
 
 - Run the narrowest relevant Ansible, lint, or documentation checks for the files you changed.
 - For playbook syntax checks from the repository root, use `ANSIBLE_ROLES_PATH=roles ansible-playbook --syntax-check
-  playbooks/playbook.yaml`. In a sandbox with a read-only home directory, also set `ANSIBLE_LOCAL_TEMP=/tmp/ansible`.
+  playbooks/graylog.yml`. In a sandbox with a read-only home directory, also set `ANSIBLE_LOCAL_TEMP=/tmp/ansible`.
+- For role or playbook changes, run `cd extensions && molecule test -s graylog_stack` after installing
+  `tests/requirements-molecule.txt`. It needs Docker and about 6 GB of free RAM.
 - For APM changes, run `apm audit --ci --no-policy` after `apm install`.
 - For Markdown or docs-only changes, run markdownlint with `.github/linters/.markdownlint.yaml` on the changed files
   when the tool is available.

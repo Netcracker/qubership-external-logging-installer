@@ -25,7 +25,7 @@
 # * The property value is generally terminated by the end of the line. White space following the
 #   property value is not ignored, and is treated as part of the property value.
 #
-# * A property value can span several lines if each line is terminated by a backslash (‘\’) character.
+# * A property value can span several lines if each line is terminated by a backslash ('\') character.
 #   For example:
 #
 # targetCities=\
@@ -54,7 +54,7 @@ node_id_file = /usr/share/graylog/data/config/node-id
 # Generate one by using for example: pwgen -N 1 -s 96
 # ATTENTION: This value must be the same on all Graylog nodes in the cluster.
 # Changing this value after installation will render all user sessions and encrypted values in the database invalid. (e.g. encrypted access tokens)
-password_secret = i5bGVGlsvW7K5qlT9Bp2kHtKeTACEbL1mjBK3h7qHnZbudJsoi0tQ94rlLYpWIx3KbTjeL3ao3lEs9rq3TEZCwMmHrN4KRyg
+password_secret = {{ graylog_password_secret_effective }}
 
 # The default root user is named 'admin'
 root_username = {{ root_username }}
@@ -709,7 +709,7 @@ mongodb_threads_allowed_to_block_multiplier = 5
 # Should be http_thread_pool_size * average_cluster_size if you have a high number of concurrent users.
 proxied_requests_thread_pool_size = 64
 
-# The default HTTP call timeout for cluster-related REST requests. This timeout might be overriden for some
+# The default HTTP call timeout for cluster-related REST requests. This timeout might be overridden for some
 # resources in code or other configuration values. (some cluster metrics resources use a lower timeout)
 #proxied_requests_default_call_timeout = 5s
 
@@ -792,7 +792,7 @@ prometheus_exporter_bind_address = 0.0.0.0:9833
 # Default: false
 #ignore_migration_failures = false
 
-# Comma-separated list of notifcation types which should not emit a system event.
+# Comma-separated list of notification types which should not emit a system event.
 # Default: SIDECAR_STATUS_UNKNOWN which would create a new event whenever the status of a sidecar becomes "Unknown"
 #system_event_excluded_types = SIDECAR_STATUS_UNKNOWN
 
@@ -808,6 +808,6 @@ prometheus_exporter_bind_address = 0.0.0.0:9833
 # Telemetry settings #
 ######################
 
-# Allowed to Graylog use PostHog integration to collect and send statistic about user expirience to Gralog Cloud.
+# Allowed to Graylog use PostHog integration to collect and send statistic about user experience to Gralog Cloud.
 # Default: true
 telemetry_enabled = false

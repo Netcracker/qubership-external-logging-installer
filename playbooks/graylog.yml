@@ -1,0 +1,28 @@
+---
+- name: Deploy Graylog with OpenSearch and MongoDB
+  hosts: "{{ graylog_target_hosts | default('graylog') }}"
+  gather_facts: true
+  become: true
+  # Short role names resolve from this collection when it is installed, and from roles_path in a source checkout.
+  collections:
+    - qubership.observability
+  roles:
+    # Prepare steps
+    - role: common
+    - role: prepare_environment
+    # Main components
+    - role: mongodb
+    - role: opensearch
+    - role: graylog_auth_proxy
+    - role: graylog
+    - role: nginx
+    - role: graylog_configuration
+    - role: graylog_output_duplicator
+    # Self-logging
+    - role: fluentd
+    - role: fluentbit
+    # Monitoring
+    - role: node_exporter
+    - role: mongodb_exporter
+    - role: opensearch_exporter
+    - role: cadvisor

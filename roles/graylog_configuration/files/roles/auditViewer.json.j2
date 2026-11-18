@@ -2,8 +2,8 @@
    "name":"AuditViewer",
    "description":"Role for viewing audit logs",
    "permissions":[
-{% if other_site_logs_stream_id is defined and other_site_logs_stream_id | length %}
-      "streams:read:{{ other_site_logs_stream_id }}"
+{% if other_site_logs_stream_id | default("", true) | length > 0 %}
+      "streams:read:{{ other_site_logs_stream_id }}",
 {% endif %}
       "streams:read:{{ all_events_stream_id }}",
       "streams:read:{{ default_stream_id }}",

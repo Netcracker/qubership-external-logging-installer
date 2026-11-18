@@ -1,0 +1,38 @@
+---
+- name: Prepare the config for case '{{ case.name }}'
+  ansible.builtin.copy:
+    dest: "{{ case_volume }}/graylog/config/graylog.conf"
+    content: "{{ case.config }}"
+    mode: "0600"
+  when: case.config is defined
+
+- name: Run case '{{ case.name }}'
+  block:
+    - name: Choose the password secret
+      ansible.builtin.include_role:
+        name: graylog
+        tasks_from: password_secret.yml
+      vars:
+        graylog_volume: "{{ case_volume }}"
+        graylog_password_secret: "{{ case.explicit | default('') }}"
+
+    - name: Check the chosen secret
+      ansible.builtin.assert:
+        that:
+          - case.expect != 'fail'
+          - >-
+            graylog_password_secret_effective == case.expect
+            if case.expect != 'random'
+            else graylog_password_secret_effective is match('^[A-Za-z0-9]{96}$')
+        fail_msg: "Case '{{ case.name }}' chose the wrong secret: '{{ graylog_password_secret_effective }}'"
+        quiet: true
+  rescue:
+    - name: Check that the failure was expected in case '{{ case.name }}'
+      ansible.builtin.assert:
+        that:
+          - case.expect == 'fail'
+          - ansible_failed_task.name is search('Stop when the existing Graylog config')
+        fail_msg: >-
+          Case '{{ case.name }}' failed in '{{ ansible_failed_task.name }}':
+          {{ ansible_failed_result.msg | default('') }}
+        quiet: true
