@@ -78,5 +78,26 @@ for role in "${expected_roles[@]}"; do
         -e "ci_role=${role}"
 done
 
+echo "==> Test how the graylog role keeps an existing password secret"
+ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/test.yml"
+
+echo "==> Check that --diff does not print the Graylog password secret"
+diff_volume="${build_dir}/graylog-volume"
+diff_secret="DiffCheckSecretThatMustNotAppearInTheOutput$(date +%s%N)"
+mkdir -p "${diff_volume}/graylog/config"
+printf 'password_secret = %s\nis_leader = true\n' "${diff_secret}" >"${diff_volume}/graylog/config/graylog.conf"
+diff_output="$(ansible-playbook -i localhost, --check --diff "${root}/tests/graylog_password_secret/diff.yml" \
+    -e "graylog_volume=${diff_volume}" -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)")"
+if grep -qF -- "${diff_secret}" <<<"${diff_output}"; then
+    echo "::error::ansible-playbook --diff printed the Graylog password secret"
+    exit 1
+fi
+# The log4j2.xml diff proves that the run printed diffs at all.
+if ! grep -qF -- "log4j2.xml" <<<"${diff_output}"; then
+    printf '%s\n' "${diff_output}"
+    echo "::error::ansible-playbook --diff printed no diff, so the secret check proves nothing"
+    exit 1
+fi
+
 echo "==> ansible-lint (production profile, baseline in .ansible-lint-ignore)"
 ansible-lint
