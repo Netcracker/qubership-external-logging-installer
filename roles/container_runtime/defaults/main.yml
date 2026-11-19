@@ -1,0 +1,48 @@
+---
+# Container engine for every role in the collection: docker or podman.
+container_runtime_engine: "{{ observability_container_runtime | default(vl_container_runtime | default('docker')) }}"
+
+# Install the engine from the distribution packages. Off by default: the roles expect an engine on the host.
+# Docker on RHEL-like systems needs the docker-ce repository, which this role does not add.
+container_runtime_install: false
+
+# Write /etc/docker/daemon.json. Turn it off when something else manages the Docker daemon on the host.
+container_runtime_docker_configure: "{{ configure_docker | default(true) | bool }}"
+
+# Rotation of the json-file container logs.
+container_runtime_docker_log_max_size: 50m
+container_runtime_docker_log_max_file: 6
+
+# Extra daemon.json keys, merged over the role's own keys. For example:
+#   container_runtime_docker_daemon_options:
+#     data-root: /data/docker
+#     registry-mirrors: ["https://mirror.example.com"]
+#     default-ulimits: {nproc: {Name: nproc, Soft: 32768, Hard: 65536}}
+container_runtime_docker_daemon_options: "{{ docker_additional_options | default({}) }}"
+
+# Registry that roles prefix to their image names. Empty means the images' own registries, such as Docker Hub.
+container_runtime_registry: "{{ observability_image_registry | default(docker_registry | default('')) }}"
+
+# When false, the engine reaches the registry over plain HTTP or without checking its certificate.
+container_runtime_registry_validate_certs: "{{ docker_registry_validate_certs | default(false) | bool }}"
+
+# Path on the managed host to the CA certificate of the registry. Empty means the system trust store.
+container_runtime_registry_ca_file: >-
+  {{ (ssl_data_host_path | default('/etc/logging/ssl')) ~ '/' ~ docker_registry_ca_cert_file
+     if docker_registry_ca_cert_file | default('', true) | length > 0 else '' }}
+
+# Registry credentials. The role logs in only when both are set.
+container_runtime_registry_username: "{{ docker_registry_username | default('') }}"
+container_runtime_registry_password: "{{ docker_registry_password | default('') }}"
+
+# Seconds that container operations, such as an image pull, may take.
+container_runtime_container_timeout: "{{ docker_container_timeout | default(300) }}"
+
+# Networks that `tasks_from: network` creates. Each item is a name or a dict with `name` and optional `driver` and
+# `mtu`.
+container_runtime_networks: []
+
+# Defaults that `tasks_from: run_container` applies to every container. See README.md for the full contract.
+container_runtime_default_restart_policy: always
+container_runtime_default_security_opts:
+  - no-new-privileges

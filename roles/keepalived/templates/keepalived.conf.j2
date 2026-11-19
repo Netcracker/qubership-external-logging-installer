@@ -1,0 +1,46 @@
+# Managed by the qubership.observability keepalived role.
+global_defs {
+  script_user root root
+  enable_script_security
+}
+{% if keepalived_check_script | length > 0 %}
+
+vrrp_script observability_check {
+  script "{{ keepalived_check_script_path }}"
+  interval {{ keepalived_check_interval }}
+  timeout {{ keepalived_check_timeout }}
+  fall {{ keepalived_check_fall }}
+  rise {{ keepalived_check_rise }}
+  init_fail
+}
+{% endif %}
+
+vrrp_instance VI_{{ keepalived_virtual_router_id }} {
+  state BACKUP
+  nopreempt
+  interface {{ keepalived_interface }}
+  virtual_router_id {{ keepalived_virtual_router_id }}
+  priority {{ keepalived_priority }}
+{% if keepalived_unicast_peers | length > 0 %}
+  unicast_peer {
+{% for peer in keepalived_unicast_peers %}
+    {{ peer }}
+{% endfor %}
+  }
+{% endif %}
+
+  authentication {
+    auth_type PASS
+    auth_pass {{ keepalived_auth_password }}
+  }
+{% if keepalived_check_script | length > 0 %}
+
+  track_script {
+    observability_check
+  }
+{% endif %}
+
+  virtual_ipaddress {
+    {{ keepalived_vip }}/{{ keepalived_vip_prefix }} dev {{ keepalived_interface }} label {{ keepalived_interface }}:vip
+  }
+}

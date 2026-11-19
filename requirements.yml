@@ -8,3 +8,5 @@ collections:
     version: "2.2.2"
   - name: community.general
     version: "13.5.1"
+  - name: containers.podman
+    version: "1.21.2"

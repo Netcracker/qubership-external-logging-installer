@@ -1,0 +1,28 @@
+---
+- name: Run failure case '{{ failure_case.name }}'
+  block:
+    - name: Fetch the artifact
+      ansible.builtin.include_role:
+        name: artifact_fetch
+        tasks_from: binary
+      vars:
+        artifact_fetch_artifact: "{{ failure_case.artifact }}"
+        artifact_fetch_password: >-
+          {{ failure_case.vars.artifact_fetch_password | default(observability_artifacts_password) }}
+        artifact_fetch_ca_file: >-
+          {{ failure_case.vars.artifact_fetch_ca_file | default(observability_artifacts_ca_file) }}
+        artifact_fetch_retries: 0
+
+    - name: Report that the case did not fail
+      ansible.builtin.fail:
+        msg: "Failure case '{{ failure_case.name }}' succeeded."
+  rescue:
+    - name: Check the failure of case '{{ failure_case.name }}'
+      ansible.builtin.assert:
+        that:
+          - ansible_failed_task.name != 'Report that the case did not fail'
+          - ansible_failed_result | to_json is search(failure_case.expect)
+        fail_msg: >-
+          Case '{{ failure_case.name }}' failed in '{{ ansible_failed_task.name }}' without '{{ failure_case.expect }}':
+          {{ ansible_failed_result | to_json }}
+        quiet: true

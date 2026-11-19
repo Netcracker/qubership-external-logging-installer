@@ -1,0 +1,98 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Read the installed binaries
+      ansible.builtin.stat:
+        path: "/opt/artifact-test/bin/{{ item }}"
+      register: installed
+      loop:
+        - fake_exporter
+        - renamed_binary
+        - pattern_exporter
+
+    - name: Check the installed binaries
+      ansible.builtin.assert:
+        that:
+          - installed.results[0].stat.exists
+          - installed.results[0].stat.mode == '0750'
+          - installed.results[1].stat.exists
+          - installed.results[1].stat.mode == '0755'
+          - installed.results[1].stat.pw_name == 'root'
+          - installed.results[2].stat.checksum == installed.results[0].stat.checksum
+        quiet: true
+
+    - name: Run the binary from the archive
+      ansible.builtin.command: /opt/artifact-test/bin/fake_exporter
+      register: exporter_output
+      changed_when: false
+
+    - name: Check that the binary came from the archive
+      ansible.builtin.assert:
+        that:
+          - exporter_output.stdout == 'fake exporter 1.0'
+        quiet: true
+
+    - name: Run the failure cases
+      ansible.builtin.include_tasks: tasks/failure_case.yml
+      loop:
+        - name: wrong password
+          vars:
+            artifact_fetch_password: wrong-password
+          artifact:
+            url: tools/fake_exporter-1.0.linux-amd64.tar.gz
+            dest: /opt/artifact-test/fail/fake_exporter
+          expect: HTTP Error 401
+        - name: server CA not trusted
+          vars:
+            artifact_fetch_ca_file: ""
+          artifact:
+            url: tools/fake_exporter-1.0.linux-amd64.tar.gz
+            dest: /opt/artifact-test/fail/fake_exporter
+          expect: CERTIFICATE_VERIFY_FAILED
+        - name: archive member pattern matches two files
+          vars: {}
+          artifact:
+            url: tools/fake_exporter-1.0.linux-amd64.tar.gz
+            dest: /opt/artifact-test/fail/anything
+            member: "*"
+          expect: holds 2 files
+        - name: checksum mismatch
+          vars: {}
+          artifact:
+            url: http://127.0.0.1:8080/plain/fake_binary
+            dest: /opt/artifact-test/fail/fake_binary
+            checksum: "sha256:{{ 'other content' | hash('sha256') }}"
+          expect: checksum
+      loop_control:
+        loop_var: failure_case
+        label: "{{ failure_case.name }}"
+
+    - name: Find staging directories left behind
+      ansible.builtin.find:
+        paths: /tmp
+        patterns: artifact_fetch.*
+        file_type: directory
+      register: leftovers
+
+    - name: Check that every run removed its staging directory
+      ansible.builtin.assert:
+        that:
+          - leftovers.files | length == 0
+        fail_msg: "{{ leftovers.files | map(attribute='path') | join(', ') }}"
+        quiet: true
+
+    - name: Find files that the failure cases installed
+      ansible.builtin.find:
+        paths: /opt/artifact-test/fail
+        file_type: file
+      register: failed_installs
+
+    - name: Check that no failure case installed a file
+      ansible.builtin.assert:
+        that:
+          - failed_installs.files | length == 0
+        fail_msg: "{{ failed_installs.files | map(attribute='path') | join(', ') }}"
+        quiet: true

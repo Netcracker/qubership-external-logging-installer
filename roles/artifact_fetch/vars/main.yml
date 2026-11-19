@@ -1,0 +1,12 @@
+---
+artifact_fetch_full_url: >-
+  {{ artifact_fetch_artifact.url if artifact_fetch_artifact.url is match('^https?://')
+     else (artifact_fetch_base_url | regex_replace('/+$', '')) ~ '/'
+          ~ (artifact_fetch_artifact.url | regex_replace('^/+', ''))
+     if artifact_fetch_base_url | length > 0
+     else artifact_fetch_artifact.url }}
+artifact_fetch_file_name: "{{ artifact_fetch_full_url | urlsplit('path') | basename }}"
+artifact_fetch_is_archive: >-
+  {{ artifact_fetch_artifact.archive
+     | default(artifact_fetch_file_name is search('[.](tar[.]gz|tgz|tar|zip)$')) | bool }}
+artifact_fetch_use_auth: "{{ artifact_fetch_username | length > 0 and artifact_fetch_password | length > 0 }}"

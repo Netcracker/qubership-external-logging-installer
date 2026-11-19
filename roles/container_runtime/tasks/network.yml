@@ -1,0 +1,30 @@
+---
+# Entry point: include_role with tasks_from: network and container_runtime_networks set.
+# Each item is a network name or a dict with `name` and optional `driver` and `mtu`.
+- name: Create the Docker networks
+  community.docker.docker_network:
+    name: "{{ container_runtime_network.name }}"
+    driver: "{{ container_runtime_network.driver | default(omit) }}"
+    driver_options: >-
+      {{ {'com.docker.network.driver.mtu': container_runtime_network.mtu | string}
+         if container_runtime_network.mtu is defined else omit }}
+    state: present
+  vars:
+    container_runtime_network: "{{ item if item is mapping else {'name': item} }}"
+  loop: "{{ container_runtime_networks }}"
+  loop_control:
+    label: "{{ container_runtime_network.name }}"
+  when: container_runtime_engine == 'docker'
+
+- name: Create the Podman networks
+  containers.podman.podman_network:
+    name: "{{ container_runtime_network.name }}"
+    driver: "{{ container_runtime_network.driver | default(omit) }}"
+    opt: "{{ {'mtu': container_runtime_network.mtu | int} if container_runtime_network.mtu is defined else omit }}"
+    state: present
+  vars:
+    container_runtime_network: "{{ item if item is mapping else {'name': item} }}"
+  loop: "{{ container_runtime_networks }}"
+  loop_control:
+    label: "{{ container_runtime_network.name }}"
+  when: container_runtime_engine == 'podman'

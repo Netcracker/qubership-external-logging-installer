@@ -1,0 +1,29 @@
+---
+- name: Check the container engine setting
+  ansible.builtin.assert:
+    that:
+      - container_runtime_engine in ['docker', 'podman']
+    fail_msg: >-
+      container_runtime_engine is '{{ container_runtime_engine }}'. Set observability_container_runtime to docker or
+      podman.
+    quiet: true
+
+- name: Install the container engine
+  ansible.builtin.include_tasks: install.yml
+  when: container_runtime_install | bool
+
+- name: Configure Docker
+  ansible.builtin.include_tasks: docker.yml
+  when: container_runtime_engine == 'docker'
+
+- name: Configure Podman
+  ansible.builtin.include_tasks: podman.yml
+  when: container_runtime_engine == 'podman'
+
+- name: Configure the image registry
+  ansible.builtin.include_tasks: registry.yml
+  when: container_runtime_registry | length > 0
+
+- name: Create the container networks
+  ansible.builtin.include_tasks: network.yml
+  when: container_runtime_networks | length > 0

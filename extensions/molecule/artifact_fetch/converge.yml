@@ -1,0 +1,40 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    # Same content as prepare.yml writes to the server.
+    plain_binary_content: |
+      #!/bin/sh
+      echo fake binary
+  tasks:
+    - name: Install a binary from an archive on the HTTPS server
+      ansible.builtin.include_role:
+        name: artifact_fetch
+        tasks_from: binary
+      vars:
+        artifact_fetch_artifact:
+          url: tools/fake_exporter-1.0.linux-amd64.tar.gz
+          dest: /opt/artifact-test/bin/fake_exporter
+          mode: "0750"
+
+    - name: Install a binary chosen by a pattern that also matches the archive name
+      ansible.builtin.include_role:
+        name: artifact_fetch
+        tasks_from: binary
+      vars:
+        artifact_fetch_artifact:
+          url: tools/fake_exporter-1.0.linux-amd64.tar.gz
+          dest: /opt/artifact-test/bin/pattern_exporter
+          member: fake_exporter*
+
+    - name: Install a plain binary from a full URL with a checksum
+      ansible.builtin.include_role:
+        name: artifact_fetch
+        tasks_from: binary
+      vars:
+        artifact_fetch_artifact:
+          url: http://127.0.0.1:8080/plain/fake_binary
+          dest: /opt/artifact-test/bin/renamed_binary
+          checksum: "sha256:{{ plain_binary_content | hash('sha256') }}"
