@@ -1,0 +1,74 @@
+---
+# Tests the keepalived role with two nodes that share a virtual IP over unicast VRRP, and checks that the VIP moves
+# when the health check fails. Run from the extensions/ directory: molecule test -s keepalived
+driver:
+  name: docker
+platforms:
+  - name: keepalived-node1
+    image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:bbf48c50bf652d059118ba025663055ca64f550adaa13405021f418d52a52a84
+    pre_build_image: true
+    privileged: true
+    cgroupns_mode: host
+    override_command: false
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    docker_networks:
+      - name: keepalived-test
+        ipam_config:
+          - subnet: 172.31.250.0/24
+    networks:
+      - name: keepalived-test
+        ipv4_address: 172.31.250.11
+  - name: keepalived-node2
+    image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:bbf48c50bf652d059118ba025663055ca64f550adaa13405021f418d52a52a84
+    pre_build_image: true
+    privileged: true
+    cgroupns_mode: host
+    override_command: false
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    networks:
+      - name: keepalived-test
+        ipv4_address: 172.31.250.12
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/../roles
+  config_options:
+    defaults:
+      stdout_callback: default
+  inventory:
+    group_vars:
+      all:
+        # Old names on purpose: the role must still read them.
+        keepalived_virtual_ip_address: 172.31.250.250
+        keepalived_network_interface: eth0
+        keepalived_vip_prefix: 24
+        keepalived_virtual_router_id: 51
+        keepalived_auth_password: molecule
+        keepalived_check_interval: 1
+        keepalived_check_fall: 1
+        keepalived_check_rise: 1
+        keepalived_check_script: |
+          #!/bin/sh
+          [ ! -e /tmp/keepalived-check-fail ]
+    host_vars:
+      keepalived-node1:
+        keepalived_priority: 110
+        keepalived_unicast_peers: [172.31.250.12]
+      keepalived-node2:
+        keepalived_priority: 100
+        keepalived_unicast_peers: [172.31.250.11]
+scenario:
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy
+verifier:
+  name: ansible

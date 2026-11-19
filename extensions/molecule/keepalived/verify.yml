@@ -1,0 +1,58 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    vip: 172.31.250.250/24
+  tasks:
+    # VRRP elects a master within about three advertisement intervals of one second.
+    - name: Let the nodes elect a master
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Read the addresses on the VRRP interface
+      ansible.builtin.command: ip -4 -o addr show dev eth0
+      register: addresses
+      changed_when: false
+
+    - name: Find the node that holds the VIP
+      ansible.builtin.set_fact:
+        vip_holders: >-
+          {{ ansible_play_hosts | zip(ansible_play_hosts | map('extract', hostvars, ['addresses', 'stdout']))
+             | selectattr('1', 'search', vip) | map('first') | list }}
+
+    - name: Check that exactly one node holds the VIP
+      ansible.builtin.assert:
+        that:
+          - vip_holders | length == 1
+        fail_msg: "Nodes that hold {{ vip }}: {{ vip_holders }}"
+        quiet: true
+
+    - name: Fail the health check on the node that holds the VIP
+      ansible.builtin.file:
+        path: /tmp/keepalived-check-fail
+        state: touch
+        mode: "0644"
+      when: inventory_hostname == vip_holders[0]
+
+    - name: Let the other node take over
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Read the addresses after the failover
+      ansible.builtin.command: ip -4 -o addr show dev eth0
+      register: addresses_after
+      changed_when: false
+
+    - name: Check that the VIP moved to the other node
+      ansible.builtin.assert:
+        that:
+          - (vip in addresses_after.stdout) == (inventory_hostname != vip_holders[0])
+        fail_msg: "{{ inventory_hostname }}: {{ addresses_after.stdout }}"
+        quiet: true
+
+    - name: Restore the health check
+      ansible.builtin.file:
+        path: /tmp/keepalived-check-fail
+        state: absent
