@@ -176,7 +176,7 @@ Each stage ends with a tagged release and updated docs.
 - [x] Create `artifact_fetch` with `tasks_from: binary`: a fresh staging directory per run, credentials, CA, and
       binary or tarball input.
 - [ ] Introduce the `observability_*` variables, including the network and VIP settings, and the alias mechanism.
-- [ ] Extract keepalived from `prepare_environment` into a shared `keepalived` role. Keep the Graylog health-check
+- [x] Extract keepalived from `prepare_environment` into a shared `keepalived` role. Keep the Graylog health-check
       script as the Graylog stack's check.
 - [ ] Move the remaining Graylog-only parts of `prepare_environment` (duplicator ports, container checks) into the
       `graylog` role, then remove `prepare_environment` and `common`.

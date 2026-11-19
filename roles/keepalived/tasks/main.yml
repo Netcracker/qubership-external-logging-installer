@@ -1,0 +1,74 @@
+---
+- name: Check the keepalived settings
+  ansible.builtin.assert:
+    that:
+      # IPv4 only: the VIP label scheme of keepalived is IPv4-specific.
+      - keepalived_vip is match('^[0-9]{1,3}([.][0-9]{1,3}){3}$')
+      - keepalived_interface | length > 0
+      - keepalived_vip_prefix | string is match('^[0-9]{1,3}$')
+      - keepalived_virtual_router_id | string is match('^[0-9]{1,3}$')
+      - keepalived_virtual_router_id | int >= 1 and keepalived_virtual_router_id | int <= 255
+      - keepalived_auth_password | length > 0 and keepalived_auth_password | length <= 8
+    fail_msg: >-
+      keepalived needs observability_vip, observability_vip_interface, keepalived_vip_prefix,
+      keepalived_virtual_router_id (1 to 255), and keepalived_auth_password (1 to 8 characters).
+      To keep the settings of earlier versions, set keepalived_vip_prefix to 24 and keepalived_virtual_router_id to
+      {{ keepalived_vip.split('.')[-1] if keepalived_vip | length > 0 else 'the last octet of the VIP' }}.
+    quiet: true
+
+- name: Install keepalived with apt
+  ansible.builtin.apt:
+    name: keepalived
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Install keepalived
+  ansible.builtin.package:
+    name: keepalived
+    state: present
+  when: ansible_facts['os_family'] != 'Debian'
+
+- name: Create the keepalived config directory
+  ansible.builtin.file:
+    path: "{{ keepalived_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Write the health check script
+  ansible.builtin.copy:
+    dest: "{{ keepalived_check_script_path }}"
+    content: "{{ keepalived_check_script }}"
+    owner: root
+    group: root
+    mode: "0755"
+    setype: >-
+      {{ 'keepalived_unconfined_script_exec_t'
+         if ansible_facts['selinux']['status'] | default('disabled') == 'enabled' else omit }}
+  notify: Restart keepalived
+  when: keepalived_check_script | length > 0
+
+- name: Remove the health check script
+  ansible.builtin.file:
+    path: "{{ keepalived_check_script_path }}"
+    state: absent
+  notify: Restart keepalived
+  when: keepalived_check_script | length == 0
+
+- name: Write the keepalived config
+  ansible.builtin.template:
+    src: keepalived.conf.j2
+    dest: "{{ keepalived_config_dir }}/keepalived.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Restart keepalived
+
+- name: Start keepalived
+  ansible.builtin.systemd_service:
+    name: keepalived
+    state: started
+    enabled: true

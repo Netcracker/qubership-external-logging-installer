@@ -25,6 +25,7 @@ expected_roles=(
     graylog_configuration
     graylog_output_duplicator
     host_prepare
+    keepalived
     fluentd
     fluentbit
     node_exporter
