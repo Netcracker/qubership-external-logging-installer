@@ -130,6 +130,7 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
+          - artifact_fetch
           - container_runtime
           - graylog_stack
     steps:

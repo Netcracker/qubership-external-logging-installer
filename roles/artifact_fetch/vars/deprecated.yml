@@ -1,0 +1,8 @@
+---
+# Old variable names that defaults/main.yml still reads. host_prepare warns when the inventory sets one.
+artifact_fetch_deprecated_variables:
+  raw_artifacts_registry: {new: observability_artifacts_url, source: "Q, L, V, M"}
+  raw_artifacts_registry_username: {new: observability_artifacts_username, source: "Q, L, M"}
+  raw_artifacts_registry_password: {new: observability_artifacts_password, source: "Q, L, M"}
+  raw_artifacts_registry_validate_certs: {new: observability_artifacts_validate_certs, source: "Q, L, M"}
+  raw_artifacts_registry_ca_cert_file: {new: observability_artifacts_ca_file, source: "Q, L, M"}
