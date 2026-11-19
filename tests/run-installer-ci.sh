@@ -13,6 +13,7 @@ inventory="${root}/tests/fixtures/inventory.ci.yml"
 playbook="${root}/playbooks/graylog.yml"
 legacy_playbook="${root}/playbooks/playbook.yaml"
 expected_roles=(
+    artifact_fetch
     common
     container_runtime
     prepare_environment
