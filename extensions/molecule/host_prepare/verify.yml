@@ -1,0 +1,101 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    chrony_config: "{{ '/etc/chrony/chrony.conf' if ansible_facts['os_family'] == 'Debian' else '/etc/chrony.conf' }}"
+  tasks:
+    - name: Read the generated files
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      register: generated
+      loop:
+        - /etc/sysctl.d/90-observability.conf
+        - /etc/security/limits.conf
+        - "{{ chrony_config }}"
+
+    - name: Check the generated files
+      ansible.builtin.assert:
+        that:
+          - files[0] is search('vm.max_map_count ?= ?262144')
+          - files[1] is search('\*\s+-\s+nofile\s+260000')
+          - files[2] is search('server 192.0.2.10 iburst')
+          - files[2] is search('server 192.0.2.11 iburst')
+        quiet: true
+      vars:
+        files: "{{ generated.results | map(attribute='content') | map('b64decode') | list }}"
+
+    - name: Read the exporters user
+      ansible.builtin.getent:
+        database: passwd
+        key: molecule_exporters
+
+    - name: Read the certificate
+      community.crypto.x509_certificate_info:
+        path: "/etc/observability/tls/{{ inventory_hostname }}.crt"
+      register: certificate
+
+    - name: Read the private key
+      ansible.builtin.stat:
+        path: "/etc/observability/tls/{{ inventory_hostname }}.key"
+      register: private_key
+
+    - name: Check the certificate
+      ansible.builtin.assert:
+        that:
+          - certificate.subject.commonName == inventory_hostname
+          - ('DNS:' ~ inventory_hostname) in certificate.subject_alt_name
+          - private_key.stat.mode == '0600'
+        quiet: true
+
+    - name: Create the config directory of an earlier install
+      ansible.builtin.file:
+        path: /var/lib/graylog/config
+        state: directory
+        mode: "0700"
+
+    - name: Create data from an earlier install
+      ansible.builtin.copy:
+        dest: /var/lib/graylog/config/graylog.conf
+        content: "password_secret = old\n"
+        mode: "0600"
+
+    - name: Check that the role stops when it would leave earlier data behind
+      block:
+        - name: Run the preflight checks with the new default data directory
+          ansible.builtin.include_role:
+            name: host_prepare
+            tasks_from: preflight
+
+        - name: Report that the preflight check did not stop
+          ansible.builtin.fail:
+            msg: The preflight check accepted a host with data in /var/lib/graylog.
+      rescue:
+        - name: Check the reason for the stop
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result | to_json is search('Set observability_data_dir to /var/lib ')
+            fail_msg: "{{ ansible_failed_result | to_json }}"
+            quiet: true
+
+    - name: Run the preflight checks with the earlier data directory
+      ansible.builtin.include_role:
+        name: host_prepare
+        tasks_from: preflight
+      vars:
+        host_prepare_data_dir: /var/lib
+
+    - name: Check that the preflight checks warned about the old names in the inventory
+      ansible.builtin.assert:
+        that:
+          - host_prepare_deprecation_warning.msg is search('ntp_server to host_prepare_ntp_servers')
+          - host_prepare_deprecation_warning.msg is search('exporters_system_user to host_prepare_exporters_user')
+          - host_prepare_deprecation_warning.msg is not search('observability_tls_cert_source to')
+        fail_msg: "{{ host_prepare_deprecation_warning | to_json }}"
+        quiet: true
+
+    - name: Remove the data from the earlier install
+      ansible.builtin.file:
+        path: /var/lib/graylog
+        state: absent

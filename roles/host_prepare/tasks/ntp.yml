@@ -1,0 +1,21 @@
+---
+- name: Install chrony
+  ansible.builtin.package:
+    name: chrony
+    state: present
+
+- name: Write the chrony config
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: "{{ host_prepare_chrony[ansible_facts['os_family']].config }}"
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify: Restart chrony
+
+- name: Start chrony
+  ansible.builtin.systemd_service:
+    name: "{{ host_prepare_chrony[ansible_facts['os_family']].service }}"
+    state: started
+    enabled: true

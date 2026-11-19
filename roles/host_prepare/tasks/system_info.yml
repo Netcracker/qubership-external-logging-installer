@@ -1,0 +1,12 @@
+---
+- name: Print the system information
+  ansible.builtin.debug:
+    msg:
+      host: "{{ ansible_facts['hostname'] }}"
+      os: "{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+      kernel: "{{ ansible_facts['kernel'] }}"
+      cpus: "{{ ansible_facts['processor_vcpus'] | default(ansible_facts['processor_count']) }}"
+      memory_mb: "{{ ansible_facts['memtotal_mb'] }}"
+      addresses: "{{ ansible_facts['all_ipv4_addresses'] | default([]) }}"
+      time: >-
+        {{ ansible_facts['date_time']['iso8601'] | default('') }} {{ ansible_facts['date_time']['tz'] | default('') }}

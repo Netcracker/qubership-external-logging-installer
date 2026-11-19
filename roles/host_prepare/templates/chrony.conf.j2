@@ -1,0 +1,9 @@
+# Managed by the qubership.observability host_prepare role.
+{% for server in host_prepare_ntp_server_list %}
+server {{ server }} iburst
+{% endfor %}
+
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony

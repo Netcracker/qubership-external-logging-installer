@@ -168,11 +168,12 @@ Each stage ends with a tagged release and updated docs.
 
 ### Stage 2: shared foundation
 
-- [ ] Create `host_prepare` from V's `prepare-environment` structure. Add Q/L limits and users, plus NTP and DNS
-      toggles.
-- [ ] Create `container_runtime` from M's `docker` role. Merge the Docker tasks from Q, L, and V. Expose
+- [x] Create `host_prepare` from V's `prepare-environment` structure. Add Q/L limits and users, plus NTP.
+- [ ] DNS settings: M's code assumes NetworkManager and defaults to internal resolvers, so `host_prepare` leaves DNS
+      alone. Add it only when a target platform needs it, through systemd-resolved or NetworkManager drop-ins.
+- [x] Create `container_runtime` from M's `docker` role. Merge the Docker tasks from Q, L, and V. Expose
       `tasks_from: run_container` and `tasks_from: network`.
-- [ ] Create `artifact_fetch` with `tasks_from: binary`: a fresh staging directory per run, credentials, CA, and
+- [x] Create `artifact_fetch` with `tasks_from: binary`: a fresh staging directory per run, credentials, CA, and
       binary or tarball input.
 - [ ] Introduce the `observability_*` variables, including the network and VIP settings, and the alias mechanism.
 - [ ] Extract keepalived from `prepare_environment` into a shared `keepalived` role. Keep the Graylog health-check
