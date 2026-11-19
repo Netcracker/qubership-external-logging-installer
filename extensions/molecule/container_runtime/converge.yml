@@ -1,0 +1,37 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Set up the container engine
+      ansible.builtin.include_role:
+        name: container_runtime
+
+    - name: Run a test container
+      ansible.builtin.include_role:
+        name: container_runtime
+        tasks_from: run_container
+      vars:
+        container_runtime_container:
+          name: runtime-test-web
+          image: docker.io/library/nginx:1.27.3-alpine
+          networks:
+            - name: runtime-test
+              aliases:
+                - web
+          ports:
+            - "18080:80"
+          read_only: true
+          tmpfs:
+            - /var/cache/nginx
+            - /run
+            - /tmp:size=16m
+          ulimits:
+            - nofile:4096:8192
+          env:
+            TEST_VALUE: "42"
+          healthcheck:
+            test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+            interval: 10s
+            retries: 3

@@ -1,0 +1,30 @@
+---
+- name: Check that the distribution packages Docker
+  ansible.builtin.assert:
+    that:
+      - container_runtime_engine == 'podman' or ansible_facts['os_family'] == 'Debian'
+    fail_msg: >-
+      {{ ansible_facts['distribution'] }} has no Docker package in its own repositories. Install docker-ce from the
+      Docker repository and set container_runtime_install to false, or use observability_container_runtime: podman.
+    quiet: true
+
+- name: Install the container engine packages with apt
+  ansible.builtin.apt:
+    name: "{{ container_runtime_packages[container_runtime_engine] }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Install the container engine packages
+  ansible.builtin.package:
+    name: "{{ container_runtime_packages[container_runtime_engine] }}"
+    state: present
+  when: ansible_facts['os_family'] != 'Debian'
+
+- name: Start the Docker service
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: true
+  when: container_runtime_engine == 'docker'

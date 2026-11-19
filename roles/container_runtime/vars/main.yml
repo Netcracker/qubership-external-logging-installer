@@ -1,0 +1,8 @@
+---
+container_runtime_certs_dir: >-
+  {{ '/etc/docker/certs.d' if container_runtime_engine == 'docker' else '/etc/containers/certs.d' }}
+
+# python3-docker is what the community.docker modules use on the host.
+container_runtime_packages:
+  docker: [docker.io, python3-docker]
+  podman: [podman]

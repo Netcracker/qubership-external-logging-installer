@@ -1,0 +1,13 @@
+---
+# Old variable names that defaults/main.yml still reads. host_prepare warns when the inventory sets one.
+# Remove them two minor releases after the release that introduced container_runtime.
+container_runtime_deprecated_variables:
+  configure_docker: {new: container_runtime_docker_configure, source: "Q, L, V"}
+  docker_additional_options: {new: container_runtime_docker_daemon_options, source: "M"}
+  docker_registry: {new: observability_image_registry, source: "Q, L, M"}
+  docker_registry_validate_certs: {new: container_runtime_registry_validate_certs, source: "Q, L, M"}
+  docker_registry_ca_cert_file: {new: container_runtime_registry_ca_file, source: "Q, L, M"}
+  docker_registry_username: {new: container_runtime_registry_username, source: "Q, L, M"}
+  docker_registry_password: {new: container_runtime_registry_password, source: "Q, L, M"}
+  docker_container_timeout: {new: container_runtime_container_timeout, source: "Q, L, V, M"}
+  vl_container_runtime: {new: observability_container_runtime, source: "V"}
