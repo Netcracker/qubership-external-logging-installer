@@ -1,0 +1,20 @@
+---
+- name: Check that Podman answers
+  ansible.builtin.command: podman info --format '{{ "{{" }} .Version.Version {{ "}}" }}'
+  register: container_runtime_podman_info
+  changed_when: false
+  failed_when: false
+
+- name: Stop when Podman does not answer
+  ansible.builtin.fail:
+    msg: >-
+      Cannot run podman: {{ container_runtime_podman_info.stderr | default('podman is not installed') }}.
+      Install Podman, or set container_runtime_install to true.
+  when: container_runtime_podman_info.rc | default(1) != 0
+
+# Containers with restart_policy start again after a reboot only when this unit runs.
+- name: Enable the Podman restart service
+  ansible.builtin.systemd_service:
+    name: podman-restart
+    enabled: true
+  failed_when: false

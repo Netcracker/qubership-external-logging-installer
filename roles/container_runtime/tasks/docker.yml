@@ -1,0 +1,55 @@
+---
+- name: Write the Docker daemon config
+  when: container_runtime_docker_configure | bool
+  block:
+    - name: Create the Docker config directory
+      ansible.builtin.file:
+        path: /etc/docker
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    # The role owns the whole file: keys that it stops setting disappear on the next run.
+    - name: Write daemon.json
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        content: "{{ container_runtime_docker_daemon_config | to_nice_json(indent=2) }}\n"
+        owner: root
+        group: root
+        mode: "0644"
+        backup: true
+      vars:
+        container_runtime_docker_daemon_config: >-
+          {{ {
+               'icc': false,
+               'live-restore': true,
+               'log-driver': 'json-file',
+               'log-opts': {
+                 'max-size': container_runtime_docker_log_max_size | string,
+                 'max-file': container_runtime_docker_log_max_file | string,
+               },
+             }
+             | combine({'insecure-registries': [container_runtime_registry]}
+                       if container_runtime_registry | length > 0
+                          and not container_runtime_registry_validate_certs | bool
+                       else {})
+             | combine(container_runtime_docker_daemon_options, recursive=true) }}
+      notify: Restart Docker
+
+# Restart now, not at the end of the play: the roles that run next start containers on this daemon.
+- name: Apply daemon.json before containers start
+  ansible.builtin.meta: flush_handlers
+
+- name: Check that Docker answers
+  ansible.builtin.command: docker info --format '{{ "{{" }} .ServerVersion {{ "}}" }}'
+  register: container_runtime_docker_info
+  changed_when: false
+  failed_when: false
+
+- name: Stop when Docker does not answer
+  ansible.builtin.fail:
+    msg: >-
+      Cannot reach the Docker daemon: {{ container_runtime_docker_info.stderr | default('docker is not installed') }}.
+      Install and start Docker, or set container_runtime_install to true.
+  when: container_runtime_docker_info.rc | default(1) != 0

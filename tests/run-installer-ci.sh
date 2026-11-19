@@ -14,6 +14,7 @@ playbook="${root}/playbooks/graylog.yml"
 legacy_playbook="${root}/playbooks/playbook.yaml"
 expected_roles=(
     common
+    container_runtime
     prepare_environment
     mongodb
     opensearch

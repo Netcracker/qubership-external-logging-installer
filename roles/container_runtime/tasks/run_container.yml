@@ -1,0 +1,114 @@
+---
+# Entry point: include_role with tasks_from: run_container and container_runtime_container set.
+# The keys use community.docker.docker_container names; README.md lists them and how Podman maps them.
+- name: Check the container definition
+  ansible.builtin.assert:
+    that:
+      - container_runtime_container is mapping
+      - container_runtime_container.name | default('') | length > 0
+      - container_runtime_container.image | default('') | length > 0
+    fail_msg: container_runtime_container needs at least `name` and `image`.
+    quiet: true
+
+- name: Run the container with Docker {{ container_runtime_container.name }}
+  community.docker.docker_container:
+    name: "{{ container_runtime_container.name }}"
+    image: "{{ container_runtime_container.image }}"
+    state: "{{ container_runtime_container.state | default('started') }}"
+    restart_policy: >-
+      {{ container_runtime_container.restart_policy | default(container_runtime_default_restart_policy) }}
+    security_opts: "{{ container_runtime_container.security_opts | default(container_runtime_default_security_opts) }}"
+    # Without strict, Docker keeps a container attached to networks that its definition no longer lists.
+    comparisons:
+      networks: strict
+    networks: "{{ container_runtime_container.networks | default(omit) }}"
+    network_mode: "{{ container_runtime_container.network_mode | default(omit) }}"
+    ports: "{{ container_runtime_container.ports | default(omit) }}"
+    volumes: "{{ container_runtime_container.volumes | default(omit) }}"
+    env: "{{ container_runtime_container.env | default(omit) }}"
+    command: "{{ container_runtime_container.command | default(omit) }}"
+    entrypoint: "{{ container_runtime_container.entrypoint | default(omit) }}"
+    user: "{{ container_runtime_container.user | default(omit) }}"
+    read_only: "{{ container_runtime_container.read_only | default(omit) }}"
+    tmpfs: "{{ container_runtime_container.tmpfs | default(omit) }}"
+    privileged: "{{ container_runtime_container.privileged | default(omit) }}"
+    capabilities: "{{ container_runtime_container.capabilities | default(omit) }}"
+    ulimits: "{{ container_runtime_container.ulimits | default(omit) }}"
+    etc_hosts: "{{ container_runtime_container.etc_hosts | default(omit) }}"
+    labels: "{{ container_runtime_container.labels | default(omit) }}"
+    healthcheck: "{{ container_runtime_container.healthcheck | default(omit) }}"
+    pull: "{{ container_runtime_container.pull | default(omit) }}"
+    # Pass `restart: true` when a config file that the container reads has changed.
+    restart: "{{ container_runtime_container.restart | default(false) | bool }}"
+    recreate: "{{ container_runtime_container.recreate | default(false) | bool }}"
+    timeout: "{{ container_runtime_container_timeout | int }}"
+  register: container_runtime_container_result
+  when: container_runtime_engine == 'docker'
+
+- name: Run the container with Podman {{ container_runtime_container.name }}
+  containers.podman.podman_container:
+    name: "{{ container_runtime_container.name }}"
+    image: "{{ container_runtime_container.image }}"
+    state: "{{ container_runtime_container.state | default('started') }}"
+    restart_policy: >-
+      {{ container_runtime_container.restart_policy | default(container_runtime_default_restart_policy) }}
+    security_opt: "{{ container_runtime_container.security_opts | default(container_runtime_default_security_opts) }}"
+    # Podman has no links: containers on a named network find each other by name and alias.
+    network: >-
+      {{ [container_runtime_container.network_mode] if container_runtime_container.network_mode is defined
+         else container_runtime_container.networks | default([]) | map(attribute='name') | list
+              | default(omit, true) }}
+    network_aliases: >-
+      {{ container_runtime_container.networks | default([]) | map(attribute='aliases', default=[]) | flatten
+         | unique | list | default(omit, true) }}
+    publish: "{{ container_runtime_container.ports | default(omit) }}"
+    volume: "{{ container_runtime_container.volumes | default(omit) }}"
+    env: "{{ container_runtime_container.env | default(omit) }}"
+    command: "{{ container_runtime_container.command | default(omit) }}"
+    entrypoint: >-
+      {{ container_runtime_container.entrypoint | join(' ')
+         if container_runtime_container.entrypoint is defined
+            and container_runtime_container.entrypoint is not string
+         else container_runtime_container.entrypoint | default(omit) }}
+    user: "{{ container_runtime_container.user | default(omit) }}"
+    read_only: "{{ container_runtime_container.read_only | default(omit) }}"
+    # docker_container takes ["/tmp:size=64m"]; podman_container takes {"/tmp": "size=64m"} and rejects empty options.
+    tmpfs: >-
+      {{ dict(container_runtime_container.tmpfs | map('regex_replace', '^([^:]+)$', '\1:rw')
+              | map('regex_search', '^([^:]+):(.*)$', '\1', '\2'))
+         if container_runtime_container.tmpfs is defined else omit }}
+    privileged: "{{ container_runtime_container.privileged | default(omit) }}"
+    cap_add: "{{ container_runtime_container.capabilities | default(omit) }}"
+    # docker_container takes "nofile:1024:2048"; podman_container takes "nofile=1024:2048".
+    ulimit: >-
+      {{ container_runtime_container.ulimits | map('regex_replace', '^([^:]+):', '\1=') | list
+         if container_runtime_container.ulimits is defined else omit }}
+    etc_hosts: "{{ container_runtime_container.etc_hosts | default(omit) }}"
+    label: "{{ container_runtime_container.labels | default(omit) }}"
+    healthcheck: >-
+      {{ (container_runtime_container.healthcheck.test[1:] | join(' ')
+          if container_runtime_container.healthcheck.test is not string
+          else container_runtime_container.healthcheck.test)
+         if container_runtime_container.healthcheck is defined else omit }}
+    healthcheck_interval: "{{ container_runtime_container.healthcheck.interval | default(omit) }}"
+    healthcheck_timeout: "{{ container_runtime_container.healthcheck.timeout | default(omit) }}"
+    healthcheck_retries: "{{ container_runtime_container.healthcheck.retries | default(omit) }}"
+    healthcheck_start_period: "{{ container_runtime_container.healthcheck.start_period | default(omit) }}"
+    force_restart: "{{ container_runtime_container.restart | default(false) | bool }}"
+    recreate: "{{ container_runtime_container.recreate | default(false) | bool }}"
+  register: container_runtime_container_result
+  when: container_runtime_engine == 'podman'
+
+# A container whose process exits right away still counts as started, so check that it keeps running.
+- name: Wait until the container is running {{ container_runtime_container.name }}
+  ansible.builtin.command: >-
+    {{ container_runtime_engine }} inspect --format {{ '{{.State.Running}}' | quote }}
+    {{ container_runtime_container.name | quote }}
+  register: container_runtime_container_running
+  changed_when: false
+  until: container_runtime_container_running.stdout | trim == 'true'
+  retries: "{{ container_runtime_container.wait_retries | default(5) }}"
+  delay: 2
+  when:
+    - container_runtime_container.state | default('started') == 'started'
+    - container_runtime_container.wait | default(true) | bool

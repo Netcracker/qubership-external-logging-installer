@@ -130,6 +130,7 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
+          - container_runtime
           - graylog_stack
     steps:
       - name: Checkout
