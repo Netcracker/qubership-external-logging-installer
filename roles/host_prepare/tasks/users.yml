@@ -1,0 +1,17 @@
+---
+- name: Create the exporters group
+  ansible.builtin.group:
+    name: "{{ host_prepare_exporters_group }}"
+    system: true
+    state: present
+  when: host_prepare_exporters_group != 'root'
+
+- name: Create the exporters user
+  ansible.builtin.user:
+    name: "{{ host_prepare_exporters_user }}"
+    group: "{{ host_prepare_exporters_group }}"
+    shell: /usr/sbin/nologin
+    create_home: false
+    system: true
+    state: present
+  when: host_prepare_exporters_user != 'root'

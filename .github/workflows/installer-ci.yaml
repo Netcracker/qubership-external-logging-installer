@@ -133,6 +133,7 @@ jobs:
           - artifact_fetch
           - container_runtime
           - graylog_stack
+          - host_prepare
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

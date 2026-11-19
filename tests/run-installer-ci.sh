@@ -24,6 +24,7 @@ expected_roles=(
     nginx
     graylog_configuration
     graylog_output_duplicator
+    host_prepare
     fluentd
     fluentbit
     node_exporter

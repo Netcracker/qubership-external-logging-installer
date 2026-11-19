@@ -1,0 +1,41 @@
+---
+- name: Run the preflight checks
+  ansible.builtin.import_tasks: preflight.yml
+
+# Package tasks below use the generic package module, which does not refresh the apt cache.
+- name: Refresh the apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - host_prepare_ntp_server_list | length > 0 or host_prepare_tls_cert_source == 'selfsigned'
+
+- name: Print the system information
+  ansible.builtin.import_tasks: system_info.yml
+  when: host_prepare_system_info | bool
+
+- name: Set kernel settings and limits
+  ansible.builtin.import_tasks: limits.yml
+
+- name: Create the exporters user
+  ansible.builtin.import_tasks: users.yml
+
+- name: Configure NTP
+  ansible.builtin.include_tasks: ntp.yml
+  when: host_prepare_ntp_server_list | length > 0
+
+- name: Create the base directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ host_prepare_data_dir }}"
+    - "{{ host_prepare_config_dir }}"
+
+- name: Install the TLS certificate
+  ansible.builtin.include_tasks: tls.yml
+  when: host_prepare_tls_cert_source != 'none'
