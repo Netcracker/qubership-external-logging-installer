@@ -9,93 +9,32 @@
                if (elasticsearch_exporter_tarball is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
                else raw_artifacts_registry ~ '/' ~ elasticsearch_exporter_tarball) }}
 
-- name: Download elasticsearch-exporter archive with credentials
-  when:
-    - raw_artifacts_registry_username is defined
-    - raw_artifacts_registry_password is defined
-  block:
-    - name: Download elasticsearch-exporter archive
-      when: not raw_artifacts_registry_validate_certs | bool
-      ansible.builtin.get_url:
-        url: "{{ elasticsearch_exporter_tarball_url }}"
-        dest: "/tmp/elasticsearch_exporter.tar.gz"
-        validate_certs: no
-        url_username: "{{ raw_artifacts_registry_username }}"
-        url_password: "{{ raw_artifacts_registry_password }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
+# Registry credentials and TLS settings apply only to raw_artifacts_registry. Downloads from anywhere else, such as
+# the public release URL, send no credentials and always verify TLS.
+- name: Check whether elasticsearch_exporter downloads from raw_artifacts_registry
+  ansible.builtin.set_fact:
+    elasticsearch_exporter_from_registry: >-
+      {{ raw_artifacts_registry | default('', true) | length > 0
+         and ([elasticsearch_exporter_tarball_url, raw_artifacts_registry]
+              | map('regex_replace', '^(?![A-Za-z][A-Za-z0-9+.-]*://)', 'https://')
+              | map('urlsplit', 'netloc') | unique | length) == 1 }}
 
-    - name: Download elasticsearch-exporter archive with SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is defined
-      ansible.builtin.get_url:
-        url: "{{ elasticsearch_exporter_tarball_url }}"
-        dest: "/tmp/elasticsearch_exporter.tar.gz"
-        url_username: "{{ raw_artifacts_registry_username }}"
-        url_password: "{{ raw_artifacts_registry_password }}"
-      environment:
-        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-    - name: Download elasticsearch-exporter archive without SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is not defined
-      ansible.builtin.get_url:
-        url: "{{ elasticsearch_exporter_tarball_url }}"
-        dest: "/tmp/elasticsearch_exporter.tar.gz"
-        url_username: "{{ raw_artifacts_registry_username }}"
-        url_password: "{{ raw_artifacts_registry_password }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-- name: Download elasticsearch-exporter archive without credentials
-  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
-  block:
-    - name: Download elasticsearch-exporter archive
-      when: not raw_artifacts_registry_validate_certs | bool
-      ansible.builtin.get_url:
-        url: "{{ elasticsearch_exporter_tarball_url }}"
-        dest: "/tmp/elasticsearch_exporter.tar.gz"
-        validate_certs: no
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-    - name: Download elasticsearch-exporter archive with SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is defined
-      ansible.builtin.get_url:
-        url: "{{ elasticsearch_exporter_tarball_url }}"
-        dest: "/tmp/elasticsearch_exporter.tar.gz"
-      environment:
-        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-    - name: Download elasticsearch-exporter archive without SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is not defined
-      ansible.builtin.get_url:
-        url: "{{ elasticsearch_exporter_tarball_url }}"
-        dest: "/tmp/elasticsearch_exporter.tar.gz"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
+- name: Download elasticsearch_exporter archive
+  ansible.builtin.get_url:
+    url: "{{ elasticsearch_exporter_tarball_url }}"
+    dest: "/tmp/elasticsearch_exporter.tar.gz"
+    url_username: "{{ raw_artifacts_registry_username | default(omit, true) if elasticsearch_exporter_from_registry else omit }}"
+    url_password: "{{ raw_artifacts_registry_password | default(omit, true) if elasticsearch_exporter_from_registry else omit }}"
+    validate_certs: "{{ raw_artifacts_registry_validate_certs | bool if elasticsearch_exporter_from_registry else true }}"
+  environment: >-
+    {{ {'SSL_CERT_FILE': ssl_data_host_path ~ '/' ~ raw_artifacts_registry_ca_cert_file}
+       if elasticsearch_exporter_from_registry and raw_artifacts_registry_validate_certs | bool
+          and raw_artifacts_registry_ca_cert_file | default('', true) | length > 0
+       else {} }}
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
 
 - name: Unarchive elasticsearch-exporter binary
   ansible.builtin.unarchive:
