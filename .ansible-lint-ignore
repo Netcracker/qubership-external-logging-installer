@@ -1,5 +1,4 @@
 # This file contains ignores rule violations for ansible-lint
-playbooks/graylog.yml fqcn[keyword]
 roles/cadvisor/tasks/deploy_cadvisor_systemd_service.yaml risky-file-permissions
 roles/cadvisor/tasks/deploy_cadvisor_systemd_service.yaml var-naming[no-role-prefix]
 roles/cadvisor/tasks/main.yaml name[missing]

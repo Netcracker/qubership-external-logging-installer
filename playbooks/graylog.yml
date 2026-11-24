@@ -3,9 +3,8 @@
   hosts: "{{ graylog_target_hosts | default('graylog') }}"
   gather_facts: true
   become: true
-  # Short role names resolve from this collection when it is installed, and from roles_path in a source checkout.
-  collections:
-    - qubership.observability
+  # No collections keyword: it would make a checkout run pick roles from an installed qubership.observability ahead of
+  # roles_path. Run as qubership.observability.graylog, the playbook resolves roles from its own collection.
   roles:
     # Prepare steps
     - role: common
