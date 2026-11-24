@@ -1,0 +1,20 @@
+---
+- name: Set raw_artifacts_registry for {{ case.url }}
+  ansible.builtin.set_fact:
+    raw_artifacts_registry: "{{ case.registry | default(none) }}"
+
+- name: Check the origin of {{ case.url }}
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: raw_artifacts_origin.yml
+  vars:
+    common_raw_artifacts_url: "{{ case.url }}"
+
+- name: Check the decision for {{ case.url }}
+  ansible.builtin.assert:
+    that:
+      - common_raw_artifacts_from_registry | bool == case.expect
+    fail_msg: >-
+      {{ case.url }} with raw_artifacts_registry '{{ case.registry | default('') }}' got
+      {{ common_raw_artifacts_from_registry }}, expected {{ case.expect }}
+    quiet: true

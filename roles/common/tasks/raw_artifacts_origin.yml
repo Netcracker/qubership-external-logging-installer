@@ -1,0 +1,24 @@
+---
+# Sets common_raw_artifacts_from_registry to true when common_raw_artifacts_url has the origin of raw_artifacts_registry:
+# the same scheme, host, and port, with 80 and 443 as the defaults for http and https. Download tasks pass the registry
+# credentials and TLS settings only then. A value without a scheme counts as https, like a registry set as host/path.
+- name: Split the download URL and the raw artifacts registry
+  ansible.builtin.set_fact:
+    common_raw_artifacts_origins: >-
+      {{ [common_raw_artifacts_url, raw_artifacts_registry | default('', true)]
+         | map('regex_replace', '^(?![A-Za-z][A-Za-z0-9+.-]*://)', 'https://')
+         | map('urlsplit') | list }}
+
+- name: Compare the origin of the download URL with the raw artifacts registry
+  vars:
+    common_default_ports: { http: 80, https: 443 }
+    common_url: "{{ common_raw_artifacts_origins[0] }}"
+    common_registry: "{{ common_raw_artifacts_origins[1] }}"
+  ansible.builtin.set_fact:
+    common_raw_artifacts_from_registry: >-
+      {{ raw_artifacts_registry | default('', true) | length > 0
+         and common_url.hostname is truthy
+         and (common_url.scheme | lower) == (common_registry.scheme | lower)
+         and (common_url.hostname | lower) == (common_registry.hostname | default('', true) | lower)
+         and (common_url.port or common_default_ports[common_url.scheme | lower] | default(none))
+             == (common_registry.port or common_default_ports[common_registry.scheme | lower] | default(none)) }}
