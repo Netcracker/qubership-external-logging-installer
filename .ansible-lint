@@ -1,5 +1,6 @@
 ---
-# Existing violations are listed per file in .ansible-lint-ignore. New code must pass the production profile.
+# .ansible-lint-ignore lists file-and-rule exceptions: a listed rule is ignored for the whole file, so a new instance of
+# that rule in that file passes as a warning. Files and rules outside the list must pass the production profile.
 # Remove entries from that file as the roles are fixed; do not add new ones.
 profile: production
 offline: true

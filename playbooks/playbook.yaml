@@ -11,6 +11,8 @@
           playbooks/playbook.yaml is deprecated and will be removed in a later release.
           Run playbooks/graylog.yml instead, and set graylog_target_hosts=all or put the hosts in the graylog group.
       run_once: true
+      # Runs limited with --tags still print the warning.
+      tags: [always]
 
 - name: Deploy Graylog
   ansible.builtin.import_playbook: graylog.yml

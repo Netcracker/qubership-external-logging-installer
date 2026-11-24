@@ -14,6 +14,8 @@
     user: admin
     password: "{{ root_password }}"
     force_basic_auth: true
+    # A short timeout keeps the whole wait near 20 minutes even when the endpoint accepts connections but never answers.
+    timeout: 10
   register: webpage
   until: webpage.status == 200
   delay: 1

@@ -10,7 +10,7 @@ on:
     branches:
       - main
   schedule:
-    # Nightly run catches breakage from new upstream images and collection releases.
+    # Nightly run tests the pinned collections on a fresh runner with freshly pulled images.
     - cron: "17 2 * * *"
   workflow_dispatch: {}
 
