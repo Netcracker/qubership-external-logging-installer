@@ -1,0 +1,67 @@
+---
+# Checks that processing_rule.json.j2 turns a rule with CRLF, CR, or LF line endings into JSON that holds the whole rule
+# with LF line endings. Rule files escape their double quotes as \", as the files in processing_rules/ do.
+- name: Test the processing rule request renderer
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+    renderer: "{{ playbook_dir }}/../../roles/graylog_configuration/files/processing_rule.json.j2"
+    expected_source: "rule \"Route test logs\"\nwhen\n  has_field(\"kubernetes\")\nthen\n  route_to_stream(id: \"abc\");\nend"
+    cases:
+      - name: CRLF
+        file: "rule \\\"Route test logs\\\"\r\nwhen\r\n  has_field(\\\"kubernetes\\\")\r\nthen\r\n  route_to_stream(id: \\\"abc\\\");\r\nend"
+      - name: CR
+        file: "rule \\\"Route test logs\\\"\rwhen\r  has_field(\\\"kubernetes\\\")\rthen\r  route_to_stream(id: \\\"abc\\\");\rend"
+      - name: LF
+        file: "rule \\\"Route test logs\\\"\nwhen\n  has_field(\\\"kubernetes\\\")\nthen\n  route_to_stream(id: \\\"abc\\\");\nend"
+  tasks:
+    - name: Create a directory for the rule files
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: rules
+      register: rules_dir
+
+    - name: Write the rule files
+      ansible.builtin.copy:
+        dest: "{{ rules_dir.path }}/{{ item.name }}.rule"
+        content: "{{ item.file }}"
+        mode: "0600"
+      loop: "{{ cases }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Check that the CRLF and CR rule files kept their carriage returns
+      ansible.builtin.assert:
+        that:
+          - lookup('ansible.builtin.file', rules_dir.path ~ '/' ~ item ~ '.rule', rstrip=false) is search('\r')
+        fail_msg: "The {{ item }} rule file lost its carriage returns, so the case proves nothing"
+        quiet: true
+      loop: [CRLF, CR]
+
+    # Pass the file content directly, and through a template lookup as manage_streams.yaml does.
+    - name: Check the rendered request bodies
+      ansible.builtin.assert:
+        that:
+          - (body | from_json).source == expected_source
+          - (body | from_json).title == 'Route test logs'
+        fail_msg: "The {{ item.0.name }} rule rendered through {{ item.1 }} gave: {{ body }}"
+        quiet: true
+      vars:
+        rule_file: "{{ rules_dir.path }}/{{ item.0.name }}.rule"
+        template_vars:
+          rule_title: Route test logs
+          rule_description: Test rule
+          rule_source: >-
+            {{ lookup('ansible.builtin.file', rule_file, rstrip=false) if item.1 == 'file'
+               else lookup('ansible.builtin.template', rule_file) }}
+        body: "{{ lookup('ansible.builtin.template', renderer, template_vars=template_vars) }}"
+      loop: "{{ cases | product(['file', 'template']) | list }}"
+      loop_control:
+        label: "{{ item.0.name }} through {{ item.1 }}"
+
+    - name: Remove the rule files
+      ansible.builtin.file:
+        path: "{{ rules_dir.path }}"
+        state: absent
