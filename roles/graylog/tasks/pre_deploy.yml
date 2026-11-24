@@ -50,37 +50,6 @@
     - root_password is not none
     - root_password | trim | length > 0
 
-# The mongodb role creates the graylog user but no collections, and Graylog creates its collections on first start, so
-# any collection in the graylog database means that Graylog ran here before.
-- name: Count the collections in the graylog MongoDB database
-  ansible.builtin.command:
-    argv:
-      - docker
-      - exec
-      - graylog_mongo_1
-      - mongo
-      - --quiet
-      - --username
-      - "{{ mongodb_root_username }}"
-      - --password
-      - "{{ mongodb_root_password }}"
-      - --authenticationDatabase
-      - admin
-      - graylog
-      - --eval
-      - db.getCollectionNames().length
-  register: graylog_mongodb_collections
-  changed_when: false
-  check_mode: false
-  no_log: true
-  until: graylog_mongodb_collections.rc == 0
-  retries: 10
-  delay: 3
-
-- name: Record whether MongoDB holds Graylog data
-  ansible.builtin.set_fact:
-    graylog_mongodb_has_data: "{{ (graylog_mongodb_collections.stdout_lines | last | default('0') | trim | int) > 0 }}"
-
 - name: Choose the Graylog password secret
   ansible.builtin.import_tasks: password_secret.yml
 

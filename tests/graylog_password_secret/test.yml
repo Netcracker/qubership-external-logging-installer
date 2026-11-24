@@ -49,7 +49,19 @@
         expect: "{{ secret }}"
       - name: escaped trailing backslash
         config: "password_secret = {{ secret }}\\\\\n"
-        expect: "{{ secret }}\\\\"
+        expect: "{{ secret }}\\"
+      - name: escapes in the value
+        config: "password_secret = Value\\u0041\\tB\\qC\n"
+        expect: "ValueA\tBqC"
+      - name: continuation of another key that looks like a definition
+        config: "password_secret = {{ secret }}\nother = a\\\n  password_secret = wrong\n"
+        expect: "{{ secret }}"
+      - name: comment after a live definition
+        config: "password_secret = {{ secret }}\n# password_secret = commented\n! password_secret = commented\n"
+        expect: "{{ secret }}"
+      - name: bare final definition
+        config: "password_secret = old\npassword_secret\n"
+        expect: fail
       - name: similar key
         config: "password_secret_old = old\n"
         expect: fail
@@ -61,7 +73,7 @@
         expect: fail
       - name: value that continues on the next line
         config: "password_secret = {{ secret }}\\\n  more\n"
-        expect: fail
+        expect: "{{ secret }}more"
       - name: explicit secret wins over the existing one
         config: "password_secret = old\n"
         explicit: "{{ secret }}"
@@ -77,12 +89,35 @@
         explicit: "{{ secret }}"
         custom: old
         expect: fail
+      - name: explicit secret and legacy custom parameter differ only in case
+        explicit: "{{ secret }}"
+        custom: "{{ secret | upper }}"
+        expect: fail
+      # graylog.conf got the legacy value as is, so Graylog applied Java escapes to it.
+      - name: legacy custom parameter with escapes
+        custom: Legacy\u0041\\B
+        expect: LegacyA\B
+      - name: explicit secret matches the escaped legacy custom parameter
+        explicit: LegacyA\B
+        custom: Legacy\u0041\\B
+        expect: LegacyA\B
+      # The template escapes the explicit secret, so these values must survive the round trip.
       - name: explicit secret ends in a backslash
         explicit: "{{ secret }}\\"
+        expect: "{{ secret }}\\"
+      - name: explicit secret starts with a space and holds a line break
+        explicit: " {{ secret }}\nnext line"
+        expect: " {{ secret }}\nnext line"
+      - name: explicit secret holds non-ASCII characters
+        explicit: "{{ secret }}é中😀"
+        expect: "{{ secret }}é中😀"
+      - name: missing config with a custom MongoDB
+        mongodb_uri: mongodb://graylog:graylog@db.example.org:27017/graylog
         expect: fail
-      - name: explicit secret starts with a space
-        explicit: " {{ secret }}"
-        expect: fail
+      - name: missing config with a custom MongoDB, with an explicit secret
+        explicit: "{{ secret }}"
+        mongodb_uri: mongodb://graylog:graylog@db.example.org:27017/graylog
+        expect: "{{ secret }}"
       - name: missing config while MongoDB holds Graylog data
         mongodb_has_data: true
         expect: fail
@@ -127,3 +162,18 @@
       loop: "{{ volumes.results }}"
       loop_control:
         label: "{{ item.item.name }}"
+
+    # A shared default would pass a shape check, so compare the secrets of two independent fresh installs.
+    - name: Choose secrets for two fresh installs
+      ansible.builtin.include_tasks: fresh.yml
+      loop: [1, 2]
+
+    - name: Check that fresh installs get different random secrets
+      ansible.builtin.assert:
+        that:
+          - fresh_secrets | length == 2
+          - fresh_secrets | select('match', '^[A-Za-z0-9]{96}$') | list | length == 2
+          - fresh_secrets[0] != fresh_secrets[1]
+        fail_msg: Two fresh installs got the same secret, or a secret of the wrong shape
+        quiet: true
+      no_log: true

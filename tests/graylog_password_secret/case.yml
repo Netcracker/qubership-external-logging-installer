@@ -23,7 +23,9 @@
       vars:
         graylog_volume: "{{ case_volume }}"
         graylog_password_secret: "{{ case.explicit | default('') }}"
-        graylog_custom_params: "{{ {'password_secret': case.custom} if case.custom is defined else {} }}"
+        graylog_custom_params: >-
+          {{ ({'password_secret': case.custom} if case.custom is defined else {})
+             | combine({'mongodb_uri': case.mongodb_uri} if case.mongodb_uri is defined else {}) }}
         graylog_mongodb_has_data: "{{ case.mongodb_has_data | default(false) }}"
 
     - name: Check the chosen secret
@@ -34,6 +36,10 @@
             graylog_password_secret_effective == case.expect
             if case.expect != 'random'
             else graylog_password_secret_effective is match('^[A-Za-z0-9]{96}$')
+          # The template writes the secret through java_properties_escape, so Graylog must read back the same value.
+          - >-
+            ('password_secret = ' ~ (graylog_password_secret_effective | java_properties_escape))
+            | java_properties_value('password_secret') == graylog_password_secret_effective
         fail_msg: "Case '{{ case.name }}' chose the wrong secret: '{{ graylog_password_secret_effective }}'"
         quiet: true
   rescue:

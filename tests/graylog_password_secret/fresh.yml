@@ -1,0 +1,26 @@
+---
+- name: Create an empty Graylog volume
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: graylog
+  register: fresh_volume
+
+- name: Choose the password secret for a fresh install
+  ansible.builtin.include_role:
+    name: graylog
+    tasks_from: password_secret.yml
+  vars:
+    graylog_volume: "{{ fresh_volume.path }}"
+    graylog_password_secret: ""
+    graylog_custom_params: {}
+    graylog_mongodb_has_data: false
+
+- name: Record the fresh secret
+  ansible.builtin.set_fact:
+    fresh_secrets: "{{ fresh_secrets | default([]) + [graylog_password_secret_effective] }}"
+  no_log: true
+
+- name: Remove the empty Graylog volume
+  ansible.builtin.file:
+    path: "{{ fresh_volume.path }}"
+    state: absent
