@@ -240,6 +240,7 @@ bash tests/run-installer-ci.sh
 
 # Deploy the playbook into a container and check Graylog, the exporters, and the stack containers
 pip3 install -r tests/requirements-molecule.txt
+ansible-galaxy collection install -r requirements.yml
 cd extensions && molecule test -s graylog_stack
 
 # Dry run deployment
