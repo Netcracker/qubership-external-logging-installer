@@ -54,8 +54,8 @@ ansible-playbook --syntax-check -i "${inventory}" "${legacy_playbook}"
 echo "==> Build and install the collection"
 build_dir="$(mktemp -d)"
 trap 'rm -rf "${build_dir}"' EXIT
-# Build from the tracked files only, as the README recommends, so nothing local in the checkout reaches the archive.
-# The copy takes the working-tree content of each tracked file, so local edits are tested too.
+# Build from the tracked files only, as the README recommends, so untracked files in the checkout never reach the
+# archive. The copy takes the working-tree content of each tracked file, so local edits to tracked files are tested.
 copy_tracked_source() {
     mkdir -p "$1"
     git -C "${root}" ls-files -z | (cd "${root}" && tar --null --ignore-failed-read -T - -cf -) | tar -x -C "$1"
@@ -114,6 +114,16 @@ done
 echo "==> Test how the graylog role keeps an existing password secret"
 ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/test.yml"
 
+echo "==> Compare the java_properties module with java.util.Properties"
+if command -v java >/dev/null 2>&1; then
+    python3 "${root}/tests/java_properties/differential.py" "${build_dir}/java-properties"
+elif [[ "${CI:-}" == "true" ]]; then
+    echo "::error::java is not on PATH, so the java_properties module cannot be compared with Java"
+    exit 1
+else
+    echo "java is not on PATH; skipping the comparison with Java"
+fi
+
 echo "==> Test the origin check for raw artifact downloads"
 ansible-playbook -i localhost, "${root}/tests/raw_artifacts_origin/test.yml"
 
@@ -135,6 +145,22 @@ fi
 if ! grep -qF -- "log4j2.xml" <<<"${diff_output}"; then
     printf '%s\n' "${diff_output}"
     echo "::error::ansible-playbook --diff printed no diff, so the secret check proves nothing"
+    exit 1
+fi
+
+echo "==> Write graylog.conf with the installed collection"
+# Collection roles load no plugins from their own directories, so this proves that the role finds java_properties.
+installed_volume="${build_dir}/installed-volume"
+installed_secret="InstalledCollectionSecret$(date +%s%N)"
+mkdir -p "${installed_volume}/graylog/config"
+printf 'password_secret = %s\n' "${installed_secret}" >"${installed_volume}/graylog/config/graylog.conf"
+(cd "${build_dir}" && ANSIBLE_ROLES_PATH="${build_dir}/no-roles" \
+    ANSIBLE_COLLECTIONS_PATH="${build_dir}/collections:${ANSIBLE_COLLECTIONS_PATH}" \
+    ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/diff.yml" \
+    -e graylog_role=qubership.observability.graylog -e "graylog_volume=${installed_volume}" \
+    -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)" >/dev/null)
+if ! grep -qxF -- "password_secret = ${installed_secret}" "${installed_volume}/graylog/config/graylog.conf"; then
+    echo "::error::The installed collection did not keep the existing password secret in graylog.conf"
     exit 1
 fi
 

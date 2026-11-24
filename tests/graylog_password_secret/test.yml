@@ -74,6 +74,17 @@
       - name: value that continues on the next line
         config: "password_secret = {{ secret }}\\\n  more\n"
         expect: "{{ secret }}more"
+      # Java starts a comment after a continuation that added nothing, and the comment ignores its trailing backslash.
+      - name: comment after an empty continuation
+        config: "password_secret = old\n\\\n# comment \\\npassword_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      # Java reads graylog.conf as ISO 8859-1, so the UTF-8 bytes of a literal é are two characters.
+      - name: literal non-ASCII bytes in the config
+        config: "password_secret = {{ secret }}é\n"
+        expect: "{{ secret }}Ã©"
+      - name: legacy custom parameter with non-ASCII characters
+        custom: "{{ secret }}é"
+        expect: "{{ secret }}Ã©"
       - name: explicit secret wins over the existing one
         config: "password_secret = old\n"
         explicit: "{{ secret }}"

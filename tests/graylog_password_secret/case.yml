@@ -28,6 +28,10 @@
              | combine({'mongodb_uri': case.mongodb_uri} if case.mongodb_uri is defined else {}) }}
         graylog_mongodb_has_data: "{{ case.mongodb_has_data | default(false) }}"
 
+    # A separate file, because Ansible finds the java_properties module only after include_role loads the role.
+    - name: Read back the escaped secret
+      ansible.builtin.include_tasks: read_back.yml
+
     - name: Check the chosen secret
       ansible.builtin.assert:
         that:
@@ -36,10 +40,7 @@
             graylog_password_secret_effective == case.expect
             if case.expect != 'random'
             else graylog_password_secret_effective is match('^[A-Za-z0-9]{96}$')
-          # The template writes the secret through java_properties_escape, so Graylog must read back the same value.
-          - >-
-            ('password_secret = ' ~ (graylog_password_secret_effective | java_properties_escape))
-            | java_properties_value('password_secret') == graylog_password_secret_effective
+          - case_read_back.value == graylog_password_secret_effective
         fail_msg: "Case '{{ case.name }}' chose the wrong secret: '{{ graylog_password_secret_effective }}'"
         quiet: true
   rescue:
