@@ -4,7 +4,8 @@
 duplicator_default_port: 12202
 
 ## Allow to turn on the duplication of logs from the left host to the right and from the right to the left.
-# For correct operation, the parameter `other_side_graylog_host` must be specified.
-# default: false
+# It needs `other_side_graylog_host`, and it turns on by default when that parameter is set. Set it to false to keep
+# a peer host without duplication.
+# default: true when `other_side_graylog_host` is set, false otherwise
 #
 duplicator_enabled: "{{ other_side_graylog_host | default('') | trim | length > 0 | ternary(true, false) }}"
