@@ -197,13 +197,16 @@ Official Ansible documentation on how to build and work with inventory:
 * [How to build your inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html)
 * [Uses a specific YAML file as an inventory source](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yaml_inventory.html)
 
-It means that all parameters described below will be specified in the following format:
+It means that all parameters described below will be specified in the following format. The playbook deploys to the
+hosts of the `graylog` group:
 
 ```yaml
 all:
-  hosts:
-    <host_ip>:
-      ansible_user: <ssh_user_name>
+  children:
+    graylog:
+      hosts:
+        <host_ip>:
+          ansible_user: <ssh_user_name>
   vars:
     <parameter_1>
     <parameter_2>
@@ -215,13 +218,18 @@ For example:
 
 ```yaml
 all:
-  hosts:
-    1.2.3.4:
-      ansible_user: ubuntu
+  children:
+    graylog:
+      hosts:
+        1.2.3.4:
+          ansible_user: ubuntu
   vars:
     graylog_install: True
     ...
 ```
+
+An existing inventory that lists the hosts directly under `all` works too: add `-e graylog_target_hosts=all` to the
+`ansible-playbook` command.
 
 [Back to TOC](#table-of-content)
 
@@ -378,7 +386,7 @@ all:
 | `graylog_heap_size_mb`       | string  | no        | `2048`                                | The heap size for Graylog in Mb, for example: `2048` or `4096`                                                                                                                                                                                              |
 | `additional_graylog_volumes` | string  | no        | `-`                                   | The list of additional volumes for the Graylog Docker container. The values equivalent to the usual Docker volume record `/var/lib/graylog/certs:/usr/share/graylog/data/certs:z` and separated by a comma                                                  |
 | `additional_graylog_ports`   | string  | no        | `-`                                   | The list of additional thrown ports for the Graylog Docker container. The values equivalent to the usual Docker thrown ports record `570`, `590:590`, `600:600/tcp` and separated by a comma                                                                |
-| `docker_ports`               | list    | no        | `[12201]`                             | GELF TCP input ports. Graylog publishes each port, and a GELF TCP input is created for each one                                                                                                                                                             |
+| `docker_ports`               | list    | no        | `[12201]`                             | GELF TCP input ports. Docker publishes each port. Unless `content_deploy_policy` is `skip`, Graylog gets a GELF TCP input on each port that has none                                                                                                        |
 | `content_deploy_policy`      | string  | no        | `only-create`                         | The Graylog content deploy policy (such as streams, inputs, grok patterns). Possible values: `only-create`, `force-update`, `skip`                                                                                                                          |
 | `dns_name`                   | string  | no        | `-`                                   | The address by which Graylog is accessible to users (DNS name). If this value is set, then Graylog is not accessible by its IP address                                                                                                                      |
 | `index_replicas`             | integer | no        | `0`                                   | The number of OpenSearch/Elasticsearch replicas used per index                                                                                                                                                                                              |
@@ -386,17 +394,28 @@ all:
 | `path_repo`                  | string  | no        | `archives`                            | The name of directory in OpenSearch/Elasticsearch for saving snapshots                                                                                                                                                                                      |
 <!-- markdownlint-enable line-length -->
 
-When `graylog_password_secret` is empty, the role chooses the secret this way:
+The role chooses the Graylog password secret in this order:
 
-* If `graylog.conf` exists, the role keeps its `password_secret`. It stops when the file has no readable value.
-* If `graylog.conf` is missing but MongoDB already holds Graylog data, the role stops. Set `graylog_password_secret` to
-  the secret that the installation used, because a new secret makes values encrypted with the old one unreadable.
-* On a fresh install, the role generates a random secret.
+1. `graylog_password_secret`, when it is set. It replaces the secret in an existing `graylog.conf`, so set it only to
+   the secret that the installation uses, or when you mean to change the secret. The role writes it with Java
+   properties escapes, so Graylog reads back the exact value.
+2. `graylog_custom_params.password_secret`, which earlier installer versions documented. The role reads it as those
+   versions wrote it, so Graylog keeps the same key. When both settings are set, they must hold the same value.
+3. The `password_secret` of the existing `graylog.conf`. The role stops when the file has no value for it.
+4. A new random secret, on a fresh install only.
 
-The role stops when `graylog_password_secret` contains a backslash or a line break, or starts with whitespace, because
-Graylog would read a different value from `graylog.conf`. Earlier versions set the secret through
-`graylog_custom_params.password_secret`. The role still reads it there, and stops when both settings hold different
-values.
+When `graylog.conf` is missing and no secret is set, the role stops instead of generating one in two cases:
+
+* `graylog_custom_params.mongodb_uri` points Graylog to a custom MongoDB. Nodes that share a database must share one
+  secret, so set `graylog_password_secret` on every node: to the secret of the existing cluster when you add a node,
+  or to one new random value for a new cluster.
+* The bundled MongoDB already holds Graylog data. The role checks this with the `mongodb_graylog_username` account.
+  Set `graylog_password_secret` to the secret that the installation used.
+
+A new secret signs out all users and makes values encrypted with the old secret, such as access tokens, unreadable.
+Before an upgrade, save the `password_secret` value from `graylog.conf`. To roll back to an installer version that
+writes its own default secret, pass the saved value as `graylog_custom_params.password_secret`, so the older version
+keeps the same key.
 
 The parameter `content_deploy_policy` has the following possible values and these policies mean:
 

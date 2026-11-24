@@ -80,7 +80,7 @@ on virtual machines.
 2. **Install Ansible and the required collections:**
 
    ```bash
-   pip3 install ansible jmespath
+   pip3 install "ansible-core>=2.18" jmespath
    ansible-galaxy collection install -r requirements.yml
    ```
 
@@ -114,13 +114,18 @@ on virtual machines.
 
 ### Install as a collection
 
-The repository is also the Ansible collection `qubership.observability`. Build and install it, then run the playbook
-by its collection name. The build packs every file that `build_ignore` in `galaxy.yml` does not exclude, Git-ignored
-files included. It leaves out files whose names start with `inventory`, so keep local inventories under such a name,
-or build from a clean clone:
+The repository is also the Ansible collection `qubership.observability`. It needs ansible-core 2.18 or later and the
+`jmespath` Python package on the controller.
+
+`ansible-galaxy collection build` packs every file that `build_ignore` in `galaxy.yml` does not exclude, Git-ignored
+files included, so an in-place build can pick up local files such as private keys. Build from an export of the tracked
+files instead, then install the archive and run the playbook by its collection name:
 
 ```bash
-ansible-galaxy collection build
+pip3 install "ansible-core>=2.18" jmespath
+src="$(mktemp -d)"
+git archive HEAD | tar -x -C "${src}"
+ansible-galaxy collection build "${src}"
 ansible-galaxy collection install qubership-observability-*.tar.gz
 ansible-playbook -i inventory.yml qubership.observability.graylog
 ```
