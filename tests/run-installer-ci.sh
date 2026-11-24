@@ -78,8 +78,10 @@ if ! tar -xzf "${build_dir}"/leak-out/qubership-observability-*.tar.gz -C "${bui
     echo "::error::Cannot read the collection archive built with planted inventory files"
     exit 1
 fi
-leaked="$(cd "${build_dir}/leak-files" && { find . \( -name 'inventory*' -o -name group_vars -o -name host_vars \) -print
-    grep -rlF -- "${leak_marker}" . || true; })"
+leaked="$(cd "${build_dir}/leak-files" && {
+    find . \( -name 'inventory*' -o -name group_vars -o -name host_vars \) -print
+    grep -rlF -- "${leak_marker}" . || true
+})"
 if [[ -n "${leaked}" ]]; then
     echo "::error::The collection archive contains planted inventory files:"
     printf '%s\n' "${leaked}"

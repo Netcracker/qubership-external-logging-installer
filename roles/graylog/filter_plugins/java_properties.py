@@ -1,6 +1,6 @@
 # Copyright Qubership contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Read and write values of Java properties files, such as graylog.conf, as java.util.Properties does."""
+"""Read and write Java properties values, such as in graylog.conf, as java.util.Properties does."""
 
 from __future__ import annotations
 
@@ -15,7 +15,10 @@ _ESCAPES = {"t": "\t", "n": "\n", "r": "\r", "f": "\f"}
 
 
 def _logical_lines(text):
-    """Yield the logical lines of a properties file, with continuations joined and comments dropped."""
+    """Yield the logical lines of a properties file.
+
+    Continuations are joined and comment lines are dropped.
+    """
     natural = _LINE_BREAK.split(text)
     index = 0
     while index < len(natural):
@@ -23,7 +26,8 @@ def _logical_lines(text):
         index += 1
         if not line or line[0] in "#!":
             continue
-        # An odd number of trailing backslashes continues the line; the next line loses its leading whitespace.
+        # An odd number of trailing backslashes continues the line.
+        # The next line loses its leading whitespace.
         while (len(line) - len(line.rstrip("\\"))) % 2 == 1:
             line = line[:-1]
             if index >= len(natural):
@@ -47,15 +51,23 @@ def _unescape(raw):
         char = raw[index]
         index += 1
         if char == "u":
-            digits = raw[index:index + 4]
-            if len(digits) != 4 or not all(c in "0123456789abcdefABCDEF" for c in digits):
-                raise AnsibleFilterError("Malformed \\uxxxx escape in a Java properties file")
+            digits = raw[index : index + 4]
+            if len(digits) != 4 or not all(
+                c in "0123456789abcdefABCDEF" for c in digits
+            ):
+                raise AnsibleFilterError(
+                    "Malformed \\uxxxx escape in a Java properties file"
+                )
             result.append(chr(int(digits, 16)))
             index += 4
         else:
             result.append(_ESCAPES.get(char, char))
     # Join \\uxxxx surrogate pairs into one character, as a Java string holds them.
-    return "".join(result).encode("utf-16-le", "surrogatepass").decode("utf-16-le", "surrogatepass")
+    return (
+        "".join(result)
+        .encode("utf-16-le", "surrogatepass")
+        .decode("utf-16-le", "surrogatepass")
+    )
 
 
 def _split(line):
@@ -76,9 +88,10 @@ def _split(line):
 
 
 def java_properties_value(text, key):
-    """Return the value that java.util.Properties reads for key from text, or None when the key is absent.
+    """Return the value that java.util.Properties reads for key from text.
 
-    The last definition wins. Line endings may be LF, CRLF, or CR.
+    Return None when the key is absent. The last definition wins, and line
+    endings may be LF, CRLF, or CR.
     """
     found = None
     for line in _logical_lines(str(text)):
@@ -89,9 +102,10 @@ def java_properties_value(text, key):
 
 
 def java_properties_escape(value):
-    """Escape value so that java.util.Properties reads it back unchanged from a "key = value" line.
+    """Escape value so that java.util.Properties reads it back unchanged.
 
-    Non-ASCII characters become \\uxxxx escapes, because Properties.load(InputStream) reads ISO 8859-1.
+    The result fits a "key = value" line. Non-ASCII characters become \\uxxxx
+    escapes, because Properties.load(InputStream) reads ISO 8859-1.
     """
     result = []
     for position, char in enumerate(str(value)):
@@ -110,13 +124,14 @@ def java_properties_escape(value):
 
 def _utf16_units(char):
     encoded = char.encode("utf-16-be").hex().upper()
-    return [encoded[i:i + 4] for i in range(0, len(encoded), 4)]
+    return [encoded[i : i + 4] for i in range(0, len(encoded), 4)]
 
 
-class FilterModule:
+class FilterModule:  # pylint: disable=too-few-public-methods
     """Java properties filters."""
 
     def filters(self):
+        """Return the filters that Ansible loads from this plugin."""
         return {
             "java_properties_value": java_properties_value,
             "java_properties_escape": java_properties_escape,
