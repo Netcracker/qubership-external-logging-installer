@@ -53,8 +53,21 @@ ansible-playbook --syntax-check -i "${inventory}" "${legacy_playbook}"
 
 echo "==> Build and install the collection"
 build_dir="$(mktemp -d)"
-trap 'rm -rf "${build_dir}"' EXIT
+# Local inventories can hold passwords, so plant one of each kind and check that the archive leaves them out.
+leak_marker="InventoryLeakMarker$(date +%s%N)"
+leak_files=("${root}/inventory-ci-leak-check.yml" "${root}/inventory/ci-leak-check.yaml")
+trap 'rm -rf "${build_dir}" "${leak_files[@]}"; rmdir "${root}/inventory" 2>/dev/null || true' EXIT
+mkdir -p "${root}/inventory"
+for leak_file in "${leak_files[@]}"; do
+    printf 'all:\n  vars:\n    root_password: %s\n' "${leak_marker}" >"${leak_file}"
+done
 ansible-galaxy collection build --force --output-path "${build_dir}" "${root}"
+rm -f "${leak_files[@]}"
+if tar -xzOf "${build_dir}"/qubership-observability-*.tar.gz | grep -qF -- "${leak_marker}"; then
+    echo "::error::The collection archive contains a local inventory file"
+    tar -tzf "${build_dir}"/qubership-observability-*.tar.gz | grep -i inventory || true
+    exit 1
+fi
 # Install into a separate path, so later checks keep resolving roles from this checkout.
 ansible-galaxy collection install --force --no-deps -p "${build_dir}/collections" \
     "${build_dir}"/qubership-observability-*.tar.gz

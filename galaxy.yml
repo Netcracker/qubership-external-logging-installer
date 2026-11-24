@@ -55,3 +55,8 @@ build_ignore:
   - renovate.json
   - tests
   - "*.tar.gz"
+  # Local inventories and run leftovers, which can hold hostnames and passwords
+  - "inventory*"
+  - "*.retry"
+  - venv
+  - .venv

@@ -115,7 +115,9 @@ on virtual machines.
 ### Install as a collection
 
 The repository is also the Ansible collection `qubership.observability`. Build and install it, then run the playbook
-by its collection name:
+by its collection name. The build packs every file that `build_ignore` in `galaxy.yml` does not exclude, Git-ignored
+files included. It leaves out files whose names start with `inventory`, so keep local inventories under such a name,
+or build from a clean clone:
 
 ```bash
 ansible-galaxy collection build
