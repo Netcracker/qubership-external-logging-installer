@@ -39,6 +39,7 @@
   when:
     - check_prerequisites_enabled is undefined or check_prerequisites_enabled | lower | trim != 'false'
   block:
+    # The heap sizes default to 2048 MiB, as in the graylog and opensearch roles.
     - name: Fail if memory parameters are not specified / specified not correctly
       ansible.builtin.fail:
         msg: Parameter '{{ item.name }}' is not correctly
@@ -47,8 +48,8 @@
       with_items:
         - { name: "max_size", value: "{{ max_size }}" }
         - { name: "max_number_of_indices", value: "{{ max_number_of_indices }}" }
-        - { name: "graylog_heap_size_mb", value: "{{ graylog_heap_size_mb }}" }
-        - { name: "elasticsearch_heap_size_mb", value: "{{ elasticsearch_heap_size_mb }}" }
+        - { name: "graylog_heap_size_mb", value: "{{ graylog_heap_size_mb | default(2048) }}" }
+        - { name: "elasticsearch_heap_size_mb", value: "{{ elasticsearch_heap_size_mb | default(2048) }}" }
 
     - name: Fail if the 'docker_ports' parameter contains the 'duplicator_default_port'
       ansible.builtin.fail:
@@ -89,7 +90,7 @@
           when:
             - (ram_space_available.stdout | int) < (required_ram_amount | int)
           vars:
-            required_ram_amount: "{{ graylog_heap_size_mb | int + elasticsearch_heap_size_mb | int + basic_heap_size_mb | int }}"
+            required_ram_amount: "{{ graylog_heap_size_mb | default(2048) | int + elasticsearch_heap_size_mb | default(2048) | int + basic_heap_size_mb | int }}"
             basic_heap_size_mb: 3456
 
         - ansible.builtin.debug:
@@ -97,7 +98,7 @@
                 WARNING not rational use of RAM.
                 Found {{ ram_space_available.stdout | int }} MB, usage after deploy {{ required_ram_amount | int }} MB
           vars:
-            required_ram_amount: "{{ graylog_heap_size_mb | int + elasticsearch_heap_size_mb | int + basic_heap_size_mb | int }}"
+            required_ram_amount: "{{ graylog_heap_size_mb | default(2048) | int + elasticsearch_heap_size_mb | default(2048) | int + basic_heap_size_mb | int }}"
             basic_heap_size_mb: 3456
           when: ( ram_space_available.stdout|int ) > ((required_ram_amount|int)*1.5)
 
