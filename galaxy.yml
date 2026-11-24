@@ -57,6 +57,8 @@ build_ignore:
   - "*.tar.gz"
   # Local inventories and run leftovers, which can hold hostnames and passwords
   - "inventory*"
+  - group_vars
+  - host_vars
   - "*.retry"
   - venv
   - .venv

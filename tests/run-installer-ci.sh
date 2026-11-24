@@ -53,21 +53,39 @@ ansible-playbook --syntax-check -i "${inventory}" "${legacy_playbook}"
 
 echo "==> Build and install the collection"
 build_dir="$(mktemp -d)"
-# Local inventories can hold passwords, so plant one of each kind and check that the archive leaves them out.
+trap 'rm -rf "${build_dir}"' EXIT
+# Build from the tracked files only, as the README recommends, so nothing local in the checkout reaches the archive.
+# The copy takes the working-tree content of each tracked file, so local edits are tested too.
+copy_tracked_source() {
+    mkdir -p "$1"
+    git -C "${root}" ls-files -z | (cd "${root}" && tar --null --ignore-failed-read -T - -cf -) | tar -x -C "$1"
+}
+copy_tracked_source "${build_dir}/src"
+ansible-galaxy collection build --force --output-path "${build_dir}" "${build_dir}/src"
+
+echo "==> Check that build_ignore keeps local inventories out of an in-place build"
+# Plant inventory files in a second copy, never in the checkout, so a run cannot overwrite or remove local files.
+leak_src="${build_dir}/leak-src"
 leak_marker="InventoryLeakMarker$(date +%s%N)"
-leak_files=("${root}/inventory-ci-leak-check.yml" "${root}/inventory/ci-leak-check.yaml")
-trap 'rm -rf "${build_dir}" "${leak_files[@]}"; rmdir "${root}/inventory" 2>/dev/null || true' EXIT
-mkdir -p "${root}/inventory"
-for leak_file in "${leak_files[@]}"; do
-    printf 'all:\n  vars:\n    root_password: %s\n' "${leak_marker}" >"${leak_file}"
+copy_tracked_source "${leak_src}"
+mkdir -p "${leak_src}/inventory" "${leak_src}/group_vars" "${leak_src}/host_vars"
+for leak_file in inventory.yml inventory-prod.ini inventory/hosts.yaml group_vars/all.yml host_vars/host1.yml; do
+    printf 'all:\n  vars:\n    root_password: %s\n' "${leak_marker}" >"${leak_src}/${leak_file}"
 done
-ansible-galaxy collection build --force --output-path "${build_dir}" "${root}"
-rm -f "${leak_files[@]}"
-if tar -xzOf "${build_dir}"/qubership-observability-*.tar.gz | grep -qF -- "${leak_marker}"; then
-    echo "::error::The collection archive contains a local inventory file"
-    tar -tzf "${build_dir}"/qubership-observability-*.tar.gz | grep -i inventory || true
+ansible-galaxy collection build --force --output-path "${build_dir}/leak-out" "${leak_src}" >/dev/null
+mkdir -p "${build_dir}/leak-files"
+if ! tar -xzf "${build_dir}"/leak-out/qubership-observability-*.tar.gz -C "${build_dir}/leak-files"; then
+    echo "::error::Cannot read the collection archive built with planted inventory files"
     exit 1
 fi
+leaked="$(cd "${build_dir}/leak-files" && { find . \( -name 'inventory*' -o -name group_vars -o -name host_vars \) -print
+    grep -rlF -- "${leak_marker}" . || true; })"
+if [[ -n "${leaked}" ]]; then
+    echo "::error::The collection archive contains planted inventory files:"
+    printf '%s\n' "${leaked}"
+    exit 1
+fi
+
 # Install into a separate path, so later checks keep resolving roles from this checkout.
 ansible-galaxy collection install --force --no-deps -p "${build_dir}/collections" \
     "${build_dir}"/qubership-observability-*.tar.gz
@@ -93,6 +111,12 @@ done
 
 echo "==> Test how the graylog role keeps an existing password secret"
 ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/test.yml"
+
+echo "==> Test the origin check for raw artifact downloads"
+ansible-playbook -i localhost, "${root}/tests/raw_artifacts_origin/test.yml"
+
+echo "==> Test the processing rule request renderer"
+ansible-playbook -i localhost, "${root}/tests/graylog_processing_rule/test.yml"
 
 echo "==> Check that --diff does not print the Graylog password secret"
 diff_volume="${build_dir}/graylog-volume"
