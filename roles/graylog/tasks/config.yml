@@ -17,9 +17,11 @@
     group: "{{ graylog_uid }}"
     mode: "0766"
 
+# password_secret.yml already chose password_secret, so this task skips it. The label hides values, which can be secret.
 - name: Set custom params in Graylog config
-  with_dict:
-    - "{{ graylog_custom_params }}"
+  loop: "{{ graylog_custom_params | default({}, true) | dict2items | rejectattr('key', 'equalto', 'password_secret') }}"
+  loop_control:
+    label: "{{ item.key }}"
   community.general.ini_file:
     path: "{{ graylog_volume }}/graylog/config/graylog.conf"
     owner: "{{ graylog_uid }}"
@@ -29,4 +31,3 @@
     value: "{{ item.value }}"
     section: null
   diff: false
-  when: graylog_custom_params is defined

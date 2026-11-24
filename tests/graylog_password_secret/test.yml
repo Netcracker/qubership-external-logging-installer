@@ -27,9 +27,20 @@
       - name: spaces inside the value
         config: "password_secret = first half second half\n"
         expect: first half second half
+      # Jinja turns CR and CRLF into LF in a template, so the line-ending fixtures hold no template and set cr: true
+      # to check that the written file keeps its carriage returns.
       - name: Windows line endings
-        config: "is_leader = true\r\npassword_secret = {{ secret }}\r\nhttp_bind_address = 0.0.0.0:9000\r\n"
-        expect: "{{ secret }}"
+        config: "is_leader = true\r\npassword_secret = CrLfSecret\r\nhttp_bind_address = 0.0.0.0:9000\r\n"
+        cr: true
+        expect: CrLfSecret
+      - name: CRLF definition overrides an LF one
+        config: "password_secret = old\npassword_secret = CrLfSecret\r\n"
+        cr: true
+        expect: CrLfSecret
+      - name: CR line endings
+        config: "password_secret = old\rpassword_secret = CrSecret\r"
+        cr: true
+        expect: CrSecret
       - name: commented-out key
         config: "#password_secret = old\n! password_secret = older\npassword_secret = {{ secret }}\n"
         expect: "{{ secret }}"
@@ -54,6 +65,30 @@
       - name: explicit secret wins over the existing one
         config: "password_secret = old\n"
         explicit: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: legacy custom parameter
+        custom: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: explicit secret and legacy custom parameter agree
+        explicit: "{{ secret }}"
+        custom: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: explicit secret and legacy custom parameter differ
+        explicit: "{{ secret }}"
+        custom: old
+        expect: fail
+      - name: explicit secret ends in a backslash
+        explicit: "{{ secret }}\\"
+        expect: fail
+      - name: explicit secret starts with a space
+        explicit: " {{ secret }}"
+        expect: fail
+      - name: missing config while MongoDB holds Graylog data
+        mongodb_has_data: true
+        expect: fail
+      - name: missing config while MongoDB holds Graylog data, with an explicit secret
+        explicit: "{{ secret }}"
+        mongodb_has_data: true
         expect: "{{ secret }}"
       - name: fresh install
         expect: random

@@ -370,7 +370,7 @@ all:
 | `mongo_image`                | string  | no        | `mongo:5.0.30`                        | Docker image of MongoDB                                                                                                                                                                                                                                     |
 | `opensearch_image`           | string  | no        | `opensearchproject/opensearch:1.3.20` | Docker image of OpenSearch                                                                                                                                                                                                                                  |
 | `root_password`              | string  | no        | `admin`                               | The password for the super admin user on Graylog                                                                                                                                                                                                            |
-| `graylog_password_secret`    | string  | no        | `""`                                  | Secret for signing sessions and encrypting stored values, at least 64 characters. When empty, the role keeps the value from the existing `graylog.conf`, stops if that file has no readable `password_secret`, or generates a random one on a fresh install |
+| `graylog_password_secret`    | string  | no        | `""`                                  | Secret for signing sessions and encrypting stored values: letters and digits, at least 64 characters. See the rules below the table                                                                                                                         |
 | `auditviewer_password`       | string  | no        | `auditViewer`                         | The initial password of `auditViewer` user                                                                                                                                                                                                                  |
 | `operator_password`          | string  | no        | `operator`                            | The initial password of `operator` user                                                                                                                                                                                                                     |
 | `telegraf_operator_password` | string  | no        | `telegraf_operator`                   | The initial password of `telegraf_operator` user                                                                                                                                                                                                            |
@@ -385,6 +385,18 @@ all:
 | `index_shards`               | integer | no        | `1`                                   | The number of OpenSearch/Elasticsearch shards used per index                                                                                                                                                                                                |
 | `path_repo`                  | string  | no        | `archives`                            | The name of directory in OpenSearch/Elasticsearch for saving snapshots                                                                                                                                                                                      |
 <!-- markdownlint-enable line-length -->
+
+When `graylog_password_secret` is empty, the role chooses the secret this way:
+
+* If `graylog.conf` exists, the role keeps its `password_secret`. It stops when the file has no readable value.
+* If `graylog.conf` is missing but MongoDB already holds Graylog data, the role stops. Set `graylog_password_secret` to
+  the secret that the installation used, because a new secret makes values encrypted with the old one unreadable.
+* On a fresh install, the role generates a random secret.
+
+The role stops when `graylog_password_secret` contains a backslash or a line break, or starts with whitespace, because
+Graylog would read a different value from `graylog.conf`. Earlier versions set the secret through
+`graylog_custom_params.password_secret`. The role still reads it there, and stops when both settings hold different
+values.
 
 The parameter `content_deploy_policy` has the following possible values and these policies mean:
 
