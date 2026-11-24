@@ -259,6 +259,15 @@ all:
 | `docker_container_timeout`              | integer | no        | `300`         | Set image pulling and container starting timeouts     |
 <!-- markdownlint-enable line-length -->
 
+The exporter roles send `raw_artifacts_registry_username`, `raw_artifacts_registry_password`, and the
+`raw_artifacts_registry_validate_certs` and `raw_artifacts_registry_ca_cert_file` settings only to download URLs with
+the scheme, host, and port of `raw_artifacts_registry`. A value without a scheme counts as `https://`. Other URLs, such
+as the public GitHub defaults, get no credentials and are checked against the trust store of the target host.
+
+To download the exporters from a mirror, set `raw_artifacts_registry` to the mirror and each binary or tarball
+parameter to a path under it, or to a full URL on the same origin. A mirror on another origin needs its CA in the trust
+store of the target hosts.
+
 Examples:
 
 **Note:** It's just an example of a parameter's format, not a recommended parameter.
@@ -378,7 +387,7 @@ all:
 | `mongo_image`                | string  | no        | `mongo:5.0.30`                        | Docker image of MongoDB                                                                                                                                                                                                                                     |
 | `opensearch_image`           | string  | no        | `opensearchproject/opensearch:1.3.20` | Docker image of OpenSearch                                                                                                                                                                                                                                  |
 | `root_password`              | string  | no        | `admin`                               | The password for the super admin user on Graylog                                                                                                                                                                                                            |
-| `graylog_password_secret`    | string  | no        | `""`                                  | Secret for signing sessions and encrypting stored values: letters and digits, at least 64 characters. See the rules below the table                                                                                                                         |
+| `graylog_password_secret`    | string  | no        | `""`                                  | Secret for signing sessions and encrypting stored values. A new secret should have letters and digits only, at least 64 characters. See the rules below the table                                                                                           |
 | `auditviewer_password`       | string  | no        | `auditViewer`                         | The initial password of `auditViewer` user                                                                                                                                                                                                                  |
 | `operator_password`          | string  | no        | `operator`                            | The initial password of `operator` user                                                                                                                                                                                                                     |
 | `telegraf_operator_password` | string  | no        | `telegraf_operator`                   | The initial password of `telegraf_operator` user                                                                                                                                                                                                            |
@@ -404,6 +413,9 @@ The role chooses the Graylog password secret in this order:
 3. The `password_secret` of the existing `graylog.conf`. The role stops when the file has no value for it.
 4. A new random secret, on a fresh install only.
 
+`graylog_password_secret` holds the value that Graylog reads. To reuse a secret from `graylog.conf`, undo its Java
+properties escapes, such as `\\` for one backslash. A secret of letters and digits has no escapes.
+
 When `graylog.conf` is missing and no secret is set, the role stops instead of generating one in two cases:
 
 * `graylog_custom_params.mongodb_uri` points Graylog to a custom MongoDB. Nodes that share a database must share one
@@ -413,9 +425,9 @@ When `graylog.conf` is missing and no secret is set, the role stops instead of g
   Set `graylog_password_secret` to the secret that the installation used.
 
 A new secret signs out all users and makes values encrypted with the old secret, such as access tokens, unreadable.
-Before an upgrade, save the `password_secret` value from `graylog.conf`. To roll back to an installer version that
-writes its own default secret, pass the saved value as `graylog_custom_params.password_secret`, so the older version
-keeps the same key.
+Before an upgrade, save the `password_secret` line from `graylog.conf`. To roll back to an installer version that
+writes its own default secret, pass the saved value as `graylog_custom_params.password_secret` exactly as the file
+writes it, with its escapes. Older versions write that setting into `graylog.conf` as is, so Graylog keeps the same key.
 
 The parameter `content_deploy_policy` has the following possible values and these policies mean:
 

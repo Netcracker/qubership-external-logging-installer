@@ -17,7 +17,8 @@
     group: "{{ graylog_uid }}"
     mode: "0766"
 
-# password_secret.yml already chose password_secret, so this task skips it. The label hides values, which can be secret.
+# password_secret.yml already chose password_secret, so this task skips it. The label shows only the option name in
+# normal output. Verbose output and failures can still show values, such as a MongoDB URI with a password.
 - name: Set custom params in Graylog config
   loop: "{{ graylog_custom_params | default({}, true) | dict2items | rejectattr('key', 'equalto', 'password_secret') }}"
   loop_control:

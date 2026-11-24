@@ -1,6 +1,6 @@
 ---
 description: Local workflow rules for qubership-external-logging-installer.
-globs: **/*
+globs: "**/*"
 ---
 
 # Repository Workflow
@@ -14,8 +14,9 @@ When changing or reviewing this repository:
 - For Ansible syntax checks from this checkout, use `ANSIBLE_ROLES_PATH=roles ansible-playbook --syntax-check
   playbooks/graylog.yml`, or `bash tests/run-installer-ci.sh` after installing `tests/requirements-ci.txt`. In a
   sandbox with a read-only home directory, also set `ANSIBLE_LOCAL_TEMP=/tmp/ansible`.
-- For role or playbook changes, run the Molecule scenario: `cd extensions && molecule test -s graylog_stack` after
-  installing `tests/requirements-molecule.txt`.
+- For role or playbook changes, run the Molecule scenario: `(cd extensions && molecule test -s graylog_stack)` after
+  installing `tests/requirements-molecule.txt` and the Galaxy dependencies with
+  `ansible-galaxy collection install -r requirements.yml`.
 - ansible-lint runs the `production` profile with a baseline in `.ansible-lint-ignore`. Remove entries you fix; do not
   add new ones.
 - For Markdown edits, apply `markdown-line-length-120` and use `.github/linters/.markdownlint.yaml`.

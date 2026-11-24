@@ -36,7 +36,11 @@ All notable changes to this project are documented in this file. The format foll
   removed. It now uses `x509_certificate`.
 - node_exporter, mongodb_exporter, opensearch_exporter, and cadvisor no longer prefix a full download URL with
   `raw_artifacts_registry`, and no longer fail when `raw_artifacts_registry` is not set.
-- `graylog_output_duplicator` now loads its defaults. The file was named `defaults/mailn.yaml`.
+- `graylog_output_duplicator` now loads its defaults. The file was named `defaults/mailn.yaml`. With the defaults
+  loaded, the role turns on when `other_side_graylog_host` is set, and it now ships the output and input templates
+  that it sends.
+- Preflight checks failed when the inventory did not set `graylog_heap_size_mb` or `elasticsearch_heap_size_mb`. They
+  now use the 2048 MiB default of the graylog and opensearch roles.
 - The MongoDB restart task no longer sets `recreate` twice.
 - The Docker `daemon.json` template failed when `docker_registry` was not set, although the parameter is optional. The
   insecure registry entry is now written only when `docker_registry` is set.
@@ -54,6 +58,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Security
 
-- `graylog.conf` no longer ships one hardcoded `password_secret` for every installation. The role keeps the value of an
-  existing installation, so users stay signed in and encrypted values stay readable, and prints a warning when that
-  value is the old public one. A fresh install gets a random 96-character secret.
+- `graylog.conf` no longer ships one hardcoded `password_secret` for every installation. `graylog_password_secret`
+  sets the secret. Without it, the role keeps the secret from `graylog_custom_params.password_secret` or from the
+  existing `graylog.conf`, so users stay signed in and encrypted values stay readable, and it warns when that secret is
+  the old public one. Only a fresh install with the bundled MongoDB gets a random 96-character secret. The role stops
+  and asks for `graylog_password_secret` when `graylog.conf` is missing and Graylog uses a custom MongoDB or the
+  bundled one already has Graylog collections. See the password secret rules in `docs/installation.md`.
+- The exporter roles send the raw registry credentials and TLS settings only to URLs on the scheme, host, and port of
+  `raw_artifacts_registry`. They used to send them with every download. An inventory that downloads from a mirror on
+  another origin with `raw_artifacts_registry_ca_cert_file` must now set `raw_artifacts_registry` to that mirror, or
+  add the mirror CA to the trust store of the target hosts.

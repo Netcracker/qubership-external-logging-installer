@@ -62,8 +62,10 @@ on virtual machines.
 ### Software Requirements
 
 * Docker >= 20.x
-* Python 3.x with pip
-* Ansible (installed via requirements)
+* Controller: Python 3.11 or later with pip, and ansible-core 2.19 or later
+* Target hosts: Python 3.8 or later. RHEL 8 ships Python 3.6 by default, so install a newer one, such as `python3.11`,
+  and set `ansible_python_interpreter` to it. See the
+  [ansible-core support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 * Additional packages: `acl`, `zip`, `unzip`, `net-tools`
 
 ## Installation
@@ -124,9 +126,10 @@ files instead, then install the archive and run the playbook by its collection n
 ```bash
 pip3 install "ansible-core>=2.19" jmespath
 src="$(mktemp -d)"
+out="$(mktemp -d)"
 git archive HEAD | tar -x -C "${src}"
-ansible-galaxy collection build "${src}"
-ansible-galaxy collection install qubership-observability-*.tar.gz
+ansible-galaxy collection build --output-path "${out}" "${src}"
+ansible-galaxy collection install "${out}"/qubership-observability-*.tar.gz
 ansible-playbook -i inventory.yml qubership.observability.graylog
 ```
 
@@ -153,8 +156,8 @@ echo '{"version":"1.1","host":"test","short_message":"Hello Graylog"}' | nc your
 **Monitor system health:**
 
 ```bash
-# Check service status
-ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml --tags health_check
+# Check that Graylog is up: prints ALIVE
+curl -k https://your-server/api/system/lbstatus
 
 # View logs
 docker logs graylog
@@ -246,9 +249,9 @@ bash tests/run-installer-ci.sh
 # Deploy the playbook into a container and check Graylog, the exporters, and the stack containers
 pip3 install -r tests/requirements-molecule.txt
 ansible-galaxy collection install -r requirements.yml
-cd extensions && molecule test -s graylog_stack
+(cd extensions && molecule test -s graylog_stack)
 
-# Dry run deployment
+# Dry run deployment from the checkout root
 ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml --check
 ```
 
