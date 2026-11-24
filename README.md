@@ -80,7 +80,7 @@ on virtual machines.
 2. **Install Ansible and the required collections:**
 
    ```bash
-   pip3 install "ansible-core>=2.18" jmespath
+   pip3 install "ansible-core>=2.19" jmespath
    ansible-galaxy collection install -r requirements.yml
    ```
 
@@ -114,7 +114,7 @@ on virtual machines.
 
 ### Install as a collection
 
-The repository is also the Ansible collection `qubership.observability`. It needs ansible-core 2.18 or later and the
+The repository is also the Ansible collection `qubership.observability`. It needs ansible-core 2.19 or later and the
 `jmespath` Python package on the controller.
 
 `ansible-galaxy collection build` packs every file that `build_ignore` in `galaxy.yml` does not exclude, Git-ignored
@@ -122,7 +122,7 @@ files included, so an in-place build can pick up local files such as private key
 files instead, then install the archive and run the playbook by its collection name:
 
 ```bash
-pip3 install "ansible-core>=2.18" jmespath
+pip3 install "ansible-core>=2.19" jmespath
 src="$(mktemp -d)"
 git archive HEAD | tar -x -C "${src}"
 ansible-galaxy collection build "${src}"
