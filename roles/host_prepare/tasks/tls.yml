@@ -65,8 +65,8 @@
     group: root
     mode: "{{ item.mode }}"
   loop:
-    - {dest: "{{ host_prepare_tls_cert_path }}", content: "{{ host_prepare_tls_cert_content }}", mode: "0644"}
-    - {dest: "{{ host_prepare_tls_key_path }}", content: "{{ host_prepare_tls_key_content }}", mode: "0600"}
+    - { dest: "{{ host_prepare_tls_cert_path }}", content: "{{ host_prepare_tls_cert_content }}", mode: "0644" }
+    - { dest: "{{ host_prepare_tls_key_path }}", content: "{{ host_prepare_tls_key_content }}", mode: "0600" }
   loop_control:
     label: "{{ item.dest }}"
   no_log: true
@@ -80,8 +80,8 @@
     group: root
     mode: "{{ item.mode }}"
   loop:
-    - {src: "{{ host_prepare_tls_cert_file }}", dest: "{{ host_prepare_tls_cert_path }}", mode: "0644"}
-    - {src: "{{ host_prepare_tls_key_file }}", dest: "{{ host_prepare_tls_key_path }}", mode: "0600"}
+    - { src: "{{ host_prepare_tls_cert_file }}", dest: "{{ host_prepare_tls_cert_path }}", mode: "0644" }
+    - { src: "{{ host_prepare_tls_key_file }}", dest: "{{ host_prepare_tls_key_path }}", mode: "0600" }
   loop_control:
     label: "{{ item.dest }}"
   when: host_prepare_tls_cert_source == 'local_file'

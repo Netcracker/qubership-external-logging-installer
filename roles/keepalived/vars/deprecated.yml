@@ -1,5 +1,5 @@
 ---
 # Old variable names that defaults/main.yml still reads. host_prepare warns when the inventory sets one.
 keepalived_deprecated_variables:
-  keepalived_virtual_ip_address: {new: observability_vip, source: "Q, L"}
-  keepalived_network_interface: {new: observability_vip_interface, source: "Q, L"}
+  keepalived_virtual_ip_address: { new: observability_vip, source: "Q, L" }
+  keepalived_network_interface: { new: observability_vip_interface, source: "Q, L" }

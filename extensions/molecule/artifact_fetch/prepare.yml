@@ -45,8 +45,8 @@
         content: "{{ item.content }}"
         mode: "0755"
       loop:
-        - {name: fake_exporter, content: "#!/bin/sh\necho fake exporter 1.0\n"}
-        - {name: LICENSE, content: "Test license\n"}
+        - { name: fake_exporter, content: "#!/bin/sh\necho fake exporter 1.0\n" }
+        - { name: LICENSE, content: "Test license\n" }
       loop_control:
         label: "{{ item.name }}"
 

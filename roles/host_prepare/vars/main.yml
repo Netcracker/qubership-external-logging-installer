@@ -18,8 +18,8 @@ host_prepare_legacy_data:
     installer: the VictoriaLogs playbooks
 
 host_prepare_chrony:
-  Debian: {config: /etc/chrony/chrony.conf, service: chrony}
-  RedHat: {config: /etc/chrony.conf, service: chronyd}
+  Debian: { config: /etc/chrony/chrony.conf, service: chrony }
+  RedHat: { config: /etc/chrony.conf, service: chronyd }
 
 host_prepare_ntp_server_list: >-
   {{ (host_prepare_ntp_servers.split(',') if host_prepare_ntp_servers is string else host_prepare_ntp_servers)

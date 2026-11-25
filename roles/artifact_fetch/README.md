@@ -27,8 +27,8 @@ call it instead of downloading by themselves.
 | --- | --- | --- |
 | `url` | required | Full `http://` or `https://` URL, or a path under `observability_artifacts_url`. |
 | `dest` | required | Path of the installed binary. |
-| `member` | basename of `dest` | File name pattern of the binary inside an archive. It must match exactly one file. |
-| `archive` | from the file name | Whether to unpack the download. `.tar.gz`, `.tgz`, `.tar`, and `.zip` count as archives. |
+| `member` | basename of `dest` | Filename pattern of the binary inside an archive. It must match exactly one file. |
+| `archive` | from the filename | Whether to unpack the download. `.tar.gz`, `.tgz`, `.tar`, and `.zip` count as archives. |
 | `checksum` | none | Checksum of the download, such as `sha256:<hex>`, as `get_url` takes it. |
 | `owner`, `group` | `root` | Owner and group of the installed binary. |
 | `mode` | `0755` | Mode of the installed binary. |

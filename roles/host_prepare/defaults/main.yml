@@ -9,8 +9,8 @@ host_prepare_sysctl:
 
 # Limits in /etc/security/limits.conf. `type: "-"` sets the soft and the hard limit.
 host_prepare_limits:
-  - {domain: "*", type: "-", item: nofile, value: 260000}
-  - {domain: "*", type: "-", item: nproc, value: 32766}
+  - { domain: "*", type: "-", item: nofile, value: 260000 }
+  - { domain: "*", type: "-", item: nproc, value: 32766 }
 
 # System user and group that the exporters run as.
 host_prepare_exporters_user: "{{ exporters_system_user | default('monitoring_exporters') }}"

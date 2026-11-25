@@ -1,15 +1,15 @@
 ---
 # Old variable names that defaults/main.yml still reads. host_prepare warns when the inventory sets one.
 host_prepare_deprecated_variables:
-  exporters_system_user: {new: host_prepare_exporters_user, source: "Q, L, V, M"}
-  exporters_system_group: {new: host_prepare_exporters_group, source: "Q, L, V, M"}
-  ntp_server: {new: host_prepare_ntp_servers, source: "Q, L, V"}
-  chrony_ntp_servers: {new: host_prepare_ntp_servers, source: "M"}
-  global_data_dir: {new: observability_data_dir, source: "V"}
-  graylog_volume: {new: observability_data_dir, source: "Q, L"}
-  graylog_default_volume: {new: observability_data_dir, source: "Q, L"}
-  global_ssl_cert_source: {new: observability_tls_cert_source, source: "V"}
-  global_ssl_cert_content: {new: host_prepare_tls_cert_content, source: "V"}
-  global_ssl_key_content: {new: host_prepare_tls_key_content, source: "V"}
-  global_ssl_cert_file: {new: host_prepare_tls_cert_file, source: "V"}
-  global_ssl_key_file: {new: host_prepare_tls_key_file, source: "V"}
+  exporters_system_user: { new: host_prepare_exporters_user, source: "Q, L, V, M" }
+  exporters_system_group: { new: host_prepare_exporters_group, source: "Q, L, V, M" }
+  ntp_server: { new: host_prepare_ntp_servers, source: "Q, L, V" }
+  chrony_ntp_servers: { new: host_prepare_ntp_servers, source: "M" }
+  global_data_dir: { new: observability_data_dir, source: "V" }
+  graylog_volume: { new: observability_data_dir, source: "Q, L" }
+  graylog_default_volume: { new: observability_data_dir, source: "Q, L" }
+  global_ssl_cert_source: { new: observability_tls_cert_source, source: "V" }
+  global_ssl_cert_content: { new: host_prepare_tls_cert_content, source: "V" }
+  global_ssl_key_content: { new: host_prepare_tls_key_content, source: "V" }
+  global_ssl_cert_file: { new: host_prepare_tls_cert_file, source: "V" }
+  global_ssl_key_file: { new: host_prepare_tls_key_file, source: "V" }
