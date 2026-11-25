@@ -4,7 +4,7 @@
 ########################################################################################################################
 
 fluentbit_install: true
-fluentbit_image: "fluent/fluent-bit:3.2.2"
+fluentbit_image: "fluent/fluent-bit:3.2.10"
 fluentbit_uid: 110
 fluentbit_gid: 110
 
