@@ -1,0 +1,4 @@
+---
+# The duplicator sends the same request templates and processing rules as graylog_configuration, which ships them.
+# The roles are siblings both in a checkout and in the installed collection.
+graylog_output_duplicator_files: "{{ role_path }}/../graylog_configuration/files"
