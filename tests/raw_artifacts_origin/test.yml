@@ -1,0 +1,31 @@
+---
+# Checks when the exporter downloads pass raw_artifacts_registry credentials and TLS settings.
+# Run it with ANSIBLE_ROLES_PATH pointing at roles/.
+- name: Test the origin check for raw artifact downloads
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+    cases:
+      - { url: https://nexus.example.org/raw/node_exporter.tar.gz, registry: https://nexus.example.org/raw, expect: true }
+      - { url: https://nexus.example.org/raw/a.tgz, registry: nexus.example.org/raw, expect: true }
+      - { url: nexus.example.org/raw/a.tgz, registry: nexus.example.org/raw, expect: true }
+      - { url: https://NEXUS.example.org/raw/a.tgz, registry: HTTPS://nexus.example.org/raw, expect: true }
+      - { url: https://nexus.example.org:443/raw/a.tgz, registry: https://nexus.example.org/raw, expect: true }
+      - { url: http://nexus.example.org:80/raw/a.tgz, registry: http://nexus.example.org/raw, expect: true }
+      - { url: https://nexus.example.org:8443/raw/a.tgz, registry: https://nexus.example.org:8443/raw, expect: true }
+      - { url: http://nexus.example.org/raw/a.tgz, registry: https://nexus.example.org/raw, expect: false }
+      - { url: http://nexus.example.org/raw/a.tgz, registry: nexus.example.org/raw, expect: false }
+      - { url: https://nexus.example.org:8443/raw/a.tgz, registry: https://nexus.example.org/raw, expect: false }
+      - { url: https://github.com/prometheus/node_exporter/releases/a.tgz, registry: https://nexus.example.org/raw, expect: false }
+      - { url: https://nexus.example.org.evil.test/raw/a.tgz, registry: https://nexus.example.org/raw, expect: false }
+      - { url: https://github.com/prometheus/node_exporter/releases/a.tgz, registry: "", expect: false }
+      - { url: https://github.com/prometheus/node_exporter/releases/a.tgz, expect: false }
+  tasks:
+    - name: Run the cases
+      ansible.builtin.include_tasks: case.yml
+      loop: "{{ cases }}"
+      loop_control:
+        loop_var: case
+        label: "{{ case.url }} from {{ case.registry | default('no registry') }}"

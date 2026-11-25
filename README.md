@@ -8,6 +8,7 @@
     * [Software Requirements](#software-requirements)
   * [Installation](#installation)
     * [Quick Start](#quick-start)
+    * [Install as a collection](#install-as-a-collection)
     * [Advanced Installation](#advanced-installation)
   * [Usage](#usage)
     * [Basic Operations](#basic-operations)
@@ -61,8 +62,11 @@ on virtual machines.
 ### Software Requirements
 
 * Docker >= 20.x
-* Python 3.x with pip
-* Ansible (installed via requirements)
+* Controller: Python 3.11 or later with pip, and ansible-core 2.19 or later
+* Target hosts: Python 3.9 or later for the latest ansible-core. Only ansible-core 2.19 still manages Python 3.8, so
+  pin `"ansible-core>=2.19,<2.20"` for such targets. RHEL 8 ships Python 3.6 by default, so install a newer one, such
+  as `python3.11`, and set `ansible_python_interpreter` to it. See the
+  [ansible-core support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 * Additional packages: `acl`, `zip`, `unzip`, `net-tools`
 
 ## Installation
@@ -76,10 +80,11 @@ on virtual machines.
    cd qubership-external-logging-installer
    ```
 
-2. **Install Ansible dependencies:**
+2. **Install Ansible and the required collections:**
 
    ```bash
-   pip3 install ansible
+   pip3 install "ansible-core>=2.19" jmespath
+   ansible-galaxy collection install -r requirements.yml
    ```
 
 3. **Configure your inventory:**
@@ -88,9 +93,11 @@ on virtual machines.
    # Create inventory file with your target hosts and parameters
    cat > inventory.yml << 'EOF'
    all:
-     hosts:
-       your-server-ip:
-         ansible_user: ubuntu
+     children:
+       graylog:
+         hosts:
+           your-server-ip:
+             ansible_user: ubuntu
      vars:
        graylog_install: true
    EOF
@@ -102,8 +109,31 @@ on virtual machines.
 4. **Run the playbook:**
 
    ```bash
-   ansible-playbook -i inventory.yml playbooks/playbook.yaml
+   ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml
    ```
+
+   The playbook targets the `graylog` inventory group. To target another group, add
+   `-e graylog_target_hosts=<group>`. `playbooks/playbook.yaml` still works on all hosts but is deprecated.
+
+### Install as a collection
+
+The repository is also the Ansible collection `qubership.observability`. It needs ansible-core 2.19 or later and the
+`jmespath` Python package on the controller.
+
+`ansible-galaxy collection build` packs every file that `build_ignore` in `galaxy.yml` does not exclude, Git-ignored
+files included, so an in-place build can pick up local files such as private keys. Build from an export of the tracked
+files instead, then install the archive and run the playbook by its collection name:
+
+```bash
+pip3 install "ansible-core>=2.19" jmespath
+src="$(mktemp -d)"
+out="$(mktemp -d)"
+git archive HEAD | tar -x -C "${src}"
+ansible-galaxy collection build --output-path "${out}" "${src}"
+# --force replaces an installed build of the same version
+ansible-galaxy collection install --force "${out}"/qubership-observability-*.tar.gz
+ansible-playbook -i inventory.yml qubership.observability.graylog
+```
 
 ### Advanced Installation
 
@@ -128,8 +158,8 @@ echo '{"version":"1.1","host":"test","short_message":"Hello Graylog"}' | nc your
 **Monitor system health:**
 
 ```bash
-# Check service status
-ansible-playbook -i inventory.yml playbooks/playbook.yaml --tags health_check
+# Check that Graylog is up: prints ALIVE
+curl -k https://your-server/api/system/lbstatus
 
 # View logs
 docker logs graylog
@@ -140,7 +170,7 @@ docker logs graylog
 ### Key Configuration Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `graylog_image` | Graylog Docker image | `graylog/graylog:5.2.9` |
 | `opensearch_heap_size` | OpenSearch JVM heap | `2g` |
 | `mongodb_version` | MongoDB version | `4.4` |
@@ -214,12 +244,24 @@ The project includes automated linting and validation:
 # Run Super Linter (same as CI)
 docker run --rm -e RUN_LOCAL=true -v $(pwd):/tmp/lint github/super-linter:latest
 
-# Ansible syntax check
-ansible-playbook --syntax-check playbooks/playbook.yaml
+# Syntax checks, collection build, tests, and ansible-lint (same as CI)
+pip3 install -r tests/requirements-ci.txt
+bash tests/run-installer-ci.sh
 
-# Dry run deployment
-ansible-playbook -i inventory.yml playbooks/playbook.yaml --check
+# Deploy the playbook into a container and check Graylog, the exporters, and the stack containers
+pip3 install -r tests/requirements-molecule.txt
+ansible-galaxy collection install -r requirements.yml
+(cd extensions && molecule test -s graylog_stack)
+
+# Dry run deployment from the checkout root
+ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml --check
 ```
+
+`tests/run-installer-ci.sh` needs GNU tar as `tar`. On macOS, install it with `brew install gnu-tar` and put its
+`gnubin` directory first in `PATH`, for example `PATH="$(brew --prefix gnu-tar)/libexec/gnubin:${PATH}"`. The script
+compares the `java_properties` module with Java when Java 11 or later is on `PATH`, and skips that check otherwise.
+
+The Molecule scenario needs Docker on the machine that runs it and about 6 GB of free RAM.
 
 ### Manual Testing
 

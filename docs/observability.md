@@ -46,7 +46,7 @@ To enable metrics collection from Graylog, the following resources need to be cr
 To collect and display metrics in Grafana, we must deploy the necessary exporters for the services we want to monitor.
 By default, these exporters are disabled and must be explicitly enabled in the configuration.
 
-Here’s an example configuration that ensures all required exporters are installed:
+Here's an example configuration that ensures all required exporters are installed:
 
 ```yaml
 node_exporter_install: true

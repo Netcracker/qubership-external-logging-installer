@@ -1,0 +1,9 @@
+---
+# The template writes graylog_password_secret_escaped, so Graylog must read back the effective secret from it.
+# tests/java_properties checks the java_properties module against Java itself.
+- name: Read back the escaped secret
+  java_properties:
+    content: "password_secret = {{ graylog_password_secret_escaped }}"
+    key: password_secret
+  register: case_read_back
+  no_log: true

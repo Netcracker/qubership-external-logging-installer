@@ -1,0 +1,57 @@
+---
+- name: Prepare the config for case '{{ case.name }}'
+  ansible.builtin.copy:
+    dest: "{{ case_volume }}/graylog/config/graylog.conf"
+    content: "{{ case.config }}"
+    mode: "0600"
+  when: case.config is defined
+
+- name: Check that the config keeps its carriage returns in case '{{ case.name }}'
+  ansible.builtin.assert:
+    that:
+      - (lookup('ansible.builtin.file', case_volume ~ '/graylog/config/graylog.conf', rstrip=false) is search('\r'))
+    fail_msg: "The fixture of case '{{ case.name }}' lost its carriage returns, so the case proves nothing"
+    quiet: true
+  when: case.cr | default(false)
+
+- name: Run case '{{ case.name }}'
+  block:
+    - name: Choose the password secret
+      ansible.builtin.include_role:
+        name: graylog
+        tasks_from: password_secret.yml
+      vars:
+        graylog_volume: "{{ case_volume }}"
+        graylog_password_secret: "{{ case.explicit | default('') }}"
+        graylog_custom_params: >-
+          {{ ({'password_secret': case.custom} if case.custom is defined else {})
+             | combine({'mongodb_uri': case.mongodb_uri} if case.mongodb_uri is defined else {}) }}
+        graylog_mongodb_has_data: "{{ case.mongodb_has_data | default(false) }}"
+
+    # A separate file, because Ansible finds the java_properties module only after include_role loads the role.
+    - name: Read back the escaped secret
+      ansible.builtin.include_tasks: read_back.yml
+
+    - name: Check the chosen secret
+      ansible.builtin.assert:
+        that:
+          - case.expect != 'fail'
+          - >-
+            graylog_password_secret_effective == case.expect
+            if case.expect != 'random'
+            else graylog_password_secret_effective is match('^[A-Za-z0-9]{96}$')
+          - case_read_back.value == graylog_password_secret_effective
+        fail_msg: "Case '{{ case.name }}' chose the wrong secret: '{{ graylog_password_secret_effective }}'"
+        quiet: true
+  rescue:
+    - name: Check that the failure was expected in case '{{ case.name }}'
+      ansible.builtin.assert:
+        that:
+          - case.expect == 'fail'
+          - ansible_failed_task.name is search('^Stop when')
+          # Each rejected fixture names the guard that must stop it, so a fixture routed to another guard fails.
+          - ansible_failed_task.name is search(case.stop)
+        fail_msg: >-
+          Case '{{ case.name }}' failed in '{{ ansible_failed_task.name }}':
+          {{ ansible_failed_result.msg | default('') }}
+        quiet: true

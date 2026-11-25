@@ -1,0 +1,211 @@
+---
+# Checks how the graylog role keeps the password_secret of an existing installation.
+# Run it with ANSIBLE_ROLES_PATH pointing at roles/.
+- name: Test the choice of the Graylog password secret
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+    secret: ThisIsTheExistingSecretOfThisInstallationAndItIsLongerThanSixtyFourCharacters0123456789
+    cases:
+      - name: equals sign
+        config: "password_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: indented key
+        config: "  password_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: colon separator
+        config: "password_secret: {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: whitespace separator
+        config: "password_secret\t{{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: no space around the separator
+        config: "password_secret={{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: spaces inside the value
+        config: "password_secret = first half second half\n"
+        expect: first half second half
+      # Jinja turns CR and CRLF into LF in a template, so the line-ending fixtures hold no template and set cr: true
+      # to check that the written file keeps its carriage returns.
+      - name: Windows line endings
+        config: "is_leader = true\r\npassword_secret = CrLfSecret\r\nhttp_bind_address = 0.0.0.0:9000\r\n"
+        cr: true
+        expect: CrLfSecret
+      - name: CRLF definition overrides an LF one
+        config: "password_secret = old\npassword_secret = CrLfSecret\r\n"
+        cr: true
+        expect: CrLfSecret
+      - name: CR line endings
+        config: "password_secret = old\rpassword_secret = CrSecret\r"
+        cr: true
+        expect: CrSecret
+      - name: commented-out key
+        config: "#password_secret = old\n! password_secret = older\npassword_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: last definition wins
+        config: "password_secret = old\npassword_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      - name: escaped trailing backslash
+        config: "password_secret = {{ secret }}\\\\\n"
+        expect: "{{ secret }}\\"
+      - name: escapes in the value
+        config: "password_secret = Value\\u0041\\tB\\qC\n"
+        expect: "ValueA\tBqC"
+      - name: continuation of another key that looks like a definition
+        config: "password_secret = {{ secret }}\nother = a\\\n  password_secret = wrong\n"
+        expect: "{{ secret }}"
+      - name: comment after a live definition
+        config: "password_secret = {{ secret }}\n# password_secret = commented\n! password_secret = commented\n"
+        expect: "{{ secret }}"
+      - name: bare final definition
+        config: "password_secret = old\npassword_secret\n"
+        expect: fail
+        stop: has no password secret
+      - name: similar key
+        config: "password_secret_old = old\n"
+        expect: fail
+        stop: has no password secret
+      - name: missing key
+        config: "is_leader = true\n"
+        expect: fail
+        stop: has no password secret
+      - name: empty value
+        config: "password_secret =\n"
+        expect: fail
+        stop: has no password secret
+      - name: value that continues on the next line
+        config: "password_secret = {{ secret }}\\\n  more\n"
+        expect: "{{ secret }}more"
+      # Java starts a comment after a continuation that added nothing, and the comment ignores its trailing backslash.
+      - name: comment after an empty continuation
+        config: "password_secret = old\n\\\n# comment \\\npassword_secret = {{ secret }}\n"
+        expect: "{{ secret }}"
+      # Java reads graylog.conf as ISO 8859-1, so the UTF-8 bytes of a literal é are two characters.
+      - name: literal non-ASCII bytes in the config
+        config: "password_secret = {{ secret }}é\n"
+        expect: "{{ secret }}Ã©"
+      - name: legacy custom parameter with non-ASCII characters
+        custom: "{{ secret }}é"
+        expect: "{{ secret }}Ã©"
+      - name: explicit secret wins over the existing one
+        config: "password_secret = old\n"
+        explicit: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: legacy custom parameter
+        custom: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: explicit secret and legacy custom parameter agree
+        explicit: "{{ secret }}"
+        custom: "{{ secret }}"
+        expect: "{{ secret }}"
+      - name: explicit secret and legacy custom parameter differ
+        explicit: "{{ secret }}"
+        custom: old
+        expect: fail
+        stop: differ
+      - name: explicit secret and legacy custom parameter differ only in case
+        explicit: "{{ secret }}"
+        custom: "{{ secret | upper }}"
+        expect: fail
+        stop: differ
+      # graylog.conf got the legacy value as is, so Graylog applied Java escapes to it.
+      - name: legacy custom parameter with escapes
+        custom: Legacy\u0041\\B
+        expect: LegacyA\B
+      - name: explicit secret matches the escaped legacy custom parameter
+        explicit: LegacyA\B
+        custom: Legacy\u0041\\B
+        expect: LegacyA\B
+      # The template escapes the explicit secret, so these values must survive the round trip.
+      - name: explicit secret ends in a backslash
+        explicit: "{{ secret }}\\"
+        expect: "{{ secret }}\\"
+      - name: explicit secret starts with a space and holds a line break
+        explicit: " {{ secret }}\nnext line"
+        expect: " {{ secret }}\nnext line"
+      # Java rejects the whole file, and Ansible cannot carry an unpaired surrogate, so the role cannot keep the secret.
+      - name: malformed escape in another key
+        config: "password_secret = {{ secret }}\nother = \\u12zz\n"
+        expect: fail
+        stop: existing Graylog config cannot be read
+      - name: unpaired surrogate escape in the value
+        config: "password_secret = {{ secret }}\\ud800\n"
+        expect: fail
+        stop: existing Graylog config cannot be read
+      - name: legacy custom parameter with a malformed escape
+        custom: Legacy\u12zz
+        expect: fail
+        stop: graylog_custom_params.password_secret cannot be read
+      - name: explicit secret holds non-ASCII characters
+        explicit: "{{ secret }}é中😀"
+        expect: "{{ secret }}é中😀"
+      - name: missing config with a custom MongoDB
+        mongodb_uri: mongodb://graylog:graylog@db.example.org:27017/graylog
+        expect: fail
+        stop: custom MongoDB
+      - name: missing config with a custom MongoDB, with an explicit secret
+        explicit: "{{ secret }}"
+        mongodb_uri: mongodb://graylog:graylog@db.example.org:27017/graylog
+        expect: "{{ secret }}"
+      - name: missing config while MongoDB holds Graylog data
+        mongodb_has_data: true
+        expect: fail
+        stop: holds Graylog collections
+      - name: missing config while MongoDB holds Graylog data, with an explicit secret
+        explicit: "{{ secret }}"
+        mongodb_has_data: true
+        expect: "{{ secret }}"
+      - name: fresh install
+        expect: random
+  tasks:
+    - name: Create a Graylog volume for each case
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: graylog
+      register: volumes
+      loop: "{{ cases }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Create the config directories
+      ansible.builtin.file:
+        path: "{{ item.path }}/graylog/config"
+        state: directory
+        mode: "0700"
+      loop: "{{ volumes.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    - name: Run the cases
+      ansible.builtin.include_tasks: case.yml
+      vars:
+        case: "{{ item.item }}"
+        case_volume: "{{ item.path }}"
+      loop: "{{ volumes.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    - name: Remove the Graylog volumes
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ volumes.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    # A shared default would pass a shape check, so compare the secrets of two independent fresh installs.
+    - name: Choose secrets for two fresh installs
+      ansible.builtin.include_tasks: fresh.yml
+      loop: [1, 2]
+
+    - name: Check that fresh installs get different random secrets
+      ansible.builtin.assert:
+        that:
+          - fresh_secrets | length == 2
+          - fresh_secrets | select('match', '^[A-Za-z0-9]{96}$') | list | length == 2
+          - fresh_secrets[0] != fresh_secrets[1]
+        fail_msg: Two fresh installs got the same secret, or a secret of the wrong shape
+        quiet: true
+      no_log: true

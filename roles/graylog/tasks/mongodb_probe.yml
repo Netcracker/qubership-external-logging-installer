@@ -1,0 +1,39 @@
+---
+# password_secret.yml runs this only when neither the inventory nor graylog.conf supplies the secret.
+# The mongodb role creates the graylog user but no collections, and Graylog creates its collections on first start, so
+# any collection in the graylog database means that Graylog ran here before.
+# The script reaches the shell through stdin, so the password stays out of process arguments and keeps its exact value.
+# timeout bounds each attempt, so the whole probe ends within about three minutes.
+- name: Count the collections in the graylog MongoDB database
+  ansible.builtin.command:
+    argv: [timeout, "30", docker, exec, -i, graylog_mongo_1, mongo, --quiet, --nodb]
+    stdin: |
+      var graylog = new Mongo("127.0.0.1:27017").getDB("graylog");
+      if (graylog.auth({{ mongodb_graylog_username | to_json }}, {{ mongodb_graylog_password | to_json }})) {
+        print("graylog_collections=" + graylog.getCollectionNames().length);
+      }
+  register: graylog_mongodb_probe
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  no_log: true
+  # The next task explains a probe that never answers, so retries that run out must not stop the play here.
+  ignore_errors: true
+  until: graylog_mongodb_probe.stdout | default('') is search('graylog_collections=\d+')
+  retries: 5
+  delay: 3
+
+- name: Stop when the MongoDB check gives no answer
+  ansible.builtin.fail:
+    msg: >-
+      Cannot count the collections in the graylog database of the MongoDB container graylog_mongo_1 (exit code
+      {{ graylog_mongodb_probe.rc | default('unknown') }}), and {{ graylog_volume }}/graylog/config/graylog.conf is
+      missing, so the role cannot tell a fresh install from a lost config. Check that the container runs and that
+      mongodb_graylog_username and mongodb_graylog_password match the database, or set graylog_password_secret to the
+      secret of this installation.
+  when: graylog_mongodb_probe.stdout | default('') is not search('graylog_collections=\d+')
+
+- name: Record whether MongoDB holds Graylog data
+  ansible.builtin.set_fact:
+    graylog_mongodb_has_data: >-
+      {{ (graylog_mongodb_probe.stdout | regex_search('graylog_collections=(\d+)', '\1') | first | int) > 0 }}

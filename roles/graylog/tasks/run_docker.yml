@@ -1,21 +1,21 @@
 ---
 - name: Set docker image with registry
-  set_fact:
+  ansible.builtin.set_fact:
     graylog_image: "{{ docker_registry }}/{{ graylog_image }}"
   when:
     - docker_registry is defined
     - docker_registry != 0
 
 - name: Set storage (opensearch) or elasticsearch container name
-  set_fact:
+  ansible.builtin.set_fact:
     storage_or_elasticsearch: "storage"
 
 - name: Set opensearch or elasticsearch path_repo
-  set_fact:
+  ansible.builtin.set_fact:
     graylog_path_repo: "opensearch"
 
 - name: Pull graylog image
-  docker_image:
+  community.docker.docker_image:
     name: "{{ graylog_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -23,7 +23,7 @@
     - not docker_registry_validate_certs|bool
 
 - name: Pull graylog image with local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ graylog_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -36,7 +36,7 @@
     - docker_registry_password is not defined
 
 - name: Pull graylog image without local CA
-  docker_image:
+  community.docker.docker_image:
     name: "{{ graylog_image }}"
     timeout: "{{ docker_container_timeout }}"
     source: pull
@@ -48,11 +48,12 @@
     - docker_registry_password is not defined
 
 - name: Create and start a 'graylog' container
-  docker_container:
+  community.docker.docker_container:
     name: graylog_graylog_1
     image: "{{ graylog_image }}"
     state: started
-    purge_networks: true
+    comparisons:
+      networks: strict
     recreate: true
     restart_policy: always
     security_opts:
@@ -80,7 +81,7 @@
           - graylog
 
 - name: Wait for container will be started
-  command: docker inspect --format={{ '{{.State.Status}}' }} graylog_graylog_1
+  ansible.builtin.command: docker inspect --format={{ '{{.State.Status}}' }} graylog_graylog_1
   register: result
   until: result.stdout == 'running'
   retries: 5

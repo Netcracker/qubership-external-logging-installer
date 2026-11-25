@@ -1,0 +1,34 @@
+---
+# graylog.conf holds password_secret, so its tasks never print a diff, even with --diff.
+- name: Prepare Graylog config
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/graylog.conf.j2"
+    dest: "{{ graylog_volume }}/graylog/config/graylog.conf"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_uid }}"
+    mode: "0766"
+  diff: false
+
+- name: Prepare Graylog logging config
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/log4j2.xml.j2"
+    dest: "{{ graylog_volume }}/graylog/config/log4j2.xml"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_uid }}"
+    mode: "0766"
+
+# password_secret.yml already chose password_secret, so this task skips it. The label shows only the option name in
+# normal output. Verbose output and failures can still show values, such as a MongoDB URI with a password.
+- name: Set custom params in Graylog config
+  loop: "{{ graylog_custom_params | default({}, true) | dict2items | rejectattr('key', 'equalto', 'password_secret') }}"
+  loop_control:
+    label: "{{ item.key }}"
+  community.general.ini_file:
+    path: "{{ graylog_volume }}/graylog/config/graylog.conf"
+    owner: "{{ graylog_uid }}"
+    group: "{{ graylog_gid }}"
+    mode: "0766"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    section: null
+  diff: false

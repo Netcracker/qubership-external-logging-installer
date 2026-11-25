@@ -5,7 +5,7 @@
 {% if change_docker_network_allowed is defined and change_docker_network_allowed | lower | trim == 'true' %}
   "bridge": "bridge0",
 {% endif %}
-{% if not docker_registry_validate_certs %}
+{% if docker_registry | default("") | string | length > 0 and not docker_registry_validate_certs %}
   "insecure-registries" : ["{{ docker_registry }}"],
 {% endif %}
   "icc" : false,

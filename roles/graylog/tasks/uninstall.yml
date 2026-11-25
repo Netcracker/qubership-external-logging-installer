@@ -4,17 +4,17 @@
     - ansible_connection != 'local'
   block:
     - name: Set 'project_src'
-      set_fact:
+      ansible.builtin.set_fact:
         project_src: "~/graylog"
 
     - name: Ensure {{ project_src }} dir exists
-      file:
+      ansible.builtin.file:
         path: "{{ project_src }}"
         state: directory
 
 # TODO: remove graylog_elasticsearch_1 deletion
 - name: Shut down Graylog
-  docker_container:
+  community.docker.docker_container:
     name: "{{ item }}"
     state: absent
     force_kill: true

@@ -1,0 +1,1 @@
+../../../plugins/modules/java_properties.py

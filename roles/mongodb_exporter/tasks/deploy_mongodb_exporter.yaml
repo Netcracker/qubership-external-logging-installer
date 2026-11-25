@@ -1,126 +1,59 @@
 ---
-- name: Set artifact download path
-  block:
-    - name: Set mongodb-exporter tarball url with registry
-      set_fact:
-        mongodb_exporter_tarball_url: "{{ raw_artifacts_registry }}/{{ mongodb_exporter_tarball }}"
-      when:
-        - raw_artifacts_registry is defined
-        - raw_artifacts_registry is not none
-
-    - name: Set mongodb-exporter tarball custom url
-      set_fact:
-        mongodb_exporter_tarball_url: "{{ mongodb_exporter_custom_tarball }}"
-      when:
-        - mongodb_exporter_custom_tarball is defined
-        - mongodb_exporter_custom_tarball is not none
+- name: Resolve mongodb_exporter download URL
+  # A custom URL wins. A full URL in mongodb_exporter_tarball is used as is; a relative path is joined to
+  # raw_artifacts_registry, which counts as https:// when it has no scheme, as in the origin check.
+  ansible.builtin.set_fact:
+    mongodb_exporter_tarball_url: >-
+      {{ mongodb_exporter_custom_tarball
+         if (mongodb_exporter_custom_tarball is defined and mongodb_exporter_custom_tarball is not none and mongodb_exporter_custom_tarball | length > 0)
+         else (mongodb_exporter_tarball
+               if (mongodb_exporter_tarball is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
+               else (raw_artifacts_registry | regex_replace('^(?![A-Za-z][A-Za-z0-9+.-]*://)', 'https://')) ~ '/' ~ mongodb_exporter_tarball) }}
 
 - name: Set default mongodb-exporter flags
-  set_fact:
+  ansible.builtin.set_fact:
     mongodb_exporter_default_flags:
       - "--mongodb.uri=mongodb://{{ mongodb_root_username }}:{{ mongodb_root_password }}@127.0.0.1:27017/"
 
 - name: Compile custom and default MongoDB exporter flags
-  set_fact:
+  ansible.builtin.set_fact:
     mongodb_exporter_flags: "{{ mongodb_exporter_flags + mongodb_exporter_default_flags }}"
 
-- name: Download mongodb-exporter with credentials
-  when:
-    - raw_artifacts_registry_username is defined
-    - raw_artifacts_registry_password is defined
-  block:
-    - name: Download mongodb-exporter archive
-      when: not raw_artifacts_registry_validate_certs | bool
-      get_url:
-        url: "{{ mongodb_exporter_tarball_url }}"
-        dest: "/tmp/mongodb_exporter.tar.gz"
-        url_username: "{{ raw_artifacts_registry_username }}"
-        url_password: "{{ raw_artifacts_registry_password }}"
-        validate_certs: no
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
+# Registry credentials and TLS settings apply only to the origin of raw_artifacts_registry. Downloads from anywhere
+# else, such as the public release URL, send no credentials and always verify TLS.
+- name: Check whether mongodb_exporter downloads from raw_artifacts_registry
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: raw_artifacts_origin.yml
+  vars:
+    common_raw_artifacts_url: "{{ mongodb_exporter_tarball_url }}"
 
-    - name: Download mongodb-exporter archive with SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is defined
-      get_url:
-        url: "{{ mongodb_exporter_tarball_url }}"
-        dest: "/tmp/mongodb_exporter.tar.gz"
-        url_username: "{{ raw_artifacts_registry_username }}"
-        url_password: "{{ raw_artifacts_registry_password }}"
-      environment:
-        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-    - name: Download mongodb-exporter archive without SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is not defined
-      get_url:
-        url: "{{ mongodb_exporter_tarball_url }}"
-        dest: "/tmp/mongodb_exporter.tar.gz"
-        url_username: "{{ raw_artifacts_registry_username }}"
-        url_password: "{{ raw_artifacts_registry_password }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-- name: Download mongodb-exporter without credentials
-  when: (raw_artifacts_registry_username is not defined) or (raw_artifacts_registry_password is not defined)
-  block:
-    - name: Download mongodb-exporter archive
-      when: not raw_artifacts_registry_validate_certs | bool
-      get_url:
-        url: "{{ mongodb_exporter_tarball_url }}"
-        dest: "/tmp/mongodb_exporter.tar.gz"
-        validate_certs: no
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-    - name: Download mongodb-exporter archive with SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is defined
-      get_url:
-        url: "{{ mongodb_exporter_tarball_url }}"
-        dest: "/tmp/mongodb_exporter.tar.gz"
-      environment:
-        SSL_CERT_FILE: "{{ ssl_data_host_path }}/{{ raw_artifacts_registry_ca_cert_file }}"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
-
-    - name: Download mongodb-exporter archive without SSL-certificate
-      when:
-        - raw_artifacts_registry_validate_certs | bool
-        - raw_artifacts_registry_ca_cert_file is not defined
-      get_url:
-        url: "{{ mongodb_exporter_tarball_url }}"
-        dest: "/tmp/mongodb_exporter.tar.gz"
-      register: _download_archive
-      until: _download_archive is succeeded
-      retries: 5
-      delay: 2
+- name: Download mongodb_exporter archive
+  ansible.builtin.get_url:
+    url: "{{ mongodb_exporter_tarball_url }}"
+    dest: "/tmp/mongodb_exporter.tar.gz"
+    url_username: "{{ raw_artifacts_registry_username | default(omit, true) if common_raw_artifacts_from_registry | bool else omit }}"
+    url_password: "{{ raw_artifacts_registry_password | default(omit, true) if common_raw_artifacts_from_registry | bool else omit }}"
+    validate_certs: "{{ raw_artifacts_registry_validate_certs | bool if common_raw_artifacts_from_registry | bool else true }}"
+  environment: >-
+    {{ {'SSL_CERT_FILE': ssl_data_host_path ~ '/' ~ raw_artifacts_registry_ca_cert_file}
+       if common_raw_artifacts_from_registry | bool and raw_artifacts_registry_validate_certs | bool
+          and raw_artifacts_registry_ca_cert_file | default('', true) | length > 0
+       else {} }}
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
 
 - name: Unarchive mongodb-exporter binary
-  unarchive:
+  ansible.builtin.unarchive:
     src: "/tmp/mongodb_exporter.tar.gz"
     dest: /tmp
     remote_src: yes
     extra_opts: [--strip-components=1]
 
 - name: Propagate mongodb-exporter binary
-  copy:
+  ansible.builtin.copy:
     src: /tmp/mongodb_exporter
     dest: "{{ mongodb_exporter_host_bin_dir }}/mongodb_exporter"
     remote_src: yes
@@ -131,7 +64,7 @@
   notify: Restart MongoDB exporter
 
 - name: Copy mongodb-exporter systemd service file
-  template:
+  ansible.builtin.template:
     src: mongodb_exporter.service.jinja
     dest: /etc/systemd/system/mongodb_exporter.service
     owner: root
@@ -140,14 +73,14 @@
   notify: Restart MongoDB exporter
 
 - name: Start and enable mongodb-exporter service
-  systemd:
+  ansible.builtin.systemd:
     name: mongodb_exporter
     enabled: yes
     state: started
     daemon_reload: yes
 
 - name: Delete temporary files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:

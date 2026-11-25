@@ -1,0 +1,27 @@
+---
+- name: Deploy Graylog with OpenSearch and MongoDB
+  hosts: "{{ graylog_target_hosts | default('graylog') }}"
+  gather_facts: true
+  become: true
+  # No collections keyword: it would make a checkout run pick roles from an installed qubership.observability ahead of
+  # roles_path. Run as qubership.observability.graylog, the playbook resolves roles from its own collection.
+  roles:
+    # Prepare steps
+    - role: common
+    - role: prepare_environment
+    # Main components
+    - role: mongodb
+    - role: opensearch
+    - role: graylog_auth_proxy
+    - role: graylog
+    - role: nginx
+    - role: graylog_configuration
+    - role: graylog_output_duplicator
+    # Self-logging
+    - role: fluentd
+    - role: fluentbit
+    # Monitoring
+    - role: node_exporter
+    - role: mongodb_exporter
+    - role: opensearch_exporter
+    - role: cadvisor

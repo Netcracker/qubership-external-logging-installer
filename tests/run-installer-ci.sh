@@ -10,7 +10,8 @@ export ANSIBLE_COLLECTIONS_PATH="${ANSIBLE_COLLECTIONS_PATH:-${root}/.ansible/co
 export ANSIBLE_FORCE_COLOR="${ANSIBLE_FORCE_COLOR:-false}"
 
 inventory="${root}/tests/fixtures/inventory.ci.yml"
-playbook="${root}/playbooks/playbook.yaml"
+playbook="${root}/playbooks/graylog.yml"
+legacy_playbook="${root}/playbooks/playbook.yaml"
 expected_roles=(
     common
     prepare_environment
@@ -34,7 +35,7 @@ mkdir -p "${ANSIBLE_LOCAL_TEMP}" "${ANSIBLE_COLLECTIONS_PATH}"
 echo "==> Install Ansible collections"
 galaxy_ok=0
 for attempt in 1 2 3 4 5; do
-    if ansible-galaxy collection install -r "${root}/tests/requirements.yml" -p "${ANSIBLE_COLLECTIONS_PATH}"; then
+    if ansible-galaxy collection install -r "${root}/requirements.yml" -p "${ANSIBLE_COLLECTIONS_PATH}"; then
         galaxy_ok=1
         break
     fi
@@ -46,8 +47,55 @@ if [[ "${galaxy_ok}" -ne 1 ]]; then
     exit 1
 fi
 
-echo "==> Syntax-check playbook against the CI inventory"
+echo "==> Syntax-check playbooks against the CI inventory"
 ansible-playbook --syntax-check -i "${inventory}" "${playbook}"
+ansible-playbook --syntax-check -i "${inventory}" "${legacy_playbook}"
+
+echo "==> Build and install the collection"
+build_dir="$(mktemp -d)"
+trap 'rm -rf "${build_dir}"' EXIT
+# Build from the tracked files only, as the README recommends, so untracked files in the checkout never reach the
+# archive. The copy takes the working-tree content of each tracked file, so local edits to tracked files are tested.
+copy_tracked_source() {
+    mkdir -p "$1"
+    git -C "${root}" ls-files -z | (cd "${root}" && tar --null --ignore-failed-read -T - -cf -) | tar -x -C "$1"
+}
+copy_tracked_source "${build_dir}/src"
+ansible-galaxy collection build --force --output-path "${build_dir}" "${build_dir}/src"
+
+echo "==> Check that build_ignore keeps local inventories out of an in-place build"
+# Plant inventory files in a second copy, never in the checkout, so a run cannot overwrite or remove local files.
+leak_src="${build_dir}/leak-src"
+leak_marker="InventoryLeakMarker$(date +%s%N)"
+copy_tracked_source "${leak_src}"
+mkdir -p "${leak_src}/inventory" "${leak_src}/group_vars" "${leak_src}/host_vars"
+for leak_file in inventory.yml inventory-prod.ini inventory/hosts.yaml group_vars/all.yml host_vars/host1.yml; do
+    printf 'all:\n  vars:\n    root_password: %s\n' "${leak_marker}" >"${leak_src}/${leak_file}"
+done
+ansible-galaxy collection build --force --output-path "${build_dir}/leak-out" "${leak_src}" >/dev/null
+mkdir -p "${build_dir}/leak-files"
+if ! tar -xzf "${build_dir}"/leak-out/qubership-observability-*.tar.gz -C "${build_dir}/leak-files"; then
+    echo "::error::Cannot read the collection archive built with planted inventory files"
+    exit 1
+fi
+leaked="$(cd "${build_dir}/leak-files" && {
+    find . \( -name 'inventory*' -o -name group_vars -o -name host_vars \) -print
+    grep -rlF -- "${leak_marker}" . || true
+})"
+if [[ -n "${leaked}" ]]; then
+    echo "::error::The collection archive contains planted inventory files:"
+    printf '%s\n' "${leaked}"
+    exit 1
+fi
+
+# Install into a separate path, so later checks keep resolving roles from this checkout.
+ansible-galaxy collection install --force --no-deps -p "${build_dir}/collections" \
+    "${build_dir}"/qubership-observability-*.tar.gz
+
+echo "==> Syntax-check the installed collection playbook"
+(cd "${build_dir}" && ANSIBLE_ROLES_PATH="${build_dir}/no-roles" \
+    ANSIBLE_COLLECTIONS_PATH="${build_dir}/collections:${ANSIBLE_COLLECTIONS_PATH}" \
+    ansible-playbook --syntax-check -i "${inventory}" qubership.observability.graylog)
 
 echo "==> Parse CI inventory"
 ansible-inventory -i "${inventory}" --list >/dev/null
@@ -63,5 +111,96 @@ for role in "${expected_roles[@]}"; do
         -e "ci_role=${role}"
 done
 
-echo "==> ansible-lint (min profile)"
-ansible-lint "${playbook}"
+echo "==> Test how the graylog role keeps an existing password secret"
+ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/test.yml"
+
+echo "==> Compare the java_properties module with java.util.Properties"
+# The comparison runs a Java source file directly, which needs Java 11 or later.
+java_major=0
+if command -v java >/dev/null 2>&1; then
+    java_spec="$(java -XshowSettings:properties -version 2>&1 | awk -F' = ' '/java.specification.version/ {print $2}')"
+    java_spec="${java_spec#1.}"
+    java_major="${java_spec%%.*}"
+fi
+if [[ "${java_major}" -ge 11 ]]; then
+    python3 "${root}/tests/java_properties/differential.py" "${build_dir}/java-properties"
+elif [[ "${CI:-}" == "true" ]]; then
+    echo "::error::The comparison with Java needs Java 11 or later on PATH; found '${java_major}'"
+    exit 1
+else
+    echo "Java 11 or later is not on PATH (found '${java_major}'); skipping the comparison with Java"
+fi
+
+echo "==> Test the origin check for raw artifact downloads"
+ansible-playbook -i localhost, "${root}/tests/raw_artifacts_origin/test.yml"
+
+echo "==> Test the processing rule request renderer"
+ansible-playbook -i localhost, "${root}/tests/graylog_processing_rule/test.yml"
+
+# Runs a command and keeps its output in run_output. On failure, prints the output with the secret in $1 replaced,
+# so the failing task shows, and returns the command's exit status.
+run_redacted() {
+    local secret="$1" status=0
+    shift
+    run_output="$("$@" 2>&1)" || status=$?
+    if [[ "${status}" -ne 0 ]]; then
+        printf '%s\n' "${run_output//"${secret}"/<redacted>}"
+        echo "::error::$1 failed with exit code ${status}"
+    fi
+    return "${status}"
+}
+
+echo "==> Check that --diff does not print the Graylog password secret"
+diff_volume="${build_dir}/graylog-volume"
+diff_secret="DiffCheckSecretThatMustNotAppearInTheOutput$(date +%s%N)"
+mkdir -p "${diff_volume}/graylog/config"
+printf 'password_secret = %s\nis_leader = true\n' "${diff_secret}" >"${diff_volume}/graylog/config/graylog.conf"
+run_redacted "${diff_secret}" ansible-playbook -i localhost, --check --diff \
+    "${root}/tests/graylog_password_secret/diff.yml" \
+    -e "graylog_volume=${diff_volume}" -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)"
+diff_output="${run_output}"
+if grep -qF -- "${diff_secret}" <<<"${diff_output}"; then
+    echo "::error::ansible-playbook --diff printed the Graylog password secret"
+    exit 1
+fi
+# The log4j2.xml diff proves that the run printed diffs at all.
+if ! grep -qF -- "log4j2.xml" <<<"${diff_output}"; then
+    printf '%s\n' "${diff_output}"
+    echo "::error::ansible-playbook --diff printed no diff, so the secret check proves nothing"
+    exit 1
+fi
+
+echo "==> Write graylog.conf with the installed collection"
+# Collection roles load no plugins from their own directories, so this proves that the role finds java_properties.
+# The seeded line uses other properties syntax than the template, so the check also proves that the role rewrote it.
+installed_volume="${build_dir}/installed-volume"
+installed_secret="InstalledCollectionSecret$(date +%s%N)"
+installed_config="${installed_volume}/graylog/config/graylog.conf"
+mkdir -p "${installed_volume}/graylog/config"
+printf 'is_leader = true\npassword_secret:%s\n' "${installed_secret}" >"${installed_config}"
+(
+    cd "${build_dir}"
+    export ANSIBLE_ROLES_PATH="${build_dir}/no-roles"
+    export ANSIBLE_COLLECTIONS_PATH="${build_dir}/collections:${ANSIBLE_COLLECTIONS_PATH}"
+    run_redacted "${installed_secret}" ansible-playbook -i localhost, \
+        "${root}/tests/graylog_password_secret/diff.yml" \
+        -e graylog_role=qubership.observability.graylog -e "graylog_volume=${installed_volume}" \
+        -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)"
+)
+if ! grep -qxF -- "password_secret = ${installed_secret}" "${installed_config}"; then
+    echo "::error::The installed collection did not rewrite graylog.conf with the existing password secret"
+    exit 1
+fi
+if [[ "${java_major}" -ge 11 ]]; then
+    mkdir -p "${build_dir}/installed-java"
+    cp "${installed_config}" "${build_dir}/installed-java/graylog.conf"
+    java_read="$(java "${root}/tests/java_properties/ReadProperties.java" "${build_dir}/installed-java")"
+    expected_units="$(printf '%s' "${installed_secret}" | iconv -t UTF-16BE | od -An -tx1 | tr -d ' \n')"
+    if [[ "${java_read}" != "graylog.conf ${expected_units}" ]]; then
+        echo "::error::Java does not read the existing password secret from the rewritten graylog.conf"
+        exit 1
+    fi
+fi
+
+echo "==> ansible-lint (production profile, baseline in .ansible-lint-ignore)"
+ansible-lint

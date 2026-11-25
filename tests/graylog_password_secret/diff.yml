@@ -1,0 +1,25 @@
+---
+# Runs the tasks that write graylog.conf with --check --diff. tests/run-installer-ci.sh checks that the output does not
+# contain the secret, and runs it from the installed collection with graylog_role=qubership.observability.graylog.
+# Pass graylog_volume, graylog_uid, and graylog_gid with -e.
+- name: Render the Graylog config with a diff
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+    root_password_sha2: "{{ 'admin' | hash('sha256') }}"
+    mongodb_graylog_username: graylog
+    mongodb_graylog_password: graylog
+    graylog_custom_params:
+      message_journal_max_age: 24h
+  tasks:
+    - name: Choose the password secret
+      ansible.builtin.include_role:
+        name: "{{ graylog_role | default('graylog') }}"
+        tasks_from: password_secret.yml
+
+    - name: Write the Graylog config
+      ansible.builtin.include_role:
+        name: "{{ graylog_role | default('graylog') }}"
+        tasks_from: config.yml

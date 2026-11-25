@@ -197,13 +197,16 @@ Official Ansible documentation on how to build and work with inventory:
 * [How to build your inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html)
 * [Uses a specific YAML file as an inventory source](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yaml_inventory.html)
 
-It means that all parameters described below will be specified in the following format:
+It means that all parameters described below will be specified in the following format. The playbook deploys to the
+hosts of the `graylog` group:
 
 ```yaml
 all:
-  hosts:
-    <host_ip>:
-      ansible_user: <ssh_user_name>
+  children:
+    graylog:
+      hosts:
+        <host_ip>:
+          ansible_user: <ssh_user_name>
   vars:
     <parameter_1>
     <parameter_2>
@@ -215,13 +218,18 @@ For example:
 
 ```yaml
 all:
-  hosts:
-    1.2.3.4:
-      ansible_user: ubuntu
+  children:
+    graylog:
+      hosts:
+        1.2.3.4:
+          ansible_user: ubuntu
   vars:
     graylog_install: True
     ...
 ```
+
+An existing inventory that lists the hosts directly under `all` works too: add `-e graylog_target_hosts=all` to the
+`ansible-playbook` command.
 
 [Back to TOC](#table-of-content)
 
@@ -251,6 +259,17 @@ all:
 | `docker_container_timeout`              | integer | no        | `300`         | Set image pulling and container starting timeouts     |
 <!-- markdownlint-enable line-length -->
 
+The exporter roles apply `raw_artifacts_registry_username`, `raw_artifacts_registry_password`,
+`raw_artifacts_registry_validate_certs`, and `raw_artifacts_registry_ca_cert_file` only when the download URL has the
+scheme, host, and port of `raw_artifacts_registry`. A registry value without a scheme counts as `https://`, both for
+this check and for the download URLs built from it. Other URLs, such as the public GitHub defaults, get no credentials
+and are checked against the trust store of the target host. The check covers the URL that the role requests: if the
+registry redirects the download, the redirected request keeps the same credentials and TLS settings.
+
+To download the exporters from a mirror, set `raw_artifacts_registry` to the mirror, such as
+`https://nexus.test.org/raw`, and each binary or tarball parameter to a path under it, or to a full URL on the same
+origin. A mirror on another origin needs its CA in the trust store of the target hosts.
+
 Examples:
 
 **Note:** It's just an example of a parameter's format, not a recommended parameter.
@@ -258,7 +277,7 @@ Examples:
 ```yaml
 all:
   vars:
-    raw_artifacts_registry: nexus.test.org/raw
+    raw_artifacts_registry: https://nexus.test.org/raw
     docker_registry: nexus.test.org:17001
 ```
 
@@ -362,27 +381,64 @@ all:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                    | Type    | Mandatory | Default value                         | Description                                                                                                                                                                                                |
-| ---------------------------- | ------- | --------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `graylog_install`            | boolean | no        | `True`                                | Enable/disable graylog installation: `True` to install, `False` to uninstall                                                                                                                               |
-| `graylog_image`              | string  | no        | `graylog/graylog:5.2.9`               | Docker image of Graylog                                                                                                                                                                                    |
-| `nginx_image`                | string  | no        | `nginx:1.27.3-alpine`                 | Docker image of Nginx                                                                                                                                                                                      |
-| `mongo_image`                | string  | no        | `mongo:5.0.30`                        | Docker image of MongoDB                                                                                                                                                                                    |
-| `opensearch_image`           | string  | no        | `opensearchproject/opensearch:1.3.20` | Docker image of OpenSearch                                                                                                                                                                                 |
-| `root_password`              | string  | no        | `admin`                               | The password for the super admin user on Graylog                                                                                                                                                           |
-| `auditviewer_password`       | string  | no        | `auditViewer`                         | The initial password of `auditViewer` user                                                                                                                                                                 |
-| `operator_password`          | string  | no        | `operator`                            | The initial password of `operator` user                                                                                                                                                                    |
-| `telegraf_operator_password` | string  | no        | `telegraf_operator`                   | The initial password of `telegraf_operator` user                                                                                                                                                           |
-| `graylog_volume`             | string  | no        | `/var/lib`                            | The folder on the target VM that is used for deployment and data storage                                                                                                                                   |
-| `graylog_heap_size_mb`       | string  | no        | `2048`                                | The heap size for Graylog in Mb, for example: `2048` or `4096`                                                                                                                                             |
-| `additional_graylog_volumes` | string  | no        | `-`                                   | The list of additional volumes for the Graylog Docker container. The values equivalent to the usual Docker volume record `/var/lib/graylog/certs:/usr/share/graylog/data/certs:z` and separated by a comma |
-| `additional_graylog_ports`   | string  | no        | `-`                                   | The list of additional thrown ports for the Graylog Docker container. The values equivalent to the usual Docker thrown ports record `570`, `590:590`, `600:600/tcp` and separated by a comma               |
-| `content_deploy_policy`      | string  | no        | `only-create`                         | The Graylog content deploy policy (such as streams, inputs, grok patterns). Possible values: `only-create`, `force-update`, `skip`                                                                         |
-| `dns_name`                   | string  | no        | `-`                                   | The address by which Graylog is accessible to users (DNS name). If this value is set, then Graylog is not accessible by its IP address                                                                     |
-| `index_replicas`             | integer | no        | `0`                                   | The number of OpenSearch/Elasticsearch replicas used per index                                                                                                                                             |
-| `index_shards`               | integer | no        | `1`                                   | The number of OpenSearch/Elasticsearch shards used per index                                                                                                                                               |
-| `path_repo`                  | string  | no        | `archives`                            | The name of directory in OpenSearch/Elasticsearch for saving snapshots                                                                                                                                     |
+| Parameter                    | Type    | Mandatory | Default value                         | Description                                                                                                                                                                                                                                                 |
+| ---------------------------- | ------- | --------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `graylog_install`            | boolean | no        | `True`                                | Enable/disable graylog installation: `True` to install, `False` to uninstall                                                                                                                                                                                |
+| `graylog_image`              | string  | no        | `graylog/graylog:5.2.9`               | Docker image of Graylog                                                                                                                                                                                                                                     |
+| `nginx_image`                | string  | no        | `nginx:1.27.3-alpine`                 | Docker image of Nginx                                                                                                                                                                                                                                       |
+| `mongo_image`                | string  | no        | `mongo:5.0.30`                        | Docker image of MongoDB                                                                                                                                                                                                                                     |
+| `opensearch_image`           | string  | no        | `opensearchproject/opensearch:1.3.20` | Docker image of OpenSearch                                                                                                                                                                                                                                  |
+| `root_password`              | string  | no        | `admin`                               | The password for the super admin user on Graylog                                                                                                                                                                                                            |
+| `graylog_password_secret`    | string  | no        | `""`                                  | Secret for signing sessions and encrypting stored values. A new secret should have letters and digits only, at least 64 characters. See the rules below the table                                                                                           |
+| `auditviewer_password`       | string  | no        | `auditViewer`                         | The initial password of `auditViewer` user                                                                                                                                                                                                                  |
+| `operator_password`          | string  | no        | `operator`                            | The initial password of `operator` user                                                                                                                                                                                                                     |
+| `telegraf_operator_password` | string  | no        | `telegraf_operator`                   | The initial password of `telegraf_operator` user                                                                                                                                                                                                            |
+| `graylog_volume`             | string  | no        | `/var/lib`                            | The folder on the target VM that is used for deployment and data storage                                                                                                                                                                                    |
+| `graylog_heap_size_mb`       | string  | no        | `2048`                                | The heap size for Graylog in Mb, for example: `2048` or `4096`                                                                                                                                                                                              |
+| `additional_graylog_volumes` | string  | no        | `-`                                   | The list of additional volumes for the Graylog Docker container. The values equivalent to the usual Docker volume record `/var/lib/graylog/certs:/usr/share/graylog/data/certs:z` and separated by a comma                                                  |
+| `additional_graylog_ports`   | string  | no        | `-`                                   | The list of additional thrown ports for the Graylog Docker container. The values equivalent to the usual Docker thrown ports record `570`, `590:590`, `600:600/tcp` and separated by a comma                                                                |
+| `docker_ports`               | list    | no        | `[12201]`                             | GELF TCP input ports. Docker publishes each port. Unless `content_deploy_policy` is `skip`, Graylog gets a GELF TCP input on each port that has none                                                                                                        |
+| `content_deploy_policy`      | string  | no        | `only-create`                         | The Graylog content deploy policy (such as streams, inputs, grok patterns). Possible values: `only-create`, `force-update`, `skip`                                                                                                                          |
+| `dns_name`                   | string  | no        | `-`                                   | The address by which Graylog is accessible to users (DNS name). If this value is set, then Graylog is not accessible by its IP address                                                                                                                      |
+| `index_replicas`             | integer | no        | `0`                                   | The number of OpenSearch/Elasticsearch replicas used per index                                                                                                                                                                                              |
+| `index_shards`               | integer | no        | `1`                                   | The number of OpenSearch/Elasticsearch shards used per index                                                                                                                                                                                                |
+| `path_repo`                  | string  | no        | `archives`                            | The name of directory in OpenSearch/Elasticsearch for saving snapshots                                                                                                                                                                                      |
 <!-- markdownlint-enable line-length -->
+
+The role chooses the Graylog password secret in this order:
+
+1. `graylog_password_secret`, when it is set. It replaces the secret in an existing `graylog.conf`, so set it only to
+   the secret that the installation uses, or when you mean to change the secret. The role writes it with Java
+   properties escapes, so Graylog reads back the exact value.
+2. `graylog_custom_params.password_secret`, which earlier installer versions documented. The role reads it as those
+   versions wrote it, so Graylog keeps the same key. When both settings are set, they must hold the same value.
+3. The `password_secret` of the existing `graylog.conf`. The role stops when the file has no value for it.
+4. A new random secret, on a fresh install only.
+
+`graylog_password_secret` holds the value that Graylog reads. To reuse a secret from `graylog.conf`, undo its Java
+properties escapes, such as `\\` for one backslash. A secret of letters and digits has no escapes.
+
+When `graylog.conf` is missing and no secret is set, the role stops instead of generating one in these cases:
+
+* `graylog_custom_params.mongodb_uri` points Graylog to a custom MongoDB. Nodes that share a database must share one
+  secret, so set `graylog_password_secret` on every node: to the secret of the existing cluster when you add a node,
+  or to one new random value for a new cluster.
+* The bundled MongoDB already holds Graylog data. The role checks this with the `mongodb_graylog_username` account.
+  Set `graylog_password_secret` to the secret that the installation used.
+* The role cannot count the collections in the bundled MongoDB: the `graylog_mongo_1` container is not running, or
+  `mongodb_graylog_username` and `mongodb_graylog_password` do not match the database. Fix the container or the
+  credentials and run the playbook again. When you recover an existing installation, you can instead set
+  `graylog_password_secret` to its original secret, which skips the check.
+
+The role also stops when it cannot read the secret that Graylog would read: when `graylog.conf` or
+`graylog_custom_params.password_secret` has a malformed `\uxxxx` escape, which Java rejects, or a value with an
+unpaired UTF-16 surrogate escape, which Ansible cannot pass on. Set `graylog_password_secret` to the secret of the
+installation.
+
+A new secret signs out all users and makes values encrypted with the old secret, such as access tokens, unreadable.
+Before an upgrade, save the `password_secret` line from `graylog.conf`. To roll back to an installer version that
+writes its own default secret, pass the saved value as `graylog_custom_params.password_secret` exactly as the file
+writes it, with its escapes. Older versions write that setting into `graylog.conf` as is, so Graylog keeps the same key.
 
 The parameter `content_deploy_policy` has the following possible values and these policies mean:
 

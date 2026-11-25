@@ -1,7 +1,7 @@
 ---
 - name: Install FluentBit
   block:
-    - import_tasks: prepare-env.yml
-    - import_tasks: run-fluentbit.yml
+    - ansible.builtin.import_tasks: prepare-env.yml
+    - ansible.builtin.import_tasks: run-fluentbit.yml
   when:
     - fluentbit_install | bool
