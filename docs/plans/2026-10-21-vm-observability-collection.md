@@ -180,7 +180,7 @@ Each stage ends with a tagged release and updated docs.
       script as the Graylog stack's check.
 - [ ] Move the remaining Graylog-only parts of `prepare_environment` (duplicator ports, container checks) into the
       `graylog` role, then remove `prepare_environment` and `common`.
-- [ ] Add Molecule scenarios for the foundation roles and `keepalived`.
+- [x] Add Molecule scenarios for the foundation roles and `keepalived`.
 - [ ] Fix the bugs that the stage 2 survey found in the code being merged:
   - an empty `docker_registry` yields `/image`, because the check compares it with `0`;
   - with `validate_certs` and credentials both set, no pull task runs;
