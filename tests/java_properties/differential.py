@@ -37,6 +37,7 @@ FRAGMENTS = [
     "password_secret = \\ud800 lone",
     "password_secret = café",
     "=: value",
+    "other = malformed \\u12zz",
 ]
 ENDINGS = ["\n", "\r\n", "\r"]
 CHARACTERS = "ab \\\t\n\r\f=:#!é中\U0001f600𐀀"
@@ -74,9 +75,13 @@ def main():
 
     source = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ReadProperties.java")
     output = subprocess.run(["java", source, work], check=True, capture_output=True, text=True).stdout
+    rows = [line.split(" ", 1) for line in output.splitlines()]
+    names = [row[0] for row in rows]
+    if sorted(names) != sorted(expected) or len(set(names)) != len(names):
+        print("Java returned %d rows for %d cases, or rows that do not match the cases" % (len(rows), len(expected)))
+        sys.exit(1)
     mismatches = 0
-    for line in output.splitlines():
-        name, java_value = line.split(" ", 1)
+    for name, java_value in rows:
         if java_value != expected[name]:
             mismatches += 1
             with open(os.path.join(work, name), "rb") as case:

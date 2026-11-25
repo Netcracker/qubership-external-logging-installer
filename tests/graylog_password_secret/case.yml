@@ -49,6 +49,8 @@
         that:
           - case.expect == 'fail'
           - ansible_failed_task.name is search('^Stop when')
+          # Each rejected fixture names the guard that must stop it, so a fixture routed to another guard fails.
+          - ansible_failed_task.name is search(case.stop)
         fail_msg: >-
           Case '{{ case.name }}' failed in '{{ ansible_failed_task.name }}':
           {{ ansible_failed_result.msg | default('') }}

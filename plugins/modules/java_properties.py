@@ -14,6 +14,8 @@ description:
   - Reads the value of one key from a Java properties file, such as C(graylog.conf), as
     C(java.util.Properties.load(InputStream)) reads it. Lines may end in LF, CRLF, or CR, and the last definition wins.
   - Escapes a value so that C(java.util.Properties) reads it back unchanged from a C(key = value) line.
+  - Set at least one of O(path), O(content), and O(escape). O(path) and O(content) are alternative sources to read
+    O(key) from, and O(escape) can be set alone or with either of them. O(key) is always required.
   - Never changes the target.
   - The graylog role ships a copy of this module in its C(library) directory, so checkout runs find it too.
 author:
@@ -46,14 +48,14 @@ notes:
 
 EXAMPLES = r"""
 - name: Read password_secret from graylog.conf
-  java_properties:
+  qubership.observability.java_properties:
     path: /srv/graylog/config/graylog.conf
     key: password_secret
   register: graylog_config_secret
   no_log: true
 
 - name: Escape a secret for graylog.conf
-  java_properties:
+  qubership.observability.java_properties:
     key: password_secret
     escape: "{{ graylog_password_secret }}"
   register: graylog_escaped_secret
@@ -66,8 +68,14 @@ exists:
   returned: when O(path) is set
   type: bool
 value:
-  description: The value of O(key), or V(null) when the key is absent.
+  description: The value of O(key), or V(null) when the key is absent or RV(error) is set.
   returned: when O(path) or O(content) is set
+  type: str
+error:
+  description:
+    - Why the value cannot be read, without the value. Java rejects a file with a malformed Unicode escape in any line,
+      and Ansible cannot pass on a value with an unpaired UTF-16 surrogate.
+  returned: when the value cannot be read
   type: str
 escaped:
   description: O(escape) escaped for a C(key = value) line.
@@ -184,13 +192,23 @@ def unescape(raw):
 
 
 def read_value(text, key):
-    """Return the value that java.util.Properties reads for key from text, or None."""
+    """Return the value that java.util.Properties reads for key from text, or None.
+
+    Like Java, it unescapes every key and value, so a malformed escape anywhere raises
+    MalformedEscapeError.
+    """
     found = None
     for line in logical_lines(text):
         raw_key, raw_value = split_line(line)
+        value = unescape(raw_value)
         if unescape(raw_key) == key:
-            found = unescape(raw_value)
+            found = value
     return found
+
+
+def has_unpaired_surrogate(value):
+    """Tell whether value holds a UTF-16 surrogate without its pair, which Ansible cannot return."""
+    return any("\ud800" <= char <= "\udfff" for char in value)
 
 
 def escape_value(value):
@@ -248,15 +266,21 @@ def main():
     elif params["content"] is not None:
         text = params["content"].encode("utf-8", "surrogatepass").decode("latin-1")
 
+    # Report a value that cannot be read in error instead of failing, so that a task with no_log can show why.
     if params["path"] is not None or params["content"] is not None:
+        result["value"] = None
         try:
-            result["value"] = None if text is None else read_value(text, params["key"])
+            value = None if text is None else read_value(text, params["key"])
         except MalformedEscapeError:
-            module.fail_json(
-                msg="%s has a malformed \\uxxxx escape, which Java also rejects, so the value of %s is unknown."
-                % (source, params["key"]),
-                **result
-            )
+            result["error"] = "%s has a malformed \\uxxxx escape, so Java cannot read it." % source
+        else:
+            if value is not None and has_unpaired_surrogate(value):
+                result["error"] = (
+                    "The value of %s in %s has an unpaired \\uD800-\\uDFFF escape, which Ansible cannot pass on."
+                    % (params["key"], source)
+                )
+            else:
+                result["value"] = value
 
     if params["escape"] is not None:
         result["escaped"] = escape_value(params["escape"])

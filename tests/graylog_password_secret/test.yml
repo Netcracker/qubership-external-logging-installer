@@ -62,15 +62,19 @@
       - name: bare final definition
         config: "password_secret = old\npassword_secret\n"
         expect: fail
+        stop: has no password secret
       - name: similar key
         config: "password_secret_old = old\n"
         expect: fail
+        stop: has no password secret
       - name: missing key
         config: "is_leader = true\n"
         expect: fail
+        stop: has no password secret
       - name: empty value
         config: "password_secret =\n"
         expect: fail
+        stop: has no password secret
       - name: value that continues on the next line
         config: "password_secret = {{ secret }}\\\n  more\n"
         expect: "{{ secret }}more"
@@ -100,10 +104,12 @@
         explicit: "{{ secret }}"
         custom: old
         expect: fail
+        stop: differ
       - name: explicit secret and legacy custom parameter differ only in case
         explicit: "{{ secret }}"
         custom: "{{ secret | upper }}"
         expect: fail
+        stop: differ
       # graylog.conf got the legacy value as is, so Graylog applied Java escapes to it.
       - name: legacy custom parameter with escapes
         custom: Legacy\u0041\\B
@@ -119,12 +125,26 @@
       - name: explicit secret starts with a space and holds a line break
         explicit: " {{ secret }}\nnext line"
         expect: " {{ secret }}\nnext line"
+      # Java rejects the whole file, and Ansible cannot carry an unpaired surrogate, so the role cannot keep the secret.
+      - name: malformed escape in another key
+        config: "password_secret = {{ secret }}\nother = \\u12zz\n"
+        expect: fail
+        stop: existing Graylog config cannot be read
+      - name: unpaired surrogate escape in the value
+        config: "password_secret = {{ secret }}\\ud800\n"
+        expect: fail
+        stop: existing Graylog config cannot be read
+      - name: legacy custom parameter with a malformed escape
+        custom: Legacy\u12zz
+        expect: fail
+        stop: graylog_custom_params.password_secret cannot be read
       - name: explicit secret holds non-ASCII characters
         explicit: "{{ secret }}é中😀"
         expect: "{{ secret }}é中😀"
       - name: missing config with a custom MongoDB
         mongodb_uri: mongodb://graylog:graylog@db.example.org:27017/graylog
         expect: fail
+        stop: custom MongoDB
       - name: missing config with a custom MongoDB, with an explicit secret
         explicit: "{{ secret }}"
         mongodb_uri: mongodb://graylog:graylog@db.example.org:27017/graylog
@@ -132,6 +152,7 @@
       - name: missing config while MongoDB holds Graylog data
         mongodb_has_data: true
         expect: fail
+        stop: holds Graylog collections
       - name: missing config while MongoDB holds Graylog data, with an explicit secret
         explicit: "{{ secret }}"
         mongodb_has_data: true
