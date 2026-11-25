@@ -56,7 +56,7 @@ jobs:
           ansible=false
           while IFS= read -r file; do
             case "${file}" in
-              playbooks/*|roles/*|tests/*|extensions/*|meta/*|galaxy.yml|requirements.yml|CHANGELOG.md|\
+              playbooks/*|plugins/*|roles/*|tests/*|extensions/*|meta/*|galaxy.yml|requirements.yml|CHANGELOG.md|\
               ansible.cfg|.ansible-lint|.ansible-lint-ignore|.github/workflows/installer-ci.yaml)
                 ansible=true
                 ;;
