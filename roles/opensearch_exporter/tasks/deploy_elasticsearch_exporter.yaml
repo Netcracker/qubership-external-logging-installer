@@ -1,13 +1,14 @@
 ---
 - name: Resolve elasticsearch_exporter download URL
-  # A custom URL wins. A full URL in elasticsearch_exporter_tarball is used as is; a relative path is joined to raw_artifacts_registry.
+  # A custom URL wins. A full URL in elasticsearch_exporter_tarball is used as is; a relative path is joined to
+  # raw_artifacts_registry, which counts as https:// when it has no scheme, as in the origin check.
   ansible.builtin.set_fact:
     elasticsearch_exporter_tarball_url: >-
       {{ elasticsearch_exporter_custom_tarball
          if (elasticsearch_exporter_custom_tarball is defined and elasticsearch_exporter_custom_tarball is not none and elasticsearch_exporter_custom_tarball | length > 0)
          else (elasticsearch_exporter_tarball
                if (elasticsearch_exporter_tarball is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
-               else raw_artifacts_registry ~ '/' ~ elasticsearch_exporter_tarball) }}
+               else (raw_artifacts_registry | regex_replace('^(?![A-Za-z][A-Za-z0-9+.-]*://)', 'https://')) ~ '/' ~ elasticsearch_exporter_tarball) }}
 
 # Registry credentials and TLS settings apply only to the origin of raw_artifacts_registry. Downloads from anywhere
 # else, such as the public release URL, send no credentials and always verify TLS.

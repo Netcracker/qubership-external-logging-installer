@@ -1,13 +1,14 @@
 ---
 - name: Resolve cAdvisor download URL
-  # A custom URL wins. A full URL in cadvisor_binary is used as is; a relative path is joined to raw_artifacts_registry.
+  # A custom URL wins. A full URL in cadvisor_binary is used as is; a relative path is joined to
+  # raw_artifacts_registry, which counts as https:// when it has no scheme, as in the origin check.
   ansible.builtin.set_fact:
     cadvisor_binary_url: >-
       {{ cadvisor_custom_binary
          if (cadvisor_custom_binary is defined and cadvisor_custom_binary is not none and cadvisor_custom_binary | length > 0)
          else (cadvisor_binary
                if (cadvisor_binary is match('https?://') or raw_artifacts_registry is not defined or raw_artifacts_registry is none)
-               else raw_artifacts_registry ~ '/' ~ cadvisor_binary) }}
+               else (raw_artifacts_registry | regex_replace('^(?![A-Za-z][A-Za-z0-9+.-]*://)', 'https://')) ~ '/' ~ cadvisor_binary) }}
 
 # Registry credentials and TLS settings apply only to the origin of raw_artifacts_registry. Downloads from anywhere
 # else, such as the public release URL, send no credentials and always verify TLS.
