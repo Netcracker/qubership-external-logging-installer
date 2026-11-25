@@ -47,7 +47,7 @@ plugins_path: {}
 # docker_threads_soft_limit: 4096
 # docker_threads_hard_limit: 8192
 
-graylog_image: "graylog/graylog:5.2.9"
+graylog_image: "graylog/graylog:5.2.12"
 
 ########################################################################################################################
 #                                               Services settings
