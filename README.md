@@ -63,8 +63,9 @@ on virtual machines.
 
 * Docker >= 20.x
 * Controller: Python 3.11 or later with pip, and ansible-core 2.19 or later
-* Target hosts: Python 3.8 or later. RHEL 8 ships Python 3.6 by default, so install a newer one, such as `python3.11`,
-  and set `ansible_python_interpreter` to it. See the
+* Target hosts: Python 3.9 or later for the latest ansible-core. Only ansible-core 2.19 still manages Python 3.8, so
+  pin `"ansible-core>=2.19,<2.20"` for such targets. RHEL 8 ships Python 3.6 by default, so install a newer one, such
+  as `python3.11`, and set `ansible_python_interpreter` to it. See the
   [ansible-core support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 * Additional packages: `acl`, `zip`, `unzip`, `net-tools`
 
@@ -129,7 +130,8 @@ src="$(mktemp -d)"
 out="$(mktemp -d)"
 git archive HEAD | tar -x -C "${src}"
 ansible-galaxy collection build --output-path "${out}" "${src}"
-ansible-galaxy collection install "${out}"/qubership-observability-*.tar.gz
+# --force replaces an installed build of the same version
+ansible-galaxy collection install --force "${out}"/qubership-observability-*.tar.gz
 ansible-playbook -i inventory.yml qubership.observability.graylog
 ```
 
@@ -242,7 +244,7 @@ The project includes automated linting and validation:
 # Run Super Linter (same as CI)
 docker run --rm -e RUN_LOCAL=true -v $(pwd):/tmp/lint github/super-linter:latest
 
-# Syntax checks, collection build, and ansible-lint (same as CI)
+# Syntax checks, collection build, tests, and ansible-lint (same as CI)
 pip3 install -r tests/requirements-ci.txt
 bash tests/run-installer-ci.sh
 
@@ -254,6 +256,10 @@ ansible-galaxy collection install -r requirements.yml
 # Dry run deployment from the checkout root
 ANSIBLE_ROLES_PATH=roles ansible-playbook -i inventory.yml playbooks/graylog.yml --check
 ```
+
+`tests/run-installer-ci.sh` needs GNU tar as `tar`. On macOS, install it with `brew install gnu-tar` and put its
+`gnubin` directory first in `PATH`, for example `PATH="$(brew --prefix gnu-tar)/libexec/gnubin:${PATH}"`. The script
+compares the `java_properties` module with Java when Java 11 or later is on `PATH`, and skips that check otherwise.
 
 The Molecule scenario needs Docker on the machine that runs it and about 6 GB of free RAM.
 

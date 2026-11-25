@@ -259,14 +259,16 @@ all:
 | `docker_container_timeout`              | integer | no        | `300`         | Set image pulling and container starting timeouts     |
 <!-- markdownlint-enable line-length -->
 
-The exporter roles send `raw_artifacts_registry_username`, `raw_artifacts_registry_password`, and the
-`raw_artifacts_registry_validate_certs` and `raw_artifacts_registry_ca_cert_file` settings only to download URLs with
-the scheme, host, and port of `raw_artifacts_registry`. A value without a scheme counts as `https://`. Other URLs, such
-as the public GitHub defaults, get no credentials and are checked against the trust store of the target host.
+The exporter roles apply `raw_artifacts_registry_username`, `raw_artifacts_registry_password`,
+`raw_artifacts_registry_validate_certs`, and `raw_artifacts_registry_ca_cert_file` only when the download URL has the
+scheme, host, and port of `raw_artifacts_registry`. A registry value without a scheme counts as `https://`, both for
+this check and for the download URLs built from it. Other URLs, such as the public GitHub defaults, get no credentials
+and are checked against the trust store of the target host. The check covers the URL that the role requests: if the
+registry redirects the download, the redirected request keeps the same credentials and TLS settings.
 
-To download the exporters from a mirror, set `raw_artifacts_registry` to the mirror and each binary or tarball
-parameter to a path under it, or to a full URL on the same origin. A mirror on another origin needs its CA in the trust
-store of the target hosts.
+To download the exporters from a mirror, set `raw_artifacts_registry` to the mirror, such as
+`https://nexus.test.org/raw`, and each binary or tarball parameter to a path under it, or to a full URL on the same
+origin. A mirror on another origin needs its CA in the trust store of the target hosts.
 
 Examples:
 
@@ -275,7 +277,7 @@ Examples:
 ```yaml
 all:
   vars:
-    raw_artifacts_registry: nexus.test.org/raw
+    raw_artifacts_registry: https://nexus.test.org/raw
     docker_registry: nexus.test.org:17001
 ```
 
@@ -416,13 +418,22 @@ The role chooses the Graylog password secret in this order:
 `graylog_password_secret` holds the value that Graylog reads. To reuse a secret from `graylog.conf`, undo its Java
 properties escapes, such as `\\` for one backslash. A secret of letters and digits has no escapes.
 
-When `graylog.conf` is missing and no secret is set, the role stops instead of generating one in two cases:
+When `graylog.conf` is missing and no secret is set, the role stops instead of generating one in these cases:
 
 * `graylog_custom_params.mongodb_uri` points Graylog to a custom MongoDB. Nodes that share a database must share one
   secret, so set `graylog_password_secret` on every node: to the secret of the existing cluster when you add a node,
   or to one new random value for a new cluster.
 * The bundled MongoDB already holds Graylog data. The role checks this with the `mongodb_graylog_username` account.
   Set `graylog_password_secret` to the secret that the installation used.
+* The role cannot count the collections in the bundled MongoDB: the `graylog_mongo_1` container is not running, or
+  `mongodb_graylog_username` and `mongodb_graylog_password` do not match the database. Fix the container or the
+  credentials and run the playbook again. When you recover an existing installation, you can instead set
+  `graylog_password_secret` to its original secret, which skips the check.
+
+The role also stops when it cannot read the secret that Graylog would read: when `graylog.conf` or
+`graylog_custom_params.password_secret` has a malformed `\uxxxx` escape, which Java rejects, or a value with an
+unpaired UTF-16 surrogate escape, which Ansible cannot pass on. Set `graylog_password_secret` to the secret of the
+installation.
 
 A new secret signs out all users and makes values encrypted with the old secret, such as access tokens, unreadable.
 Before an upgrade, save the `password_secret` line from `graylog.conf`. To roll back to an installer version that

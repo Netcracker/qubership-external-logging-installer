@@ -37,10 +37,14 @@ All notable changes to this project are documented in this file. The format foll
 - node_exporter, mongodb_exporter, opensearch_exporter, and cadvisor no longer prefix a full download URL with
   `raw_artifacts_registry`, and no longer fail when `raw_artifacts_registry` is not set.
 - `graylog_output_duplicator` now loads its defaults. The file was named `defaults/mailn.yaml`. With the defaults
-  loaded, the role turns on when `other_side_graylog_host` is set, and it now ships the output and input templates
-  that it sends.
+  loaded, the role turns on when `other_side_graylog_host` is set. It now loads the request templates and processing
+  rules that it shares with `graylog_configuration` from that role, instead of looking for them in its own files.
 - Preflight checks failed when the inventory did not set `graylog_heap_size_mb` or `elasticsearch_heap_size_mb`. They
   now use the 2048 MiB default of the graylog and opensearch roles.
+- `--check` runs failed in preflight, because check mode skipped the read-only disk, RAM, CPU, and Docker commands.
+  These commands now run in check mode too.
+- Exporter download URLs built from a `raw_artifacts_registry` without a scheme had no scheme either, so `get_url`
+  rejected them. They now get `https://`, as the registry origin check already assumed.
 - The MongoDB restart task no longer sets `recreate` twice.
 - The Docker `daemon.json` template failed when `docker_registry` was not set, although the parameter is optional. The
   insecure registry entry is now written only when `docker_registry` is set.
