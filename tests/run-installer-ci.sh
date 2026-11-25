@@ -115,13 +115,20 @@ echo "==> Test how the graylog role keeps an existing password secret"
 ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/test.yml"
 
 echo "==> Compare the java_properties module with java.util.Properties"
+# The comparison runs a Java source file directly, which needs Java 11 or later.
+java_major=0
 if command -v java >/dev/null 2>&1; then
+    java_spec="$(java -XshowSettings:properties -version 2>&1 | awk -F' = ' '/java.specification.version/ {print $2}')"
+    java_spec="${java_spec#1.}"
+    java_major="${java_spec%%.*}"
+fi
+if [[ "${java_major}" -ge 11 ]]; then
     python3 "${root}/tests/java_properties/differential.py" "${build_dir}/java-properties"
 elif [[ "${CI:-}" == "true" ]]; then
-    echo "::error::java is not on PATH, so the java_properties module cannot be compared with Java"
+    echo "::error::The comparison with Java needs Java 11 or later on PATH; found '${java_major}'"
     exit 1
 else
-    echo "java is not on PATH; skipping the comparison with Java"
+    echo "Java 11 or later is not on PATH (found '${java_major}'); skipping the comparison with Java"
 fi
 
 echo "==> Test the origin check for raw artifact downloads"
@@ -130,13 +137,28 @@ ansible-playbook -i localhost, "${root}/tests/raw_artifacts_origin/test.yml"
 echo "==> Test the processing rule request renderer"
 ansible-playbook -i localhost, "${root}/tests/graylog_processing_rule/test.yml"
 
+# Runs a command and keeps its output in run_output. On failure, prints the output with the secret in $1 replaced,
+# so the failing task shows, and returns the command's exit status.
+run_redacted() {
+    local secret="$1" status=0
+    shift
+    run_output="$("$@" 2>&1)" || status=$?
+    if [[ "${status}" -ne 0 ]]; then
+        printf '%s\n' "${run_output//"${secret}"/<redacted>}"
+        echo "::error::$1 failed with exit code ${status}"
+    fi
+    return "${status}"
+}
+
 echo "==> Check that --diff does not print the Graylog password secret"
 diff_volume="${build_dir}/graylog-volume"
 diff_secret="DiffCheckSecretThatMustNotAppearInTheOutput$(date +%s%N)"
 mkdir -p "${diff_volume}/graylog/config"
 printf 'password_secret = %s\nis_leader = true\n' "${diff_secret}" >"${diff_volume}/graylog/config/graylog.conf"
-diff_output="$(ansible-playbook -i localhost, --check --diff "${root}/tests/graylog_password_secret/diff.yml" \
-    -e "graylog_volume=${diff_volume}" -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)")"
+run_redacted "${diff_secret}" ansible-playbook -i localhost, --check --diff \
+    "${root}/tests/graylog_password_secret/diff.yml" \
+    -e "graylog_volume=${diff_volume}" -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)"
+diff_output="${run_output}"
 if grep -qF -- "${diff_secret}" <<<"${diff_output}"; then
     echo "::error::ansible-playbook --diff printed the Graylog password secret"
     exit 1
@@ -150,18 +172,34 @@ fi
 
 echo "==> Write graylog.conf with the installed collection"
 # Collection roles load no plugins from their own directories, so this proves that the role finds java_properties.
+# The seeded line uses other properties syntax than the template, so the check also proves that the role rewrote it.
 installed_volume="${build_dir}/installed-volume"
 installed_secret="InstalledCollectionSecret$(date +%s%N)"
+installed_config="${installed_volume}/graylog/config/graylog.conf"
 mkdir -p "${installed_volume}/graylog/config"
-printf 'password_secret = %s\n' "${installed_secret}" >"${installed_volume}/graylog/config/graylog.conf"
-(cd "${build_dir}" && ANSIBLE_ROLES_PATH="${build_dir}/no-roles" \
-    ANSIBLE_COLLECTIONS_PATH="${build_dir}/collections:${ANSIBLE_COLLECTIONS_PATH}" \
-    ansible-playbook -i localhost, "${root}/tests/graylog_password_secret/diff.yml" \
-    -e graylog_role=qubership.observability.graylog -e "graylog_volume=${installed_volume}" \
-    -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)" >/dev/null)
-if ! grep -qxF -- "password_secret = ${installed_secret}" "${installed_volume}/graylog/config/graylog.conf"; then
-    echo "::error::The installed collection did not keep the existing password secret in graylog.conf"
+printf 'is_leader = true\npassword_secret:%s\n' "${installed_secret}" >"${installed_config}"
+(
+    cd "${build_dir}"
+    export ANSIBLE_ROLES_PATH="${build_dir}/no-roles"
+    export ANSIBLE_COLLECTIONS_PATH="${build_dir}/collections:${ANSIBLE_COLLECTIONS_PATH}"
+    run_redacted "${installed_secret}" ansible-playbook -i localhost, \
+        "${root}/tests/graylog_password_secret/diff.yml" \
+        -e graylog_role=qubership.observability.graylog -e "graylog_volume=${installed_volume}" \
+        -e "graylog_uid=$(id -u)" -e "graylog_gid=$(id -g)"
+)
+if ! grep -qxF -- "password_secret = ${installed_secret}" "${installed_config}"; then
+    echo "::error::The installed collection did not rewrite graylog.conf with the existing password secret"
     exit 1
+fi
+if [[ "${java_major}" -ge 11 ]]; then
+    mkdir -p "${build_dir}/installed-java"
+    cp "${installed_config}" "${build_dir}/installed-java/graylog.conf"
+    java_read="$(java "${root}/tests/java_properties/ReadProperties.java" "${build_dir}/installed-java")"
+    expected_units="$(printf '%s' "${installed_secret}" | iconv -t UTF-16BE | od -An -tx1 | tr -d ' \n')"
+    if [[ "${java_read}" != "graylog.conf ${expected_units}" ]]; then
+        echo "::error::Java does not read the existing password secret from the rewritten graylog.conf"
+        exit 1
+    fi
 fi
 
 echo "==> ansible-lint (production profile, baseline in .ansible-lint-ignore)"
