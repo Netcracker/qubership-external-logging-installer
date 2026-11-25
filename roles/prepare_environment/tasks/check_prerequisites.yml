@@ -66,6 +66,9 @@
           ansible.builtin.shell: >
             df -BG {{ graylog_volume }} | awk '!/'Filesystem'/ {print $2}' | sed 's/G//'
           register: hdd_space_total
+          # Read-only, so it runs in check mode too: a skipped result would fail the checks below.
+          check_mode: false
+          changed_when: false
 
         - name: HDD information
           vars:
@@ -81,6 +84,9 @@
           ansible.builtin.shell: >
             free -m | awk '!/'total'/ {print $1 $2}' | grep 'Mem:' | sed 's/Mem://'
           register: ram_space_available
+          # Read-only, so it runs in check mode too: a skipped result would fail the checks below.
+          check_mode: false
+          changed_when: false
 
         - name: Fail if there is not enough RAM size
           ansible.builtin.fail:
@@ -108,6 +114,9 @@
           ansible.builtin.shell: >
             lscpu | grep ^"CPU(s)" | awk 'NF>1{print $NF}'
           register: cpus_available
+          # Read-only, so it runs in check mode too: a skipped result would fail the checks below.
+          check_mode: false
+          changed_when: false
           ignore_errors: yes
 
         - ansible.builtin.debug:
@@ -139,6 +148,9 @@
     - name: Check docker is exists
       ansible.builtin.command: /usr/bin/docker ps
       register: docker_exists
+      # Read-only, so it runs in check mode too: a skipped result would fail the checks below.
+      check_mode: false
+      changed_when: false
       ignore_errors: true
 
     - name: Fail if docker doesn't exist
@@ -178,6 +190,9 @@
               ansible.builtin.shell: "{{ 'docker port ' + item }}"
               with_items: "{{ docker_containers }}"
               register: raw_docker_ports
+              # Read-only, so it runs in check mode too: a skipped result would fail the checks below.
+              check_mode: false
+              changed_when: false
               ignore_errors: true
 
             # In ansible 2.5 after the map on regex_search can be added 'flatten' filter,
