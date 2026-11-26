@@ -4,16 +4,19 @@
     that:
       # IPv4 only: the VIP label scheme of keepalived is IPv4-specific.
       - keepalived_vip is match('^[0-9]{1,3}([.][0-9]{1,3}){3}$')
+      - keepalived_vip.split('.') | map('int') | max <= 255
       - keepalived_interface | length > 0
-      - keepalived_vip_prefix | string is match('^[0-9]{1,3}$')
+      - keepalived_vip_prefix | string is match('^[0-9]{1,2}$')
+      - keepalived_vip_prefix | int >= 1 and keepalived_vip_prefix | int <= 32
       - keepalived_virtual_router_id | string is match('^[0-9]{1,3}$')
       - keepalived_virtual_router_id | int >= 1 and keepalived_virtual_router_id | int <= 255
       - keepalived_auth_password | length > 0 and keepalived_auth_password | length <= 8
     fail_msg: >-
-      keepalived needs observability_vip, observability_vip_interface, keepalived_vip_prefix,
-      keepalived_virtual_router_id (1 to 255), and keepalived_auth_password (1 to 8 characters).
+      keepalived needs observability_vip (an IPv4 address), observability_vip_interface, keepalived_vip_prefix
+      (1 to 32), keepalived_virtual_router_id (1 to 255), and keepalived_auth_password (1 to 8 characters).
       To keep the settings of earlier versions, set keepalived_vip_prefix to 24 and keepalived_virtual_router_id to
-      {{ keepalived_vip.split('.')[-1] if keepalived_vip | length > 0 else 'the last octet of the VIP' }}.
+      {{ keepalived_vip.split('.')[-1] if keepalived_vip | length > 0 else 'the last octet of the VIP' }}. keepalived
+      used only the first 8 characters of a longer password, so set keepalived_auth_password to those 8 characters.
     quiet: true
 
 - name: Install keepalived with apt
@@ -65,6 +68,8 @@
     owner: root
     group: root
     mode: "0600"
+  # The file holds the VRRP password.
+  diff: false
   notify: Restart keepalived
 
 - name: Start keepalived

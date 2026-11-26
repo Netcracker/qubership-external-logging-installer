@@ -8,19 +8,19 @@ VIP while that check fails.
     name: qubership.observability.keepalived
   vars:
     keepalived_check_script: "{{ lookup('ansible.builtin.file', 'keepalived_check.sh') }}"
-  when: observability_vip | default('') | length > 0
+  when: observability_vip | default(keepalived_virtual_ip_address | default('')) | length > 0
 ```
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `observability_vip` | required | Virtual IPv4 address. |
 | `observability_vip_interface` | required | Interface that holds the VIP. |
-| `keepalived_vip_prefix` | required | Prefix length of the VIP, such as `24`. |
-| `keepalived_virtual_router_id` | required | VRRP router ID, 1 to 255. It must be unique per VIP in the network segment. |
+| `keepalived_vip_prefix` | required | Prefix length of the VIP, 1 to 32, such as `24`. |
+| `keepalived_virtual_router_id` | required | VRRP router ID, 1 to 255. All nodes that serve one VIP use the same ID; every other VRRP instance in the network segment needs a different one. |
 | `keepalived_auth_password` | required | VRRP password, 1 to 8 characters. Keep it in a vault. |
 | `keepalived_priority` | `100` | Election priority. Give each node a different value. |
 | `keepalived_unicast_peers` | `[]` | Addresses of the other nodes, for networks that drop multicast. Empty means multicast. |
-| `keepalived_check_script` | `""` | Content of a POSIX `sh` script that exits `0` while the node can serve. |
+| `keepalived_check_script` | `""` | Content of a POSIX `sh` script that exits `0` while the node can serve. keepalived runs it as root. Empty means no check: the VIP moves only when a node or keepalived stops. |
 | `keepalived_check_interval`, `keepalived_check_timeout` | `5`, `10` | Seconds between checks, and seconds one check may take. |
 | `keepalived_check_fall`, `keepalived_check_rise` | `2`, `2` | Failures in a row before the node gives up the VIP, and successes before it takes part again. |
 
@@ -33,5 +33,9 @@ The installer used to configure keepalived inside `prepare_environment`, with a 
 of the VIP as the router ID. The role now requires both settings. To keep the same VRRP setup, set
 `keepalived_vip_prefix: 24` and `keepalived_virtual_router_id` to the last octet of the VIP. The old names
 `keepalived_virtual_ip_address` and `keepalived_network_interface` still work.
+
+The role accepts a `keepalived_auth_password` of 1 to 8 characters. The earlier installer accepted a longer one, but
+keepalived used only its first 8 characters. Set `keepalived_auth_password` to those 8 characters: the nodes then keep
+the password they already use, and you can upgrade them one at a time.
 
 The earlier installer also skipped keepalived silently when the package was missing. The role now installs it.
