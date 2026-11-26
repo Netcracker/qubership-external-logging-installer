@@ -1,6 +1,7 @@
 ---
 # Tests the artifact_fetch role against an nginx server on the test host: HTTPS with basic auth and a private CA,
-# and plain HTTP. Run from the extensions/ directory: molecule test -s artifact_fetch
+# and plain HTTP. The inventory leaves validate_certs unset, so the default is under test.
+# Run from the extensions/ directory: molecule test -s artifact_fetch
 driver:
   name: docker
 platforms:
@@ -25,7 +26,6 @@ provisioner:
         observability_artifacts_url: https://localhost:8443/secure
         observability_artifacts_username: fetcher
         observability_artifacts_password: fetcher-password
-        observability_artifacts_validate_certs: true
         observability_artifacts_ca_file: /etc/artifact-test/ca.crt
 scenario:
   test_sequence:

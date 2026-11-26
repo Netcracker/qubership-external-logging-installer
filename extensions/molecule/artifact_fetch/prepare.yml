@@ -68,9 +68,13 @@
         dest: /etc/nginx/sites-enabled/default
         mode: "0644"
         content: |
+          # A different origin from the base URL: the role must not send the credentials here.
           server {
             listen 127.0.0.1:8080;
             root /srv/artifacts;
+            if ($http_authorization) {
+              return 403;
+            }
           }
           server {
             listen 127.0.0.1:8443 ssl;

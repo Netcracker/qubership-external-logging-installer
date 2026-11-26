@@ -1,25 +1,27 @@
 ---
 # Base URL for artifact paths that are not full URLs, for example a mirror of GitHub releases.
-# Full http:// or https:// URLs are used as they are.
+# Full http:// or https:// URLs are used as they are. A value without a scheme counts as https://.
 artifact_fetch_base_url: "{{ observability_artifacts_url | default(raw_artifacts_registry | default('')) }}"
 
-# Credentials for the artifact server. The role sends them only when both are set.
+# Credentials for the artifact server. The role sends them only when both are set, and only to the origin of the
+# base URL.
 artifact_fetch_username: >-
   {{ observability_artifacts_username | default(raw_artifacts_registry_username | default('')) }}
 artifact_fetch_password: >-
   {{ observability_artifacts_password | default(raw_artifacts_registry_password | default('')) }}
 
-# Check the server certificate. The default is true, because the default URLs point at GitHub.
+# Check the certificate of the base URL's server. Downloads from other origins always check it.
 artifact_fetch_validate_certs: >-
   {{ observability_artifacts_validate_certs | default(raw_artifacts_registry_validate_certs | default(true)) | bool }}
 
-# Path on the managed host to the CA certificate of the artifact server. Empty means the system trust store.
-# When set, it replaces the trust store for the download, as SSL_CERT_FILE does.
+# Path on the managed host to the CA certificate of the base URL's server. Empty means the system trust store.
+# When set, it replaces the trust store for downloads from that origin, as SSL_CERT_FILE does.
 artifact_fetch_ca_file: >-
   {{ observability_artifacts_ca_file | default(
        (ssl_data_host_path | default('/etc/logging/ssl')) ~ '/' ~ raw_artifacts_registry_ca_cert_file
        if raw_artifacts_registry_ca_cert_file | default('', true) | length > 0 else '') }}
 
-# Seconds that one download may take, and how often to retry it.
+# Seconds that one request may wait for the server, such as for the connection or the next data, and how often to
+# retry a failed download. A response that keeps sending data can take longer: neither is a deadline for the download.
 artifact_fetch_timeout: 60
 artifact_fetch_retries: 5
