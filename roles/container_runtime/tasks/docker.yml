@@ -35,11 +35,15 @@
                           and not container_runtime_registry_validate_certs | bool
                        else {})
              | combine(container_runtime_docker_daemon_options, recursive=true) }}
-      notify: Restart Docker
+      register: container_runtime_daemon_json
 
-# Restart now, not at the end of the play: the roles that run next start containers on this daemon.
-- name: Apply daemon.json before containers start
-  ansible.builtin.meta: flush_handlers
+    # Restart here, not in a handler: the roles that run next start containers on this daemon, and flushing handlers
+    # would also run the handlers of other roles in the play.
+    - name: Restart Docker to apply daemon.json  # noqa: no-handler
+      ansible.builtin.systemd_service:
+        name: docker
+        state: restarted
+      when: container_runtime_daemon_json is changed
 
 - name: Check that Docker answers
   ansible.builtin.command: docker info --format '{{ "{{" }} .ServerVersion {{ "}}" }}'
