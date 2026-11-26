@@ -21,11 +21,12 @@
   run_once: true
   register: host_prepare_deprecated_files
 
-# Only names set in the inventory or with -e count: hostvars does not hold role defaults.
-- name: Warn about old variable names in the inventory
+# hostvars does not hold role defaults, so the names come from the inventory, -e, or an earlier set_fact.
+- name: Warn about old variable names
   ansible.builtin.debug:
     msg: >-
-      The inventory sets variable names that a later release removes. Rename
+      This host has variables with names that a later release removes. Rename them where they are set, such as
+      the inventory, an extra var, or a set_fact task:
       {% for old in host_prepare_old_names -%}
       {{ old.key }} to {{ old.value.new }}{{ '; ' if not loop.last }}
       {%- endfor %}.

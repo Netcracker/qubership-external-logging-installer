@@ -35,14 +35,21 @@ Run only the checks with `tasks_from: preflight`.
 ## TLS certificate
 
 The role installs one certificate per host for the proxies of every stack:
-`<observability_config_dir>/tls/<ansible_host>.crt` and `.key`.
+`<observability_config_dir>/tls/<host_prepare_tls_name>.crt` and `.key`, with the key in mode `0600`. Point the
+proxies at these two files, and with `existing`, place the files there before the run.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `host_prepare_tls_name` | `ansible_host`, or `inventory_hostname` when `ansible_host` is not set | Base name of the two files. |
+| `host_prepare_tls_san` | `ansible_host` and `inventory_hostname` | Names in the self-signed certificate. The first is the common name. An IPv4 or IPv6 address becomes an `IP:` entry, anything else a `DNS:` entry. |
+| `host_prepare_tls_selfsigned_days` | `3650` | Validity of the self-signed certificate in days. |
 
 | `observability_tls_cert_source` | What the role does |
 | --- | --- |
 | `none` (default) | Nothing. |
 | `selfsigned` | Creates a 4096-bit RSA key and a certificate for `host_prepare_tls_san`, valid for `host_prepare_tls_selfsigned_days`. |
-| `content` | Writes `host_prepare_tls_cert_content` and `host_prepare_tls_key_content`. Keep them in a vault. |
-| `local_file` | Copies `host_prepare_tls_cert_file` and `host_prepare_tls_key_file` from the controller. |
-| `existing` | Checks that both files are already on the host. |
+| `content` | Writes `host_prepare_tls_cert_content` and `host_prepare_tls_key_content`, both PEM text and both required. Keep them in a vault. |
+| `local_file` | Copies `host_prepare_tls_cert_file` and `host_prepare_tls_key_file`, both paths on the controller and both required. |
+| `existing` | Checks that both files are already on the host, and stops when one is missing. |
 
 The old V names, such as `global_ssl_cert_source` and `global_data_dir`, still work.

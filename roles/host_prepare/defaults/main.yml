@@ -20,10 +20,11 @@ host_prepare_exporters_group: "{{ exporters_system_group | default(host_prepare_
 host_prepare_ntp_servers: "{{ ntp_server | default(chrony_ntp_servers | default([])) }}"
 
 # Directories that the stacks keep their data and config in. Each stack uses a subdirectory, such as
-# <data dir>/graylog or <data dir>/victorialogs.
+# <data dir>/graylog or <data dir>/victorialogs. An empty or null value counts as unset, so an inventory with
+# `graylog_volume: null` still falls back to graylog_default_volume.
 host_prepare_data_dir: >-
   {{ observability_data_dir | default(graylog_volume | default(graylog_default_volume
-     | default(global_data_dir | default('/var/lib/observability')))) }}
+     | default(global_data_dir | default('/var/lib/observability', true), true), true), true) }}
 host_prepare_config_dir: "{{ observability_config_dir | default('/etc/observability') }}"
 
 # TLS certificate for the host, used by the proxies of each stack.
