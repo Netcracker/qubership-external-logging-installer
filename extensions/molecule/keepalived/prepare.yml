@@ -1,0 +1,12 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    # verify.yml pings the VIP to wait for the election.
+    - name: Install ping
+      ansible.builtin.apt:
+        name: iputils-ping
+        state: present
+        update_cache: true

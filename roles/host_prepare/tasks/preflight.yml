@@ -1,0 +1,65 @@
+---
+- name: Warn when the OS is not supported
+  ansible.builtin.debug:
+    msg: >-
+      {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }} is not a supported OS. The
+      collection is tested on Ubuntu 20.04 to 24.04 and RHEL, Rocky, and Oracle Linux 8 and 9.
+  when: >-
+    ansible_facts['distribution_major_version']
+    not in host_prepare_supported_os[ansible_facts['distribution']] | default([])
+
+# Each role lists its old variable names in vars/deprecated.yml. fileglob cannot match a directory wildcard, so find
+# the files on the controller.
+- name: Find the lists of old variable names
+  ansible.builtin.find:
+    paths: "{{ role_path | dirname }}"
+    patterns: deprecated.yml
+    recurse: true
+    depth: 3
+  delegate_to: localhost
+  become: false
+  run_once: true
+  register: host_prepare_deprecated_files
+
+# hostvars does not hold role defaults, so the names come from the inventory, -e, or an earlier set_fact.
+- name: Warn about old variable names
+  ansible.builtin.debug:
+    msg: >-
+      This host has variables with names that a later release removes. Rename them where they are set, such as
+      the inventory, an extra var, or a set_fact task:
+      {% for old in host_prepare_old_names -%}
+      {{ old.key }} to {{ old.value.new }}{{ '; ' if not loop.last }}
+      {%- endfor %}.
+  vars:
+    host_prepare_deprecated: >-
+      {{ query('ansible.builtin.file', *(host_prepare_deprecated_files.files | map(attribute='path') | sort))
+         | map('from_yaml') | map('dict2items') | flatten | map(attribute='value') | combine }}
+    host_prepare_old_names: >-
+      {{ host_prepare_deprecated | dict2items | selectattr('key', 'in', hostvars[inventory_hostname]) | list }}
+  register: host_prepare_deprecation_warning
+  when: host_prepare_old_names | length > 0
+
+- name: Find data from an earlier install
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  register: host_prepare_legacy_stat
+  loop: "{{ host_prepare_legacy_data }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: host_prepare_check_legacy_data | bool
+
+# The new default would start the stacks with empty data next to the old data.
+- name: Stop when earlier data would be left behind
+  ansible.builtin.fail:
+    msg: >-
+      {{ item.item.path }} exists, so {{ item.item.installer }} installed this host, but the data directory is
+      {{ host_prepare_data_dir }}. A run would start the stack with empty data. Set observability_data_dir to
+      {{ item.item.data_dir }} to keep the existing data, or set host_prepare_check_legacy_data to false after moving
+      it.
+  loop: "{{ host_prepare_legacy_stat.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.path }}"
+  when:
+    - item.stat is defined
+    - item.stat.exists
+    - host_prepare_data_dir | regex_replace('/+$', '') != item.item.data_dir

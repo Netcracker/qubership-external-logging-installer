@@ -1,0 +1,40 @@
+---
+# A base URL without a scheme counts as https, as the earlier roles treated a raw_artifacts_registry set as host/path.
+artifact_fetch_base: >-
+  {{ artifact_fetch_base_url | regex_replace('^(?![A-Za-z][A-Za-z0-9+.-]*://)', 'https://') | regex_replace('/+$', '')
+     if artifact_fetch_base_url | length > 0 else '' }}
+artifact_fetch_full_url: >-
+  {{ artifact_fetch_artifact.url if artifact_fetch_artifact.url is match('^https?://')
+     else artifact_fetch_base ~ '/' ~ (artifact_fetch_artifact.url | regex_replace('^/+', ''))
+     if artifact_fetch_base | length > 0
+     else artifact_fetch_artifact.url }}
+# The URL without user information, query, or fragment, for task names and messages.
+artifact_fetch_display_url: >-
+  {{ (artifact_fetch_artifact.url | default('') if artifact_fetch_full_url is not match('^https?://')
+      else artifact_fetch_full_url)
+     | regex_replace('^([A-Za-z][A-Za-z0-9+.-]*://)[^/@]*@', '\1') | regex_replace('[?#].*$', '') }}
+artifact_fetch_file_name: "{{ artifact_fetch_full_url | urlsplit('path') | basename }}"
+artifact_fetch_is_archive: >-
+  {{ artifact_fetch_artifact.archive
+     | default(artifact_fetch_file_name is search('[.](tar[.]gz|tgz|tar|zip)$')) | bool }}
+
+# Credentials and TLS settings apply only to the origin of the base URL: the same scheme, host, and port, with 80 and
+# 443 as the defaults. A download from anywhere else, such as a public release URL, sends no credentials and checks
+# the certificate against the system trust store.
+artifact_fetch_default_ports: { http: 80, https: 443 }
+artifact_fetch_url_origin: >-
+  {{ (artifact_fetch_full_url | urlsplit('scheme') | lower) ~ '://'
+     ~ (artifact_fetch_full_url | urlsplit('hostname') | default('', true) | lower) ~ ':'
+     ~ (artifact_fetch_full_url | urlsplit('port')
+        or artifact_fetch_default_ports[artifact_fetch_full_url | urlsplit('scheme') | lower] | default('')) }}
+artifact_fetch_base_origin: >-
+  {{ '' if artifact_fetch_base | length == 0
+     else (artifact_fetch_base | urlsplit('scheme') | lower) ~ '://'
+          ~ (artifact_fetch_base | urlsplit('hostname') | default('', true) | lower) ~ ':'
+          ~ (artifact_fetch_base | urlsplit('port')
+             or artifact_fetch_default_ports[artifact_fetch_base | urlsplit('scheme') | lower] | default('')) }}
+artifact_fetch_from_base: "{{ artifact_fetch_base_origin | length > 0 and artifact_fetch_url_origin == artifact_fetch_base_origin }}"
+artifact_fetch_use_auth: >-
+  {{ artifact_fetch_from_base | bool and artifact_fetch_username | length > 0 and artifact_fetch_password | length > 0 }}
+artifact_fetch_effective_validate_certs: "{{ artifact_fetch_validate_certs | bool if artifact_fetch_from_base | bool else true }}"
+artifact_fetch_effective_ca_file: "{{ artifact_fetch_ca_file if artifact_fetch_from_base | bool else '' }}"

@@ -14,6 +14,17 @@ All notable changes to this project are documented in this file. The format foll
 - A Molecule scenario, `graylog_stack`, deploys the playbook into a container and checks Graylog, the exporters, and
   the stack containers.
 - `graylog_password_secret` sets the Graylog `password_secret`.
+- Four shared roles that later stages build the Graylog and VictoriaLogs stacks on. The Graylog roles do not use them
+  yet, so an install runs the same tasks as before:
+  - `container_runtime` configures Docker or Podman. Other roles call `tasks_from: network` to create networks and
+    `tasks_from: run_container` to describe a container once for both engines.
+  - `artifact_fetch` downloads a binary or an archive with `tasks_from: binary` and installs the binary only when it
+    changed. Mirror credentials and CA settings apply only to the mirror's origin.
+  - `host_prepare` sets kernel settings and limits, creates the exporters user, configures chrony, installs a per-host
+    TLS certificate, and stops when the host has data that the new `/var/lib/observability` default would leave
+    behind.
+  - `keepalived` holds a virtual IP with VRRP, over multicast or unicast, and takes a health check from each stack.
+- The collection depends on `containers.podman`.
 
 ### Changed
 

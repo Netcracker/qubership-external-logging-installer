@@ -1,0 +1,42 @@
+---
+# Tests the artifact_fetch role against an nginx server on the test host: HTTPS with basic auth and a private CA,
+# and plain HTTP. The inventory leaves validate_certs unset, so the default is under test.
+# Run from the extensions/ directory: molecule test -s artifact_fetch
+driver:
+  name: docker
+platforms:
+  - name: artifact-fetch-ubuntu2404
+    image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:bbf48c50bf652d059118ba025663055ca64f550adaa13405021f418d52a52a84
+    pre_build_image: true
+    privileged: true
+    cgroupns_mode: host
+    override_command: false
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/../roles
+  config_options:
+    defaults:
+      stdout_callback: default
+  inventory:
+    group_vars:
+      all:
+        observability_artifacts_url: https://localhost:8443/secure
+        observability_artifacts_username: fetcher
+        observability_artifacts_password: fetcher-password
+        observability_artifacts_ca_file: /etc/artifact-test/ca.crt
+scenario:
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy
+verifier:
+  name: ansible

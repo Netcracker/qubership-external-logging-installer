@@ -1,0 +1,6 @@
+---
+- name: Explain how to use the role
+  ansible.builtin.fail:
+    msg: >-
+      artifact_fetch has no main entry point. Call it with include_role, tasks_from: binary, and
+      artifact_fetch_artifact set. See the role README.

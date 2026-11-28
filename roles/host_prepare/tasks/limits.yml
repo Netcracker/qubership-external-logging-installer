@@ -1,0 +1,29 @@
+---
+- name: Create the sysctl directory
+  ansible.builtin.file:
+    path: /etc/sysctl.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Set kernel settings
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value | string }}"
+    state: present
+    sysctl_file: /etc/sysctl.d/90-observability.conf
+    reload: true
+  loop: "{{ host_prepare_sysctl | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}={{ item.value }}"
+
+- name: Set user limits
+  community.general.pam_limits:
+    domain: "{{ item.domain }}"
+    limit_type: "{{ item.type }}"
+    limit_item: "{{ item.item }}"
+    value: "{{ item.value }}"
+  loop: "{{ host_prepare_limits }}"
+  loop_control:
+    label: "{{ item.domain }} {{ item.item }}={{ item.value }}"

@@ -1,0 +1,9 @@
+---
+container_runtime_certs_dir: >-
+  {{ '/etc/docker/certs.d' if container_runtime_engine == 'docker' else '/etc/containers/certs.d' }}
+
+# The community.docker modules talk to the Docker API with their own client. It needs requests on the host, but not
+# the Docker SDK for Python.
+container_runtime_packages:
+  docker: [docker.io, python3-requests]
+  podman: [podman]

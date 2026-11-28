@@ -1,0 +1,99 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    engine: "{{ observability_container_runtime }}"
+  tasks:
+    - name: Read daemon.json
+      ansible.builtin.slurp:
+        src: /etc/docker/daemon.json
+      register: daemon_json
+      when: engine == 'docker'
+
+    - name: Check daemon.json
+      ansible.builtin.assert:
+        that:
+          - config['icc'] == false
+          - config['live-restore'] == true
+          - config['log-opts']['max-size'] == '50m'
+          - config['log-opts']['max-file'] == '6'
+          - config['storage-driver'] == 'overlay2'
+          - "'insecure-registries' not in config"
+        quiet: true
+      vars:
+        config: "{{ daemon_json.content | b64decode | from_json }}"
+      when: engine == 'docker'
+
+    - name: Read the storage driver that Docker uses
+      ansible.builtin.command: docker info --format {{ '{{.Driver}}' | quote }}
+      register: docker_driver
+      changed_when: false
+      when: engine == 'docker'
+
+    - name: Check that Docker applied daemon.json
+      ansible.builtin.assert:
+        that:
+          - docker_driver.stdout | trim == 'overlay2'
+        quiet: true
+      when: engine == 'docker'
+
+    - name: Read the test network
+      ansible.builtin.command: "{{ engine }} network inspect runtime-test"
+      register: network
+      changed_when: false
+
+    - name: Check the network MTU
+      ansible.builtin.assert:
+        that:
+          - >-
+            (network.stdout | from_json | first | to_json)
+            is search('"(com[.]docker[.]network[.]driver[.])?mtu": "?1400"?')
+        fail_msg: "{{ network.stdout }}"
+        quiet: true
+
+    - name: Read the test container
+      ansible.builtin.command: "{{ engine }} inspect runtime-test-web"
+      register: container
+      changed_when: false
+
+    - name: Check the test container settings
+      ansible.builtin.assert:
+        that:
+          - info.State.Running
+          - info.HostConfig.ReadonlyRootfs
+          - info.HostConfig.RestartPolicy.Name == 'always'
+          - "'no-new-privileges' in (info.HostConfig.SecurityOpt | join(' '))"
+          - "'TEST_VALUE=42' in info.Config.Env"
+          - "'/tmp' in info.HostConfig.Tmpfs"
+        fail_msg: "{{ info.HostConfig | to_json }}"
+        quiet: true
+      vars:
+        info: "{{ container.stdout | from_json | first }}"
+
+    - name: Read the open file limit inside the container
+      ansible.builtin.command: "{{ engine }} exec runtime-test-web sh -c 'ulimit -n'"
+      register: nofile
+      changed_when: false
+
+    - name: Check the open file limit
+      ansible.builtin.assert:
+        that:
+          - nofile.stdout | trim == '4096'
+        quiet: true
+
+    - name: Fetch the test page through the published port
+      ansible.builtin.uri:
+        url: http://127.0.0.1:18080/
+        status_code: 200
+      register: page
+      until: page.status == 200
+      retries: 10
+      delay: 2
+
+    - name: Resolve the network alias from another container
+      ansible.builtin.command: >-
+        {{ engine }} run --rm --network runtime-test docker.io/library/nginx:1.27.3-alpine
+        wget -q -O /dev/null http://web/
+      changed_when: false

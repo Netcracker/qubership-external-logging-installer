@@ -1,0 +1,3 @@
+---
+keepalived_config_dir: /etc/keepalived
+keepalived_check_script_path: "{{ keepalived_config_dir }}/observability_check.sh"

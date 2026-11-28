@@ -1,0 +1,29 @@
+---
+host_prepare_supported_os:
+  Ubuntu: ["20", "22", "24"]
+  RedHat: ["8", "9"]
+  Rocky: ["8", "9"]
+  OracleLinux: ["8", "9"]
+
+# Data that earlier installers left in their default locations, and the variable that keeps using it.
+host_prepare_legacy_data:
+  - path: /var/lib/graylog/config/graylog.conf
+    data_dir: /var/lib
+    installer: this installer before the collection
+  - path: /srv/docker/graylog/graylog/config/graylog.conf
+    data_dir: /srv/docker/graylog
+    installer: the internal logging installer
+  - path: /var/lib/vl
+    data_dir: /var/lib/vl
+    installer: the VictoriaLogs playbooks
+
+host_prepare_chrony:
+  Debian: { config: /etc/chrony/chrony.conf, service: chrony }
+  RedHat: { config: /etc/chrony.conf, service: chronyd }
+
+host_prepare_ntp_server_list: >-
+  {{ (host_prepare_ntp_servers.split(',') if host_prepare_ntp_servers is string else host_prepare_ntp_servers)
+     | map('trim') | select | list }}
+
+host_prepare_tls_cert_path: "{{ host_prepare_tls_dir }}/{{ host_prepare_tls_name }}.crt"
+host_prepare_tls_key_path: "{{ host_prepare_tls_dir }}/{{ host_prepare_tls_name }}.key"

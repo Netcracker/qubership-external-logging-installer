@@ -1,0 +1,95 @@
+---
+- name: Serve test artifacts with nginx
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install nginx and openssl
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - openssl
+        state: present
+        update_cache: true
+
+    - name: Create the test directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /etc/artifact-test
+        - /srv/artifacts/secure/tools
+        - /srv/artifacts/plain
+        - /tmp/fake_exporter-1.0.linux-amd64
+
+    - name: Create a CA and a server certificate for localhost
+      ansible.builtin.shell: |
+        set -eu
+        cd /etc/artifact-test
+        openssl req -x509 -newkey rsa:2048 -nodes -days 2 -subj "/CN=artifact test CA" \
+          -keyout ca.key -out ca.crt
+        openssl req -newkey rsa:2048 -nodes -subj "/CN=localhost" -keyout server.key -out server.csr
+        printf 'subjectAltName=DNS:localhost\n' > server.ext
+        openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 2 \
+          -extfile server.ext -out server.crt
+        printf 'fetcher:%s\n' "$(openssl passwd -apr1 fetcher-password)" > htpasswd
+        chmod 0644 htpasswd
+      args:
+        executable: /bin/bash
+        creates: /etc/artifact-test/server.crt
+
+    - name: Create the files that the archive holds
+      ansible.builtin.copy:
+        dest: "/tmp/fake_exporter-1.0.linux-amd64/{{ item.name }}"
+        content: "{{ item.content }}"
+        mode: "0755"
+      loop:
+        - { name: fake_exporter, content: "#!/bin/sh\necho fake exporter 1.0\n" }
+        - { name: LICENSE, content: "Test license\n" }
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Pack the test archive
+      community.general.archive:
+        path: /tmp/fake_exporter-1.0.linux-amd64
+        dest: /srv/artifacts/secure/tools/fake_exporter-1.0.linux-amd64.tar.gz
+        format: gz
+        mode: "0644"
+
+    - name: Create the plain test binary
+      ansible.builtin.copy:
+        dest: /srv/artifacts/plain/fake_binary
+        content: "#!/bin/sh\necho fake binary\n"
+        mode: "0644"
+
+    - name: Configure nginx
+      ansible.builtin.copy:
+        dest: /etc/nginx/sites-enabled/default
+        mode: "0644"
+        content: |
+          # A different origin from the base URL: the role must not send the credentials here.
+          server {
+            listen 127.0.0.1:8080;
+            root /srv/artifacts;
+            if ($http_authorization) {
+              return 403;
+            }
+          }
+          server {
+            listen 127.0.0.1:8443 ssl;
+            server_name localhost;
+            ssl_certificate /etc/artifact-test/server.crt;
+            ssl_certificate_key /etc/artifact-test/server.key;
+            root /srv/artifacts;
+            location /secure/ {
+              auth_basic "artifacts";
+              auth_basic_user_file /etc/artifact-test/htpasswd;
+            }
+          }
+
+    - name: Start nginx
+      ansible.builtin.systemd_service:
+        name: nginx
+        state: restarted
+        enabled: true

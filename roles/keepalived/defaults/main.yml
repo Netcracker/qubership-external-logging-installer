@@ -1,0 +1,30 @@
+---
+# Virtual IP address and the interface that holds it.
+keepalived_vip: "{{ observability_vip | default(keepalived_virtual_ip_address | default('')) }}"
+keepalived_interface: "{{ observability_vip_interface | default(keepalived_network_interface | default('')) }}"
+
+# Prefix length of the virtual IP, such as 24. Required: earlier versions always used /24.
+keepalived_vip_prefix: ""
+
+# VRRP router ID, 1 to 255. All nodes that serve one VIP use the same ID, and every other VRRP instance in the same
+# network segment needs a different one. Required: earlier versions took the last octet of the VIP, which collides
+# when two clusters share a subnet.
+keepalived_virtual_router_id: ""
+
+# Higher priority wins the election. Give each node of a cluster a different value.
+keepalived_priority: 100
+
+# VRRP password, at most 8 characters. Required. Keep it in a vault.
+keepalived_auth_password: ""
+
+# Peers for unicast VRRP, for networks that drop multicast. Empty means multicast.
+keepalived_unicast_peers: []
+
+# Health check that the stack provides, as the content of a POSIX sh script. It exits 0 when the node can serve.
+# keepalived runs it as root. Empty means no check: the VIP moves only when a node or keepalived stops.
+# The node gives up the VIP after `fall` failures in a row and takes part again after `rise` successes.
+keepalived_check_script: ""
+keepalived_check_interval: 5
+keepalived_check_timeout: 10
+keepalived_check_fall: 2
+keepalived_check_rise: 2

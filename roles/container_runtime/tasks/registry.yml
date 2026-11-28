@@ -1,0 +1,44 @@
+---
+# Docker and Podman both trust a CA placed under certs.d/<registry>/, so pulls validate without per-task settings.
+- name: Install the registry CA certificate
+  when: container_runtime_registry_ca_file | length > 0
+  block:
+    - name: Create the registry certificate directory
+      ansible.builtin.file:
+        path: "{{ container_runtime_certs_dir }}/{{ container_runtime_registry }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Copy the registry CA certificate
+      ansible.builtin.copy:
+        src: "{{ container_runtime_registry_ca_file }}"
+        dest: "{{ container_runtime_certs_dir }}/{{ container_runtime_registry }}/ca.crt"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+
+- name: Log in to the image registry
+  when:
+    - container_runtime_registry_username | length > 0
+    - container_runtime_registry_password | length > 0
+  no_log: true
+  block:
+    - name: Log in to the image registry with Docker
+      community.docker.docker_login:
+        registry_url: "{{ container_runtime_registry }}"
+        username: "{{ container_runtime_registry_username }}"
+        password: "{{ container_runtime_registry_password }}"
+        validate_certs: "{{ container_runtime_registry_validate_certs | bool }}"
+        reauthorize: true
+      when: container_runtime_engine == 'docker'
+
+    - name: Log in to the image registry with Podman
+      containers.podman.podman_login:
+        registry: "{{ container_runtime_registry }}"
+        username: "{{ container_runtime_registry_username }}"
+        password: "{{ container_runtime_registry_password }}"
+        tlsverify: "{{ container_runtime_registry_validate_certs | bool }}"
+      when: container_runtime_engine == 'podman'

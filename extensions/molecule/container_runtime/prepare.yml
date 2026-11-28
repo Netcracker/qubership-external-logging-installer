@@ -1,0 +1,27 @@
+---
+# GitHub-hosted runners have no ip_tables kernel module, so netavark's default iptables driver cannot set up NAT
+# inside the Rocky 9 container. The nftables driver works on any kernel with nf_tables. Real Rocky 9 hosts load
+# ip_tables, so the role keeps the distribution default.
+- name: Use the nftables firewall driver for Podman networks
+  hosts: podman_hosts
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install nftables
+      ansible.builtin.dnf:
+        name: nftables
+        state: present
+
+    - name: Create the containers.conf drop-in directory
+      ansible.builtin.file:
+        path: /etc/containers/containers.conf.d
+        state: directory
+        mode: "0755"
+
+    - name: Select the nftables driver
+      ansible.builtin.copy:
+        dest: /etc/containers/containers.conf.d/50-molecule-firewall.conf
+        content: |
+          [network]
+          firewall_driver = "nftables"
+        mode: "0644"

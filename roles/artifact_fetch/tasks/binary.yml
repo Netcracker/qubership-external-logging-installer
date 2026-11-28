@@ -1,0 +1,129 @@
+---
+# Entry point: include_role with tasks_from: binary and artifact_fetch_artifact set.
+# Downloads into a fresh directory on every run, so a stale or partial file from an earlier run is never reused, then
+# installs the binary only when it differs from the installed one. The task "Install the binary" reports the change.
+# The staging tasks run in check mode too: they touch only the staging directory, and the install task can then report
+# whether the binary would change.
+- name: Check the artifact definition
+  ansible.builtin.assert:
+    that:
+      - artifact_fetch_artifact is mapping
+      - artifact_fetch_artifact.url | default('') | length > 0
+      - artifact_fetch_artifact.dest | default('') | length > 0
+      - artifact_fetch_full_url is match('^https?://')
+    fail_msg: >-
+      artifact_fetch_artifact needs `url` and `dest`. A `url` that is not a full http:// or https:// URL needs
+      observability_artifacts_url. Got url '{{ artifact_fetch_display_url }}'.
+    quiet: true
+
+- name: Fetch and install the binary {{ artifact_fetch_artifact.dest | basename }}
+  block:
+    - name: Create a staging directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: artifact_fetch.
+      register: artifact_fetch_staging
+      check_mode: false
+      # A per-run scratch directory is not a change to the host.
+      changed_when: false
+
+    - name: Download the artifact {{ artifact_fetch_display_url }}
+      ansible.builtin.get_url:
+        url: "{{ artifact_fetch_full_url }}"
+        dest: "{{ artifact_fetch_staging.path }}/{{ artifact_fetch_file_name }}"
+        mode: "0600"
+        url_username: "{{ artifact_fetch_username if artifact_fetch_use_auth | bool else omit }}"
+        url_password: "{{ artifact_fetch_password if artifact_fetch_use_auth | bool else omit }}"
+        force_basic_auth: "{{ artifact_fetch_use_auth | bool }}"
+        validate_certs: "{{ artifact_fetch_effective_validate_certs | bool }}"
+        checksum: "{{ artifact_fetch_artifact.checksum | default(omit) }}"
+        timeout: "{{ artifact_fetch_timeout | int }}"
+        use_netrc: false
+      environment: >-
+        {{ {'SSL_CERT_FILE': artifact_fetch_effective_ca_file} if artifact_fetch_effective_ca_file | length > 0 else {} }}
+      register: artifact_fetch_download
+      until: artifact_fetch_download is succeeded
+      retries: "{{ artifact_fetch_retries | int }}"
+      delay: 2
+      check_mode: false
+      # The download always lands in a new directory; only the installed file shows a real change.
+      # get_url masks url_password itself, so failures still show the server's answer.
+      changed_when: false
+
+    # A separate directory keeps the archive itself out of the member search.
+    - name: Create the unpack directory
+      ansible.builtin.file:
+        path: "{{ artifact_fetch_staging.path }}/unpacked"
+        state: directory
+        mode: "0700"
+      check_mode: false
+      changed_when: false
+      when: artifact_fetch_is_archive
+
+    - name: Unpack the archive
+      ansible.builtin.unarchive:
+        src: "{{ artifact_fetch_staging.path }}/{{ artifact_fetch_file_name }}"
+        dest: "{{ artifact_fetch_staging.path }}/unpacked"
+        remote_src: true
+      check_mode: false
+      changed_when: false
+      when: artifact_fetch_is_archive
+
+    - name: Find the binary in the archive
+      ansible.builtin.find:
+        paths: "{{ artifact_fetch_staging.path }}/unpacked"
+        patterns: "{{ artifact_fetch_artifact.member | default(artifact_fetch_artifact.dest | basename) }}"
+        file_type: file
+        recurse: true
+      register: artifact_fetch_members
+      when: artifact_fetch_is_archive
+
+    # `member` matches file names only, so two files with the same name in different directories also count.
+    - name: Check that the archive holds exactly one matching file
+      ansible.builtin.assert:
+        that:
+          - artifact_fetch_members.files | length == 1
+        fail_msg: >-
+          {{ artifact_fetch_display_url }} holds {{ artifact_fetch_members.files | length }} files named
+          '{{ artifact_fetch_artifact.member | default(artifact_fetch_artifact.dest | basename) }}':
+          {{ artifact_fetch_members.files | map(attribute='path')
+             | map('relpath', artifact_fetch_staging.path ~ '/unpacked') | sort | join(', ') }}.
+          `member` matches file names, not paths. Set it to a pattern that matches the name of one file.
+        quiet: true
+      when: artifact_fetch_is_archive
+
+    # The mode applies only to a directory that the role creates: an existing one keeps its own.
+    - name: Read the target directory
+      ansible.builtin.stat:
+        path: "{{ artifact_fetch_artifact.dest | dirname }}"
+      register: artifact_fetch_dest_dir
+
+    - name: Create the target directory
+      ansible.builtin.file:
+        path: "{{ artifact_fetch_artifact.dest | dirname }}"
+        state: directory
+        mode: "0755"
+      when: not artifact_fetch_dest_dir.stat.exists
+
+    - name: Install the binary
+      ansible.builtin.copy:
+        src: >-
+          {{ artifact_fetch_members.files[0].path if artifact_fetch_is_archive
+             else artifact_fetch_staging.path ~ '/' ~ artifact_fetch_file_name }}
+        dest: "{{ artifact_fetch_artifact.dest }}"
+        remote_src: true
+        owner: "{{ artifact_fetch_artifact.owner | default('root') }}"
+        group: "{{ artifact_fetch_artifact.group | default('root') }}"
+        mode: "{{ artifact_fetch_artifact.mode | default('0755') }}"
+      register: artifact_fetch_result
+
+  # Ansible skips this when the host becomes unreachable mid-run. The directory is then left in the temporary
+  # directory, but no later run reads it, because each run creates its own.
+  always:
+    - name: Remove the staging directory
+      ansible.builtin.file:
+        path: "{{ artifact_fetch_staging.path }}"
+        state: absent
+      check_mode: false
+      changed_when: false
+      when: artifact_fetch_staging.path is defined

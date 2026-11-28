@@ -1,0 +1,49 @@
+---
+# Print the host's OS, hardware, and network facts at the start of a run.
+host_prepare_system_info: true
+
+# Kernel settings. OpenSearch needs vm.max_map_count of at least 262144.
+host_prepare_sysctl:
+  fs.file-max: 1618107
+  vm.max_map_count: 262144
+
+# Limits in /etc/security/limits.conf. `type: "-"` sets the soft and the hard limit.
+host_prepare_limits:
+  - { domain: "*", type: "-", item: nofile, value: 260000 }
+  - { domain: "*", type: "-", item: nproc, value: 32766 }
+
+# System user and group that the exporters run as.
+host_prepare_exporters_user: "{{ exporters_system_user | default('monitoring_exporters') }}"
+host_prepare_exporters_group: "{{ exporters_system_group | default(host_prepare_exporters_user) }}"
+
+# NTP servers for chrony. Empty leaves the time configuration alone. Accepts a list or a comma-separated string.
+host_prepare_ntp_servers: "{{ ntp_server | default(chrony_ntp_servers | default([])) }}"
+
+# Directories that the stacks keep their data and config in. Each stack uses a subdirectory, such as
+# <data dir>/graylog or <data dir>/victorialogs. An empty or null value counts as unset, so an inventory with
+# `graylog_volume: null` still falls back to graylog_default_volume.
+host_prepare_data_dir: >-
+  {{ observability_data_dir | default(graylog_volume | default(graylog_default_volume
+     | default(global_data_dir | default('/var/lib/observability', true), true), true), true) }}
+host_prepare_config_dir: "{{ observability_config_dir | default('/etc/observability') }}"
+
+# TLS certificate for the host, used by the proxies of each stack.
+# Source: selfsigned, content, local_file, existing, or none.
+host_prepare_tls_cert_source: >-
+  {{ observability_tls_cert_source | default(global_ssl_cert_source | default('none')) }}
+host_prepare_tls_dir: "{{ host_prepare_config_dir }}/tls"
+# Base name of the files: <name>.crt and <name>.key.
+host_prepare_tls_name: "{{ ansible_host | default(inventory_hostname) }}"
+# Names in the self-signed certificate. The first one is also the common name.
+host_prepare_tls_san: >-
+  {{ [ansible_host | default(inventory_hostname)] + ([inventory_hostname] if ansible_host is defined else []) }}
+host_prepare_tls_selfsigned_days: 3650
+# PEM text for the `content` source. Keep it in a vault.
+host_prepare_tls_cert_content: "{{ global_ssl_cert_content | default('') }}"
+host_prepare_tls_key_content: "{{ global_ssl_key_content | default('') }}"
+# Paths on the controller for the `local_file` source.
+host_prepare_tls_cert_file: "{{ global_ssl_cert_file | default('') }}"
+host_prepare_tls_key_file: "{{ global_ssl_key_file | default('') }}"
+
+# Stop when the host has data from an earlier install in a directory that the new defaults no longer use.
+host_prepare_check_legacy_data: true

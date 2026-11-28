@@ -46,6 +46,19 @@ Findings that shape the plan:
   VictoriaLogs roles only; other roles are Docker-only until Podman is enabled for them.
 - **Variables:** new role-prefixed names with deprecated aliases for old names, removed two minor releases later.
 - **Testing:** Molecule scenarios for every role.
+- **Supported OS:** Ubuntu 20.04–24.04 and RHEL, Rocky, and Oracle Linux 8–9. The CentOS 7 Docker path (bridge0,
+  daemon flags, audit rules, iptables flush) is dropped. Its `--default-pids-limit` and `--default-ulimit nproc` flags
+  applied only to CentOS 7, so `container_runtime` sets no such limits by default. To keep them, set
+  `default-pids-limit` and `default-ulimits` in `container_runtime_docker_daemon_options`.
+- **daemon.json:** `container_runtime` templates Q's keys plus a free-form `container_runtime_docker_daemon_options`
+  dict, and restarts Docker only when the file changes. A flag turns it off for hosts whose Docker is managed elsewhere.
+  No more backup, delete, and restart on every run.
+- **Data directory:** `observability_data_dir` defaults to `/var/lib/observability`, with one subdirectory per stack.
+  An existing Q install keeps its data in `/var/lib/<component>`, so a `host_prepare` preflight check fails when those
+  directories exist and neither `observability_data_dir` nor an old name such as `graylog_volume` is set.
+- **keepalived:** a rewrite, not a move. The role installs the package, restarts only when the config or the health
+  check script changes, and takes the prefix length and `virtual_router_id` as required settings. Each stack passes
+  its own POSIX `sh` health check.
 - **Delivery:** staged releases in this repository, in the order listed under [Stages](#stages).
 
 ## Target layout
@@ -158,18 +171,32 @@ Each stage ends with a tagged release and updated docs.
 
 ### Stage 2: shared foundation
 
-- [ ] Create `host_prepare` from V's `prepare-environment` structure. Add Q/L limits and users, plus NTP and DNS
-      toggles.
-- [ ] Create `container_runtime` from M's `docker` role. Merge the Docker tasks from Q, L, and V. Expose
+- [x] Create `host_prepare` from V's `prepare-environment` structure. Add Q/L limits and users, plus NTP.
+- [ ] DNS settings: M's code assumes NetworkManager and defaults to internal resolvers, so `host_prepare` leaves DNS
+      alone. Add it only when a target platform needs it, through systemd-resolved or NetworkManager drop-ins.
+- [x] Create `container_runtime` from M's `docker` role. Merge the Docker tasks from Q, L, and V. Expose
       `tasks_from: run_container` and `tasks_from: network`.
-- [ ] Create `artifact_fetch` with `tasks_from: binary`: a fresh staging directory per run, credentials, CA, and
+- [x] Create `artifact_fetch` with `tasks_from: binary`: a fresh staging directory per run, credentials, CA, and
       binary or tarball input.
 - [ ] Introduce the `observability_*` variables, including the network and VIP settings, and the alias mechanism.
-- [ ] Extract keepalived from `prepare_environment` into a shared `keepalived` role. Keep the Graylog health-check
+- [x] Extract keepalived from `prepare_environment` into a shared `keepalived` role. Keep the Graylog health-check
       script as the Graylog stack's check.
 - [ ] Move the remaining Graylog-only parts of `prepare_environment` (duplicator ports, container checks) into the
       `graylog` role, then remove `prepare_environment` and `common`.
-- [ ] Add Molecule scenarios for the foundation roles and `keepalived`.
+- [x] Add Molecule scenarios for the foundation roles and `keepalived`.
+- [ ] Fix the bugs that the stage 2 survey found in the code being merged:
+  - an empty `docker_registry` yields `/image`, because the check compares it with `0`;
+  - with `validate_certs` and credentials both set, no pull task runs;
+  - `raw_artifacts_registry_ca_cert_file: ~` counts as defined;
+  - downloads reuse fixed `/tmp` paths.
+- [ ] Raise the `galaxy.yml` dependency floors to the versions the code needs, and add containers.podman.
+- [ ] Update `tests/run-installer-ci.sh`, which lists `common` and `prepare_environment` by name.
+- [ ] When the Graylog roles move to the shared roles, keep copying the registry and artifact CA files from
+      `ssl_module_files_path` on the controller to the managed host: `container_runtime` and `artifact_fetch` read
+      them on the host.
+- [ ] Molecule coverage that the stage 2 review asked for: a private registry with login and a private CA on both
+      engines, the `content`, `local_file`, and `existing` TLS sources, and the Graylog keepalived check script
+      against a stub `lbstatus` endpoint.
 
 ### Stage 3: Graylog fixes from L
 

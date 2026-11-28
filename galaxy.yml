@@ -22,6 +22,7 @@ dependencies:
   community.crypto: ">=2.0.0"
   community.docker: ">=3.10.0"
   community.general: ">=8.0.0"
+  containers.podman: ">=1.10.0"
 repository: https://github.com/Netcracker/qubership-external-logging-installer
 documentation: https://github.com/Netcracker/qubership-external-logging-installer/tree/main/docs
 issues: https://github.com/Netcracker/qubership-external-logging-installer/issues

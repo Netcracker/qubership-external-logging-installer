@@ -1,0 +1,108 @@
+---
+- name: Check the TLS certificate settings
+  ansible.builtin.assert:
+    that:
+      - host_prepare_tls_cert_source in ['selfsigned', 'content', 'local_file', 'existing']
+      - >-
+        host_prepare_tls_cert_source != 'content'
+        or (host_prepare_tls_cert_content | length > 0 and host_prepare_tls_key_content | length > 0)
+      - >-
+        host_prepare_tls_cert_source != 'local_file'
+        or (host_prepare_tls_cert_file | length > 0 and host_prepare_tls_key_file | length > 0)
+    fail_msg: >-
+      observability_tls_cert_source is '{{ host_prepare_tls_cert_source }}'. Use selfsigned, content, local_file,
+      existing, or none. `content` needs host_prepare_tls_cert_content and host_prepare_tls_key_content, and
+      `local_file` needs host_prepare_tls_cert_file and host_prepare_tls_key_file.
+    quiet: true
+
+- name: Create the TLS directory
+  ansible.builtin.file:
+    path: "{{ host_prepare_tls_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create a self-signed certificate
+  when: host_prepare_tls_cert_source == 'selfsigned'
+  block:
+    - name: Install the Python cryptography library
+      ansible.builtin.package:
+        name: python3-cryptography
+        state: present
+
+    - name: Create the private key
+      community.crypto.openssl_privatekey:
+        path: "{{ host_prepare_tls_key_path }}"
+        type: RSA
+        size: 4096
+        mode: "0600"
+
+    - name: Create the certificate signing request
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ host_prepare_tls_key_path }}"
+        common_name: "{{ host_prepare_tls_san | first }}"
+        subject_alt_name: >-
+          {{ host_prepare_tls_san | map('regex_replace', '^(\d+\.\d+\.\d+\.\d+|[0-9a-fA-F:]*:[0-9a-fA-F:]*)$', 'IP:\1')
+             | map('regex_replace', '^(?!IP:)(.*)$', 'DNS:\1') | list }}
+      register: host_prepare_tls_csr
+      changed_when: false
+
+    - name: Create the self-signed certificate
+      community.crypto.x509_certificate:
+        path: "{{ host_prepare_tls_cert_path }}"
+        csr_content: "{{ host_prepare_tls_csr.csr }}"
+        privatekey_path: "{{ host_prepare_tls_key_path }}"
+        provider: selfsigned
+        selfsigned_not_after: "+{{ host_prepare_tls_selfsigned_days }}d"
+        mode: "0644"
+
+- name: Write the certificate and key from content
+  ansible.builtin.copy:
+    dest: "{{ item.dest }}"
+    content: "{{ item.content }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { dest: "{{ host_prepare_tls_cert_path }}", content: "{{ host_prepare_tls_cert_content }}", mode: "0644" }
+    - { dest: "{{ host_prepare_tls_key_path }}", content: "{{ host_prepare_tls_key_content }}", mode: "0600" }
+  loop_control:
+    label: "{{ item.dest }}"
+  no_log: true
+  when: host_prepare_tls_cert_source == 'content'
+
+- name: Copy the certificate and key from the controller
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: "{{ host_prepare_tls_cert_file }}", dest: "{{ host_prepare_tls_cert_path }}", mode: "0644" }
+    - { src: "{{ host_prepare_tls_key_file }}", dest: "{{ host_prepare_tls_key_path }}", mode: "0600" }
+  loop_control:
+    label: "{{ item.dest }}"
+  when: host_prepare_tls_cert_source == 'local_file'
+
+- name: Read the existing certificate and key
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: host_prepare_tls_existing
+  loop:
+    - "{{ host_prepare_tls_cert_path }}"
+    - "{{ host_prepare_tls_key_path }}"
+  when: host_prepare_tls_cert_source == 'existing'
+
+- name: Stop when the existing certificate or key is missing
+  ansible.builtin.fail:
+    msg: >-
+      observability_tls_cert_source is 'existing', but {{ item.item }} does not exist. Place the certificate and key
+      there before the run, or choose another source.
+  loop: "{{ host_prepare_tls_existing.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item | default('') }}"
+  when:
+    - host_prepare_tls_cert_source == 'existing'
+    - not item.stat.exists
